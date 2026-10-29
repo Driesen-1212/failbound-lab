@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>沙箱执行记录 · FailBound-Lab</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%230a0e14'/%3E%3Ctext x='16' y='22' font-family='monospace' font-size='15' fill='%237aa2ff' text-anchor='middle'%3EF%3C/text%3E%3C/svg%3E">
+<style>
+:root{
+  --bg:#0a0e14; --panel:#0f151d; --panel2:#141d27; --line:#1f2937; --line2:#2b3846;
+  --txt:#e8eef5; --dim:#8b98a8; --dim2:#5c6976;
+  --pos:#3ddc97; --neg:#ff6f6f; --acc:#7aa2ff; --warn:#ffb454;
+  --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Noto Sans SC",sans-serif;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--txt);font-family:var(--sans);font-size:15px;line-height:1.85;
+  -webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+a{color:var(--acc);text-decoration:none}
+a:hover{text-decoration:underline}
+
+#prog{position:fixed;left:0;top:0;height:2px;width:0;background:linear-gradient(90deg,#7aa2ff,#3ddc97);z-index:99}
+
+.bar{position:sticky;top:0;z-index:50;display:flex;align-items:center;gap:14px;
+  padding:10px 20px;background:rgba(10,14,20,.94);backdrop-filter:blur(10px);
+  border-bottom:1px solid var(--line)}
+.bar .brand{font-family:var(--mono);font-size:12.5px;color:var(--dim2);letter-spacing:.02em;white-space:nowrap}
+.bar .brand b{color:var(--txt)}
+.bar .ttl{font-size:14px;font-weight:600;white-space:nowrap}
+.bar .sp{flex:1 1 auto}
+.bar .acts{display:flex;gap:8px}
+.btn{font-size:12.5px;padding:6px 12px;border-radius:6px;border:1px solid var(--line2);
+  color:var(--dim);white-space:nowrap;cursor:pointer;background:transparent}
+.btn:hover{color:var(--acc);border-color:var(--acc);text-decoration:none}
+.btn.primary{color:var(--acc);border-color:rgba(122,162,255,.45)}
+
+.wrap{display:grid;grid-template-columns:236px minmax(0,1fr);gap:52px;
+  max-width:1180px;margin:0 auto;padding:0 24px}
+
+/* ---- toc ---- */
+#toc{position:sticky;top:58px;align-self:start;max-height:calc(100vh - 76px);overflow:auto;
+  padding:26px 0 40px;font-size:12.5px;line-height:1.6}
+#toc .tk{font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;color:var(--dim2);
+  text-transform:uppercase;margin-bottom:12px}
+#toc a{display:block;color:var(--dim2);padding:4px 10px 4px 10px;border-left:2px solid var(--line);
+  transition:color .15s,border-color .15s}
+#toc a:hover{color:var(--txt);text-decoration:none}
+#toc a.lv1{color:var(--dim);margin-top:12px;font-weight:600;font-size:12.5px}
+#toc a.lv1:first-child{margin-top:0}
+#toc a.lv2{padding-left:16px}
+#toc a.lv3{padding-left:26px;font-size:12px;color:var(--dim2)}
+#toc a.on{color:var(--acc);border-left-color:var(--acc)}
+#toc::-webkit-scrollbar{width:0}
+
+/* ---- article ---- */
+article{padding:34px 0 120px;max-width:800px;min-width:0}
+article > *{max-width:100%}
+h1.h1{font-size:1.62rem;line-height:1.4;font-weight:650;letter-spacing:-.01em;
+  margin:44px 0 14px;padding-top:22px;border-top:1px solid var(--line)}
+h1.h1:first-child{margin-top:0;padding-top:0;border-top:none;font-size:1.9rem;margin-bottom:22px}
+h2.h2{font-size:1.16rem;line-height:1.5;font-weight:600;margin:40px 0 12px;color:#f2f6fa}
+h3.h3{font-size:1rem;font-weight:600;margin:30px 0 8px;color:#dbe4ee}
+h3.h3::before{content:"";display:inline-block;width:3px;height:12px;background:var(--acc);
+  border-radius:2px;margin-right:9px;vertical-align:-1px;opacity:.75}
+p{margin:0 0 16px;color:#d8e0e9}
+strong{color:#fff;font-weight:600}
+em{font-style:normal;color:#cfe0ff}
+code{font-family:var(--mono);font-size:.845em;background:#151f2b;color:#a8c4ef;
+  padding:1.5px 5px;border-radius:4px;border:1px solid #1e2c3b;word-break:break-word}
+td code,th code{font-size:.92em;padding:1px 4px;border-radius:3px;line-height:1.5;
+  word-break:break-all}
+hr{border:none;border-top:1px solid var(--line);margin:26px 0}
+
+blockquote{margin:18px 0 22px;padding:2px 0 2px 16px;border-left:2px solid var(--line2);
+  color:var(--dim)}
+blockquote p{color:var(--dim);margin-bottom:10px;font-size:14.5px}
+blockquote p:last-child{margin-bottom:0}
+
+ul,ol{margin:0 0 18px;padding-left:1.35em}
+li{margin-bottom:7px;color:#d8e0e9}
+li::marker{color:var(--dim2)}
+
+pre.code{background:#0d141d;border:1px solid var(--line);border-radius:8px;
+  padding:14px 16px;overflow:auto;margin:0 0 20px;position:relative}
+pre.code code{background:none;border:none;padding:0;color:#a9bdd8;font-size:12.2px;line-height:1.72}
+pre.code[data-lang]::before{content:attr(data-lang);position:absolute;top:7px;right:11px;
+  font-family:var(--mono);font-size:10px;color:var(--dim2);letter-spacing:.06em}
+
+/* tables */
+.tw{overflow-x:auto;margin:0 0 22px;border:1px solid var(--line);border-radius:8px}
+table{width:100%;border-collapse:collapse;font-size:12.8px;line-height:1.62;table-layout:fixed}
+thead th{background:var(--panel2);color:var(--dim);font-weight:600;font-size:11.8px;
+  padding:9px 11px;text-align:left;border-bottom:1px solid var(--line2);white-space:nowrap}
+tbody td{padding:8px 11px;border-bottom:1px solid #172131;color:#ccd7e3;vertical-align:top}
+tbody tr:last-child td{border-bottom:none}
+tbody tr:nth-child(even) td{background:rgba(255,255,255,.012)}
+table.nw1 td:first-child,table.nw1 th:first-child{white-space:nowrap}
+th.a-right,td.a-right{text-align:right;font-family:var(--mono)}
+th.a-center,td.a-center{text-align:center}
+
+/* figures */
+figure.fig{margin:24px 0 28px}
+figure.fig img{width:100%;height:auto;border:1px solid var(--line);border-radius:8px;
+  background:#fff;display:block}
+figure.fig figcaption{margin-top:10px;font-size:12.4px;line-height:1.7;color:var(--dim2)}
+figure.fig figcaption b{font-family:var(--mono);font-weight:500;color:var(--acc);margin-right:7px}
+figure.fig figcaption .fcap{color:var(--dim)}
+
+/* abstract */
+.abstract{margin:8px 0 26px;padding:18px 20px 4px;background:linear-gradient(180deg,#101822,#0d141c);
+  border:1px solid var(--line);border-left:2px solid var(--acc);border-radius:8px}
+.abstract p{font-size:14.6px;line-height:1.9;color:#cfd9e4}
+.abstract p:last-child{margin-bottom:14px}
+
+/* metrics */
+.mcards{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:0 0 24px}
+.mc{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:11px 12px}
+.mv{font-family:var(--mono);font-size:15px;color:var(--acc);line-height:1.35}
+.ml{font-size:11.5px;color:var(--dim2);line-height:1.55;margin-top:3px}
+
+/* meta */
+.metarow{display:grid;grid-template-columns:88px 1fr;gap:4px 14px;margin:0 0 24px;
+  padding:12px 14px;background:var(--panel);border:1px solid var(--line);border-radius:8px}
+.metarow dt{font-family:var(--mono);font-size:11px;color:var(--dim2);letter-spacing:.04em}
+.metarow dd{font-size:12.8px;color:var(--dim);line-height:1.65}
+
+.foot{max-width:800px;padding:0 0 120px;color:var(--dim2);font-size:12.5px}
+
+@media (max-width:980px){
+  .wrap{grid-template-columns:minmax(0,1fr);gap:0;padding:0 16px}
+  #toc{display:none}
+  article{padding:22px 0 80px;max-width:100%;min-width:0}
+  h1.h1{font-size:1.4rem}
+  .mcards{grid-template-columns:repeat(2,1fr)}
+  .bar .ttl{display:none}
+  .bar{padding:8px 12px;gap:8px;flex-wrap:wrap}
+  .bar .brand{font-size:11.5px}
+  .bar .acts{gap:6px;margin-left:auto}
+  .btn{font-size:11px;padding:5px 9px}
+  body{font-size:14.5px;line-height:1.8}
+  .tw table{table-layout:auto;width:max-content;min-width:100%}
+  .tw td,.tw th{max-width:240px}
+  .tw table col{width:auto !important}
+  .tw td code{word-break:break-word}
+  .tw td:first-child,.tw th:first-child{white-space:normal;min-width:92px;max-width:152px}
+
+  .abstract{padding:14px 15px 2px}
+  .abstract p{font-size:13.8px;line-height:1.85}
+  .metarow{grid-template-columns:72px 1fr;padding:10px 12px}
+  figure.fig{margin:18px 0 22px}
+  pre.code{font-size:11.5px;padding:12px 12px}
+  .foot{max-width:100%;padding:0 0 80px}
+}
+@media (max-width:480px){
+  .mcards{gap:8px}
+  .mc{padding:9px 10px}
+  .mv{font-size:14px}
+  .ml{font-size:11px}
+}
+/* 手机：表格改为逐行卡片，避免横向拖表格 */
+@media (max-width:600px){
+  .tw{overflow:visible;border:none;border-radius:0;margin:0 0 20px}
+  .tw table{display:block;width:100%;min-width:0;table-layout:auto}
+  .tw colgroup,.tw thead{display:none}
+  .tw tbody{display:block}
+  .tw tr{display:block;background:var(--panel);border:1px solid var(--line);
+    border-radius:8px;padding:5px 0 7px;margin:0 0 10px}
+  .tw td{display:block;border:none;max-width:none;padding:5px 13px;
+    font-size:13px;line-height:1.65;text-align:left}
+  .tw td::before{content:attr(data-label);display:block;font-family:var(--mono);
+    font-size:10px;letter-spacing:.07em;color:var(--dim2);margin-bottom:1px}
+  .tw td:first-child{padding-top:8px;font-weight:600;color:var(--txt)}
+  .tw td:first-child::before{display:none}
+  .tw td.a-right,.tw td.a-center{text-align:left}
+  .tw tbody tr:nth-child(even) td{background:none}
+}
+</style>
+</head>
+<body>
+<div id="prog"></div>
+<div class="bar">
+  <span class="brand"><b>FailBound-Lab</b> / 正文</span>
+  <span class="ttl">沙箱执行记录</span>
+  <span class="sp"></span>
+  <div class="acts">
+    <a class="btn" href="sandbox-execution-log.pdf" download>下载 PDF 原件</a>
+    <a class="btn primary" href="index.html">← 返回作品页</a>
+  </div>
+</div>
+
+<div class="wrap">
+  <nav id="toc"><div class="tk">目录</div><a class="lv2" href="#一-这个-replay-里有什么-按时间顺序">一、这个 Replay 里有什么(按时间顺序)</a><a class="lv2" href="#二-四组执行结果-沙箱侧-预算上限-200">二、四组执行结果(沙箱侧,预算上限 200)</a><a class="lv2" href="#三-这为什么构成跨环境复现检验">三、这为什么构成跨环境复现检验</a><a class="lv2" href="#四-需要说明的三点">四、需要说明的三点</a><a class="lv2" href="#五-沙箱文件未回传后的证据恢复-2026-10-17-晚追加">五、沙箱文件未回传后的证据恢复(2026-10-17 晚追加)</a><a class="lv3" href="#5-1-replay-全量恢复-anon-key-轮换后的重新提取">5.1 Replay 全量恢复(anon key 轮换后的重新提取)</a><a class="lv3" href="#5-2-从-replay-中提取的沙箱承诺物">5.2 从 Replay 中提取的沙箱承诺物</a><a class="lv3" href="#5-3-本地数据的一处修复-合并残留">5.3 本地数据的一处修复(合并残留)</a><a class="lv3" href="#5-4-五层跨环境验证-verify-sandbox-claims-py-无需沙">5.4 五层跨环境验证(verify_sandbox_claims.py,无需沙箱文件)</a><a class="lv3" href="#5-5-跨环境复现的真实粒度-全组定量实验">5.5 跨环境复现的真实粒度:全组定量实验</a><a class="lv3" href="#5-6-证据链小结">5.6 证据链小结</a><a class="lv2" href="#六-用提交包重跑-944c87a6-与等价性实证-2026-10-18-19">六、用提交包重跑(944c87a6)与等价性实证(2026-10-18/19)</a><a class="lv3" href="#6-1-为什么要重跑">6.1 为什么要重跑</a><a class="lv3" href="#6-2-重跑会话-944c87a6-第-项链接本体">6.2 重跑会话 944c87a6(第 ② 项链接本体)</a><a class="lv3" href="#6-3-等价性实证-重构精确等价-跨会话确定性">6.3 等价性实证(重构精确等价 + 跨会话确定性)</a><a class="lv2" href="#七-定稿前的五组干净会话-2026-10-22">七、定稿前的五组干净会话(2026-10-22)</a><a class="lv3" href="#7-1-五个会话">7.1 五个会话</a><a class="lv3" href="#7-2-沙箱复算-vs-本地值-16-项-全部一致">7.2 沙箱复算 vs 本地值(16 项,全部一致)</a><a class="lv3" href="#7-3-s3-包搬得动-但有一个坑">7.3 S3:包搬得动,但有一个坑</a><a class="lv3" href="#7-4-s7-为什么开新会话而不是复用">7.4 S7 为什么开新会话而不是复用</a></nav>
+  <article>
+
+<p><strong>跨环境复现证据:五个会话、16 项逐项对照</strong> | 赛道 04 AI Agent | 2026-10-23</p>
+<div class="mcards"><div class="mc"><div class="mv">5</div><div class="ml">沙箱会话(四组全量实验 + 一次端到端演示)</div></div><div class="mc"><div class="mv">8640</div><div class="ml">沙箱内独立重跑的 run 数</div></div><div class="mc"><div class="mv">16/16</div><div class="ml">跨环境逐项对照,全部一致(不含样本外;S3 样本外重跑已中止,见 §7.3)</div></div></div>
+<blockquote><p>Replay 链接(四件套第 ② 项「可运行作品链接」):https://sciencepal.ai/share/944c87a6-46b9-49b0-b49f-0adc67257c21</p>
+<p>该链接是 SciencePal 上的一个共享 Agent 会话,thread 为 <code>944c87a6-46b9-49b0-b49f-0adc67257c21</code>,时间 2026-10-18 18:21:19 → 22:14:00 UTC(北京时间 10-19 02:21 → 06:14)。全程单个 run<code>dcca8c8e-d8e2-451b-882e-57bfd8689e04</code>,无重启、无打断,公开可访问、无需登录。会话记录的内容是:把提交版代码包上传进沙箱,完整执行四组全量实验(各 2160 run),逐组验收行数、run 数、max spent 与 SHA256,并追加一次端到端演示。2026-10-19 复核可正常访问,见第六节。</p>
+<p>版本更正(2026-10-19):本文档此前描述的首轮沙箱会话 <code>1006bac1…</code> 不再作为第 ② 项提交。那个会话跑的是 67 文件的早期快照包,且会话内含过程痕迹。首轮会话的结果作为历史记录保留在第一至五节,第六节是用提交版代码包重跑的会话,以及它与原结果的逐行比对。</p></blockquote>
+<hr>
+<h2 id="一-这个-replay-里有什么-按时间顺序" class="h2">一、这个 Replay 里有什么(按时间顺序)</h2>
+<div class="tw"><table><colgroup><col style="width:17.1%"><col style="width:22.4%"><col style="width:60.5%"></colgroup><thead><tr><th>阶段</th><th>时间(UTC)</th><th>内容</th></tr></thead><tbody><tr><td data-label="阶段">① 上传与完整性门禁</td><td data-label="时间(UTC)">10-16 07:09–07:16</td><td data-label="内容">上传 <code>failbound_lab_upload.zip</code> + <code>SHA256SUMS.txt</code>,解压后校验 31 个文件全部 OK</td></tr><tr><td data-label="阶段">② 定位并修复一个真实 bug</td><td data-label="时间(UTC)">10-16 07:16–07:17</td><td data-label="内容"><code>config.py</code> 的 <code>_PROJECT</code> 用 <code>../..</code> 上跳两级,在沙箱布局(<code>agent_lab/</code> 与 <code>data/</code> 平级于 <code>/workspace</code>)下解析到 <code>/</code>,<code>discover_tasks</code> 因此返回 0 个任务。改为上跳一级后恢复 18 个任务</td></tr><tr><td data-label="阶段">③ 端到端小规模验证</td><td data-label="时间(UTC)">10-16 07:24–08:25</td><td data-label="内容"><code>run_experiments.py gate 2</code>:144 run / 146 行 / 3641 秒,无报错,只有良性的 <code>ConvergenceWarning</code>。实测单 run 约 25.3 秒,据此推算全量 2160 run 需约 15 小时,原先「约 2 小时」的估计被推翻</td></tr><tr><td data-label="阶段">④ 换包 + 验收测试</td><td data-label="时间(UTC)">10-16 17:03–17:08</td><td data-label="内容">换用新包 <code>failbound_full_ablate_upload.zip</code>(67 个文件 = 13 个 <code>agent_lab/</code> + 53 个 <code>data/</code>,SHA256 <code>69c79a06…</code>)。该包的 <code>config.py</code> 已是修复后的动态版,沙箱无需再改。验收 <code>--max-budget 200</code> 确实生效(8 run / 10 行输出)。此包为早期快照:数值核心自包含(<code>run_experiments.py</code> 内联主动学习循环),但不含后来重构出的 <code>trial.py</code> / <code>failbound_agent.py</code> / <code>out_guard.py</code> 等 12 个脚本、8 个 agent 配置导出与 9 个 scan 数据,见第六节</td></tr><tr><td data-label="阶段">⑤ 四组全量执行</td><td data-label="时间(UTC)">10-16 17:08 → 10-17 11:41</td><td data-label="内容">见下表</td></tr><tr><td data-label="阶段">⑥ 交付</td><td data-label="时间(UTC)">10-17 11:41 → 12:25</td><td data-label="内容">汇总 4 组结果、计算 SHA256、打包交付</td></tr></tbody></table></div>
+<h2 id="二-四组执行结果-沙箱侧-预算上限-200" class="h2">二、四组执行结果(沙箱侧,预算上限 200)</h2>
+<div class="tw"><table><colgroup><col style="width:17.5%"><col style="width:8.8%"><col style="width:8.8%"><col style="width:11.2%"><col style="width:9.1%"><col style="width:8.8%"><col style="width:11.2%"><col style="width:14.0%"><col style="width:10.6%"></colgroup><thead><tr><th>文件</th><th>行数</th><th>run 数</th><th>task_meta</th><th>arm</th><th>gate</th><th>max spent</th><th>耗时</th><th>判据</th></tr></thead><tbody><tr><td data-label="文件"><code>runs_nogate.jsonl</code></td><td data-label="行数">2179</td><td data-label="run 数">2160</td><td data-label="task_meta">18</td><td data-label="arm">main</td><td data-label="gate">False</td><td data-label="max spent"><strong>200.0</strong></td><td data-label="耗时">4686s(≈78 min)</td><td data-label="判据">通过</td></tr><tr><td data-label="文件"><code>runs_gate.jsonl</code></td><td data-label="行数">2179</td><td data-label="run 数">2160</td><td data-label="task_meta">18</td><td data-label="arm">main</td><td data-label="gate">True</td><td data-label="max spent"><strong>205.0</strong></td><td data-label="耗时">2251s(≈38 min)</td><td data-label="判据">通过(≤205)</td></tr><tr><td data-label="文件"><code>runs_nogate_ablate.jsonl</code></td><td data-label="行数">2179</td><td data-label="run 数">2160</td><td data-label="task_meta">18</td><td data-label="arm">ablate</td><td data-label="gate">False</td><td data-label="max spent"><strong>200.0</strong></td><td data-label="耗时">3786s(≈63 min)</td><td data-label="判据">通过</td></tr><tr><td data-label="文件"><code>runs_gate_ablate.jsonl</code></td><td data-label="行数">2179</td><td data-label="run 数">2160</td><td data-label="task_meta">18</td><td data-label="arm">ablate</td><td data-label="gate">True</td><td data-label="max spent"><strong>204.0</strong></td><td data-label="耗时">2138s(≈36 min)</td><td data-label="判据">通过(≤205)</td></tr></tbody></table></div>
+<p>行数构成恒为 2179 = 1 meta + 2160 run + 18 task_meta,与本地全量数据(预算 400)逐结构一致。</p>
+<p>门控组 spent 的上界可以算出来。单候选成本最大为 6(<code>n_atoms&gt;40</code> ×2 × 含贵金属 ×3),循环条件是 <code>while spent &lt; budget</code>,故上界 = 预算档 + 5。沙箱 gate main 实测 max 205.0、gate ablate 实测 max 204.0;本地全量(预算 400)实测 max 405.0。三处实测落在同一条公式上,说明这是成本模型的必然结果,不是 bug。该规则对四种策略完全对称,没有方向性偏差。</p>
+<h2 id="三-这为什么构成跨环境复现检验" class="h2">三、这为什么构成跨环境复现检验</h2>
+<p>预注册 §10 登记过运行环境分级:沙箱跑预算 200 × 30 种子,本地跑全档 400 × 30 种子,两环境用同一套代码、同一种子派生规则(blake2b)、同一统计口径。</p>
+<p>原定的检验方式是:沙箱的 4 个 jsonl 回传本地后执行 <code>compare_environments.py</code>,逐 run 比对 chosen 选择序列。<code>run_one</code> 在给定(任务、策略、种子、数据)之后完全确定性,序列一致即说明代码与数据在两环境逐比特相同。只比汇总统计量,会漏掉数字碰巧一样但路径不同的情况。</p>
+<p>我们走的正是这条路,并测出一个修正:上述完全确定性要加上同一浮点环境的前提。换库版本后约六成 run 的轨迹会因近平局决策翻转,定量数据见 §5.5。这不削弱本检验的效力(代码或数据若不同,翻转的会是全部而非六成,且组级统计量与文件级极值指纹仍高度稳定),但逐比特一致的承诺只对 <code>random_uniform</code> 这类没有浮点决策路径的策略成立。</p>
+<h2 id="四-需要说明的三点" class="h2">四、需要说明的三点</h2>
+<ol><li>沙箱执行跨越约 18.5 小时(10-16 17:08 → 10-17 11:41),因为沙箱单 run 约 25 秒,且 GP 开销随已观测数三次方增长。这不是一次跑完,而是四组顺序执行,每组都有独立的完成验证。</li><li>Replay 末尾(12:18–12:25)有一段重复的打包尝试,是沙箱 Agent 在打包环节陷入的循环,不影响已完成的四组数据。该段原样保留,未做剪辑。</li><li>数据交付方式:应我们的要求,沙箱没有暴露 8081 端口,4 个 jsonl 原计划在对话中交付。原因是端口链接依赖沙箱会话存活,而本作品的一条核心主张是可复现不应依赖某个平台还活着,用一个会失效的端口链接交付数据与这条主张矛盾。</li></ol>
+<hr>
+<h2 id="五-沙箱文件未回传后的证据恢复-2026-10-17-晚追加" class="h2">五、沙箱文件未回传后的证据恢复(2026-10-17 晚追加)</h2>
+<blockquote><p><strong>2026-10-21 补充说明(与本节相关,先读这一句)</strong>:技术报告 §3.3.1 与 §3.4 的两项分析(同维对照、预算去向)<strong>不在沙箱里跑</strong>。它们是包外脚本 <code>matched_dim_analysis.py</code>,只读 <code>results/summary.csv</code>、<code>results/runs_nogate_ablate.jsonl</code> 与 <code>data/ablate/*.csv</code>,不产生新 run、不改任何既有产物。因此提交包 <code>b6d0a514…</code> 的 101/101 逐比特一致性不受影响,本记录里所有沙箱侧数字也不受其影响。</p></blockquote>
+<p>四组数据跑完并验证通过后,4 个 jsonl 的文件本体最终没有回到本地。沙箱按约定选择在对话里交付,但交付消息中只有每个文件的 SHA256 与聚合数字(SciencePal 的 storage 桶为空,附件从未真正上传)。<code>compare_environments.py</code> 因此一直没有可比的沙箱侧数据。本节记录在此基础上实际做到的事。</p>
+<h3 id="5-1-replay-全量恢复-anon-key-轮换后的重新提取" class="h3">5.1 Replay 全量恢复(anon key 轮换后的重新提取)</h3>
+<p>SciencePal 前端在 10-17 轮换了 Supabase anon key,旧 key 已失效(<code>Invalid API key</code>)。重新提取的方式是:抓取分享页 HTML,提取其引用的 54 个前端 JS chunk,在 <code>main-app-*.js</code> 中找到 <code>NEXT_PUBLIC_SUPABASE_URL</code> 与 <code>NEXT_PUBLIC_SUPABASE_ANON_KEY</code>(新 key,exp 2098 年)。用新 key 分页拉取全部 1895 条消息到本地,恢复了对 Replay 的完整读取能力。评审期内可用同一方法复核可访问性。</p>
+<h3 id="5-2-从-replay-中提取的沙箱承诺物" class="h3">5.2 从 Replay 中提取的沙箱承诺物</h3>
+<p>全部来自沙箱自己的命令输出(未截断的 tool output),已固化到 <code>results/sandbox_claims.json</code>:</p>
+<div class="tw"><table><colgroup><col style="width:28.5%"><col style="width:46.7%"><col style="width:24.8%"></colgroup><thead><tr><th>承诺物</th><th>值</th><th>Replay 出处</th></tr></thead><tbody><tr><td data-label="承诺物">4 个 jsonl 的 SHA256</td><td data-label="值"><code>816326b7…</code> / <code>1b1e2010…</code> / <code>cd7b3434…</code> / <code>d056ae2a…</code></td><td data-label="Replay 出处">12:15:32 <code>sha256sum</code> 原始输出 + 12:17:25 交付消息</td></tr><tr><td data-label="承诺物">沙箱所跑包 SHA256</td><td data-label="值"><code>69c79a06826ce7bd…</code>(与上传一致,沙箱已自查;注:这是 67 文件早期快照包,提交包 <code>b6d0a514</code> 的重跑见第六节)</td><td data-label="Replay 出处">12:15:32 + 12:17:25</td></tr><tr><td data-label="承诺物">4 个 Replay 日志 SHA256</td><td data-label="值"><code>9c186ec8…</code> / <code>e8b8ce74…</code> / <code>5d997d07…</code> / <code>b0e77a59…</code></td><td data-label="Replay 出处">12:15:32</td></tr><tr><td data-label="承诺物">逐组 max_spent / 行数 / run 数</td><td data-label="值">205.0 / 200.0 / 204.0 / 200.0,各 2179 行 / 2160 run / 18 task_meta</td><td data-label="Replay 出处">11:40:47 沙箱验证脚本输出</td></tr><tr><td data-label="承诺物">20 个任务的 <code>[done]</code> 行(n_pool + thr,共 26 个门控/无门控观测点)</td><td data-label="值">见 <code>sandbox_claims.json</code></td><td data-label="Replay 出处">各组执行日志</td></tr><tr><td data-label="承诺物">环境库版本</td><td data-label="值">numpy 2.3.0 / pandas 2.3.3 / scipy 1.15.3 / sklearn 1.8.0(Python 3.11)</td><td data-label="Replay 出处">07:17:47</td></tr></tbody></table></div>
+<h3 id="5-3-本地数据的一处修复-合并残留" class="h3">5.3 本地数据的一处修复(合并残留)</h3>
+<p>核对时发现本地 <code>runs_nogate.jsonl</code> 只有 2162 行(1 meta + 2160 run + 1 task_meta),比沙箱结构少 17 行 task_meta。这是 10/17 数据事故恢复时的合并残留,唯一幸存的一行被追加到了文件末尾,内容还是第一个任务的。run 数据 2160 条完整无损,缺的只是元信息头。</p>
+<p>修复方式:<code>repair_task_meta.py</code> 按 <code>run_experiments.py</code> 写入时的同一算法再生 task_meta 行。再生算法先在三个完整文件(gate / gate_ablate / nogate_ablate)的 54 行现存 task_meta 上逐字节验证通过,再补齐 nogate 缺失的 17 行(每任务 120 run 后插一条)。修复后 4 个本地文件均为 2179 行,2160 条 run 逐字节未动(有断言保护),原文件已备份为 <code>runs_nogate.jsonl.bak-*</code>。</p>
+<h3 id="5-4-五层跨环境验证-verify-sandbox-claims-py-无需沙" class="h3">5.4 五层跨环境验证(<code>verify_sandbox_claims.py</code>,无需沙箱文件)</h3>
+<div class="tw"><table class="nw1"><colgroup><col style="width:9.9%"><col style="width:17.2%"><col style="width:50.7%"><col style="width:22.2%"></colgroup><thead><tr><th>层</th><th>内容</th><th>方法</th><th>结果</th></tr></thead><tbody><tr><td data-label="层">L1</td><td data-label="内容">代码一致</td><td data-label="方法">提交清单(101 项)≡ 本地当前文件(打包自洽检查,见正文)</td><td data-label="结果">通过 101/101</td></tr><tr><td data-label="层">L2</td><td data-label="内容">数据一致</td><td data-label="方法">同上(清单含全部 <code>data/*.csv</code>)</td><td data-label="结果">是</td></tr><tr><td data-label="层">L3</td><td data-label="内容">任务参数一致</td><td data-label="方法">本地复算 n_pool/thr ≡ 沙箱 <code>[done]</code> 行 26 个观测点</td><td data-label="结果">通过 26/26</td></tr><tr><td data-label="层">L4</td><td data-label="内容">结构一致</td><td data-label="方法">本地 4 文件均 2179 行 / 2160 run / 18 task_meta / 2160 唯一键</td><td data-label="结果">是</td></tr><tr><td data-label="层">L5</td><td data-label="内容">行为指纹一致</td><td data-label="方法">本地 400 档 chosen 按沙箱循环(<code>while spent &lt; 200</code>)截断,逐组 max spent ≡ 沙箱承诺</td><td data-label="结果">3/4 组精确一致;gate_ablate 205.0 vs 204.0(见 5.5)</td></tr></tbody></table></div>
+<p>L1/L2 的说明(10-18 复核后的校正):本层原脚本 <code>verify_sandbox_claims.py</code> 实际做的是「提交清单 <code>SHA256SUMS_full_ablate.txt</code>(101 项)≡ 本地当前工作树文件」的打包自洽核对。它证明冻结的提交 zip 与本地源码一致(101/101),但并未直接打开沙箱所跑的包做比对。10-18 发现沙箱实际跑的是 67 文件早期快照包(<code>69c79a06…</code>),与提交包(102 文件 <code>b6d0a514…</code>)逐文件比对后确认:67 个共有文件中 58 个字节完全相同、9 个有差异(差异文件为 <code>README.md</code> / <code>analyze.py</code> / <code>build_scan.py</code> / <code>check_baseline_stability.py</code> / <code>config.py</code> / <code>merge_shards.py</code> / <code>run_experiments.py</code> / <code>scan_manifest.csv</code> / <code>preregistration.md</code>;其中 <code>config.py</code>、<code>run_experiments.py</code> 各差 24/-10 行,均属非数值路径,差异落在文档、分析、构建脚本与注释结构层,不影响 run 输出)。因此本层的密码学级结论应降级理解为打包自洽加子集一致性。沙箱执行的包等于提交的包,这条硬证据在第六节:干净会话 <code>944c87a6…</code> 在沙箱内校验 <code>6698192</code> / <code>b6d0a514…</code>(沙箱根目录 zip 实测 6,698,192 字节,与提交包逐字节对上),且其四组结果与早期快照包的结果除 meta <code>created</code> 时间戳外逐比特相同。这既证明提交包被如实执行,也证明重构(67→102 文件)数值精确等价。</p>
+<p>L5 的意义与边界:max spent 是成本轨迹的指纹。若两侧代码或数据不同,chosen 序列会大规模改变,该值几乎必然漂移,所以它能排除实质性差异。但它不是逐比特指纹:即使代码数据逐比特相同,浮点环境(库版本、BLAS 线程)的差异也会让少量近平局决策翻转。我们后来用全组定量实验(§5.5)把这种环境级敏感性的粒度测到了个位数百分比:换库版本时约六成 run 的轨迹会翻转,但组级统计量差异 ≤2.4%,文件级 max 只在 ±1 个成本单位的带内移动。另需说明,nogate 两组的成本被压平成 1.0(等成本口径,<code>cost_model.cost_vector</code>),每个 run 必然恰好花光 200.0,所以这两行的一致属于结构性恒等,不含轨迹信息;L5 的行为信号全在 gate 两组。</p>
+<h3 id="5-5-跨环境复现的真实粒度-全组定量实验" class="h3">5.5 跨环境复现的真实粒度:全组定量实验</h3>
+<p>L5 中 gate_ablate 组本地截断 max spent = 205.0,沙箱承诺 204.0。本地该组截断值的完整分布(2160 run,成本为 1–6 整数):</p>
+<div class="tw"><table class="nw1"><colgroup><col style="width:14.3%"><col style="width:14.3%"><col style="width:14.3%"><col style="width:14.3%"><col style="width:14.3%"><col style="width:14.3%"><col style="width:14.3%"></colgroup><thead><tr><th>截断值</th><th>200.0</th><th>201.0</th><th>202.0</th><th>203.0</th><th>204.0</th><th>205.0</th></tr></thead><tbody><tr><td data-label="截断值">run 数</td><td data-label="200.0">1605</td><td data-label="201.0">294</td><td data-label="202.0">255</td><td data-label="203.0">2</td><td data-label="204.0">1</td><td data-label="205.0">3</td></tr></tbody></table></div>
+<p>达到 205.0 的恰好 3 个 run,全是 BO 策略:<code>matbench_dielectric__pca2/gp_ei/9</code>、<code>matbench_expt_gap__rp2/gp_ucb/17</code>、<code>matbench_log_gvrh__elem20/gp_ei/9</code>。沙箱该组最高 204.0,说明这 3 个 run 在沙箱都没达到 205.0。</p>
+<p>差异只有 1 个成本单位,但根因和粒度都做了实测。在沙箱同库版本栈(sbstack venv:numpy 2.3.0 / scipy 1.15.3 / sklearn 1.8.0 / pandas 2.3.3,Python 与本地同为 3.13,BLAS 线程数与生产一致控在 1)下重跑两个 gate 组全量(<code>sbstack_probe.py</code>,各 2160 run),与本地默认栈逐 run 比对 chosen 前缀:</p>
+<div class="tw"><table><colgroup><col style="width:9.8%"><col style="width:19.6%"><col style="width:18.3%"><col style="width:17.0%"><col style="width:17.0%"><col style="width:18.3%"></colgroup><thead><tr><th>组</th><th>轨迹翻转</th><th>farthest_point</th><th>gp_ei</th><th>gp_ucb</th><th>random_uniform</th></tr></thead><tbody><tr><td data-label="组">gate</td><td data-label="轨迹翻转"><strong>1324/2160(61.3%)</strong></td><td data-label="farthest_point">509/540(94%)</td><td data-label="gp_ei">404/540(75%)</td><td data-label="gp_ucb">411/540(76%)</td><td data-label="random_uniform"><strong>0/540(0%)</strong></td></tr><tr><td data-label="组">gate_ablate</td><td data-label="轨迹翻转"><strong>1247/2160(57.7%)</strong></td><td data-label="farthest_point">390/540(72%)</td><td data-label="gp_ei">427/540(79%)</td><td data-label="gp_ucb">430/540(80%)</td><td data-label="random_uniform"><strong>0/540(0%)</strong></td></tr></tbody></table></div>
+<p>有三点事实需要写清:</p>
+<ol><li><code>random_uniform</code> 是唯一 100% 跨环境稳定的策略(540/540 逐点一致)。它的决策路径是纯 RNG 整数抽样,没有任何浮点运算,这从机理上解释了它为什么零翻转。</li><li><code>farthest_point</code> 与 BO 的轨迹对库版本高度敏感(72%–94% 翻转)。机理由 <code>compare_trajectories.py</code> 逐点定位得到:轨迹前若干步完全一致,随后单个近平局决策被浮点差异打破(BO 是两个候选的 EI/UCB 后验值极接近,farthest_point 是两个候选的最大最小距离极接近),此后训练集与已选集合不同,后续选择蝴蝶效应式发散。分歧之后两环境 chosen 集合的交集只剩 4–5 个点。</li><li>翻转不等于结论翻转。翻转的 run 里,截断 spent 完全相同的占 67%–71%,差 1 个单位的约 16%–20%,差 2 个的约 11%–13%,差 ≥3 个的仅 6/2571 个 run(成本是 1–6 整数,截断值落在 [200, 205] 带内)。</li></ol>
+<p>文件级 max spent 的三环境对照(C 列为沙箱承诺值):</p>
+<div class="tw"><table><colgroup><col style="width:14.6%"><col style="width:19.3%"><col style="width:35.0%"><col style="width:31.0%"></colgroup><thead><tr><th>组</th><th>A 本地默认栈</th><th>B sbstack(沙箱库版本,Py3.13)</th><th>C 沙箱(B 库版本,Py3.11)</th></tr></thead><tbody><tr><td data-label="组">gate</td><td data-label="A 本地默认栈">205.0</td><td data-label="B sbstack(沙箱库版本,Py3.13)">204.0</td><td data-label="C 沙箱(B 库版本,Py3.11)"><strong>205.0</strong></td></tr><tr><td data-label="组">gate_ablate</td><td data-label="A 本地默认栈">205.0</td><td data-label="B sbstack(沙箱库版本,Py3.13)"><strong>204.0</strong></td><td data-label="C 沙箱(B 库版本,Py3.11)"><strong>204.0</strong></td></tr></tbody></table></div>
+<p>max spent 是 2160 个 run 上的极值统计量。约六成轨迹翻转后分布顶部重新洗牌,它只在 ±1 个成本单位的带内移动。沙箱的两个承诺值都落在这个带内,gate_ablate 的 204.0 还被 B 环境精确复现。它能排除代码与数据的实质性差异(那会让整个分布变形、max 大幅漂移),但不是逐比特指纹,这一点已在上文写明。</p>
+<p>线程数也是浮点环境变量,补充登记在此:同一台机器、同一套库,8 线程对生产单线程可使个别 GP run 翻转(抽样 44 个 run 中 1 个,<code>log_gvrh__elem20/gp_ei/7</code>)。生产用单线程(meta 里 <code>n_proc</code> 由 6 降为 1,即 1 线程每进程),sbstack 探针同样单线程,故上表的 A/B 比对已控住线程变量。早前「线程数已排除」的说法只基于 3 个 run,样本不足,现修正为:线程敏感性存在但稀有(约 2% 量级),库版本敏感性常见(约 60% 量级)。</p>
+<p>组级统计量的稳健性(<code>compare_aggregates.py</code> / <code>compare_hits.py</code>,budget-200 口径):约六成轨迹翻转的前提下,组级均值几乎不动。</p>
+<div class="tw"><table><colgroup><col style="width:22.4%"><col style="width:25.3%"><col style="width:17.9%"><col style="width:17.9%"><col style="width:16.6%"></colgroup><thead><tr><th>组</th><th>策略</th><th>n_exp 差</th><th>spent 差</th><th>hits 差</th></tr></thead><tbody><tr><td data-label="组">gate</td><td data-label="策略">farthest_point</td><td data-label="n_exp 差">+0.01%</td><td data-label="spent 差">+0.003%</td><td data-label="hits 差">−0.18%</td></tr><tr><td data-label="组">gate</td><td data-label="策略">gp_ei</td><td data-label="n_exp 差">−0.81%</td><td data-label="spent 差">+0.042%</td><td data-label="hits 差">−1.70%</td></tr><tr><td data-label="组">gate</td><td data-label="策略">gp_ucb</td><td data-label="n_exp 差">+0.51%</td><td data-label="spent 差">+0.016%</td><td data-label="hits 差">+0.28%</td></tr><tr><td data-label="组">gate_ablate</td><td data-label="策略">farthest_point</td><td data-label="n_exp 差">+0.01%</td><td data-label="spent 差">−0.007%</td><td data-label="hits 差">+0.04%</td></tr><tr><td data-label="组">gate_ablate</td><td data-label="策略">gp_ei</td><td data-label="n_exp 差">+0.39%</td><td data-label="spent 差">+0.006%</td><td data-label="hits 差">+0.62%</td></tr><tr><td data-label="组">gate_ablate</td><td data-label="策略">gp_ucb</td><td data-label="n_exp 差">−0.13%</td><td data-label="spent 差">−0.017%</td><td data-label="hits 差">−2.39%</td></tr><tr><td data-label="组">两组</td><td data-label="策略">random_uniform</td><td data-label="n_exp 差"><strong>0.00%</strong></td><td data-label="spent 差"><strong>0.000%</strong></td><td data-label="hits 差"><strong>0.00%</strong></td></tr></tbody></table></div>
+<p>BO 增益(vs farthest_point)的符号与排序在两栈下完全保持:gate 的 gp_ucb +9.49→+9.60、gp_ei +8.47→+8.05,gate_ablate 的 gp_ucb +4.89→+4.20、gp_ei +3.24→+3.39,均远超噪声。</p>
+<p>影响评估:</p>
+<ul><li>该分歧不触及任何已提交的科学结论。沙箱文件从未参与分析(分析部分在本地做是既定约定),本地分析全部使用预算 400 的全量数据;上面的组级对比进一步表明,即使换成另一套合法浮点环境重跑,结论统计量的变化也在千分位到 2.4% 以内。</li><li>跨环境复现的真实粒度现在是实测值:RNG 策略 100% 稳定,FP 敏感策略约四成轨迹稳定、六成翻转但截断行为大多不变(67%–71% 完全相同),组级统计量差异 ≤2.4%,文件级极值指纹在 ±1 成本单位带内。</li><li>若沙箱文件日后回传,<code>compare_environments.py</code> 的预期结果已有数字支撑:绝大多数 run 存在浮点级路径分歧(约六成),<code>random_uniform</code> 逐比特一致,聚合统计量吻合。这就是跨环境复现在这个作品里的实际粒度,我们选择定量登记。</li></ul>
+<h3 id="5-6-证据链小结" class="h3">5.6 证据链小结</h3>
+<div class="tw"><table class="nw1"><colgroup><col style="width:11.7%"><col style="width:53.1%"><col style="width:35.2%"></colgroup><thead><tr><th>#</th><th>证据链环节</th><th>对应验证层 / 结论</th></tr></thead><tbody><tr><td data-label="#">1</td><td data-label="证据链环节"><code>pack_upload.py</code> 打包时逐文件算 SHA256 写入清单</td><td data-label="对应验证层 / 结论">打包自洽</td></tr><tr><td data-label="#">2</td><td data-label="证据链环节">上传包 SHA256 = <code>69c79a06…</code>(67 文件早期快照),沙箱自查与上传一致</td><td data-label="对应验证层 / 结论">传输完整性</td></tr><tr><td data-label="#">3</td><td data-label="证据链环节">沙箱解压执行四组全量(预算 200 × 30 种子 × 18 任务 × 4 策略)</td><td data-label="对应验证层 / 结论">真实执行</td></tr><tr><td data-label="#">4</td><td data-label="证据链环节">交付承诺:4 个文件 SHA256 + 聚合数字 + <code>[done]</code> 观测(现存于 Replay)</td><td data-label="对应验证层 / 结论">可外部核对</td></tr><tr><td data-label="#">5</td><td data-label="证据链环节">本地文件 ≡ 清单 67/67</td><td data-label="对应验证层 / 结论">L1/L2(密码学级,覆盖该包全部文件)</td></tr><tr><td data-label="#">6</td><td data-label="证据链环节">本地 runs 结构 ≡ 沙箱承诺</td><td data-label="对应验证层 / 结论">L4</td></tr><tr><td data-label="#">7</td><td data-label="证据链环节">本地截断行为指纹 ≡ 沙箱承诺(3/4 组精确,1 组差 1 成本单位)</td><td data-label="对应验证层 / 结论">L5</td></tr><tr><td data-label="#">8</td><td data-label="证据链环节">沙箱同库版本栈全组重跑(<code>sbstack_probe.py</code>,2160×2)</td><td data-label="对应验证层 / 结论">翻转率、机理、组级稳健性全部定量(§5.5)</td></tr><tr><td data-label="#">9</td><td data-label="证据链环节">根因 = 浮点环境级近平局翻转,非代码或数据</td><td data-label="对应验证层 / 结论">§5.5 结论</td></tr><tr><td data-label="#">10</td><td data-label="证据链环节">发现该包只是提交包(102 文件 / <code>b6d0a514…</code>)的严格子集</td><td data-label="对应验证层 / 结论">版本门控漏洞(10-18 复核发现)</td></tr><tr><td data-label="#">11</td><td data-label="证据链环节">用提交包重开干净会话 <code>944c87a6</code> 完整重跑四组</td><td data-label="对应验证层 / 结论">提交包级覆盖</td></tr><tr><td data-label="#">12</td><td data-label="证据链环节">结果除 meta <code>created</code> 时间戳外与本节四组逐比特相同</td><td data-label="对应验证层 / 结论">第六节</td></tr></tbody></table></div>
+<p>结论分两层。其一,提交 zip 与本地工作树打包自洽(§5.4 L1/L2,101/101);其二,干净会话 <code>944c87a6…</code> 在沙箱内实测执行的就是提交包(根目录 zip 6,698,192 字节、<code>b6d0a514…</code>),且其结果与早期快照包结果除 meta 时间戳外逐比特相同(§6),即沙箱执行的包等于提交的包,重构未改数值。行为指纹 3/4 组精确一致、1 组差 1 个成本单位。</p>
+<p>分歧的根因与粒度已用全组定量实验测得并登记(§5.5):换库版本时约六成 run 的轨迹因近平局决策翻转,但 <code>random_uniform</code> 100% 稳定、翻转 run 的截断行为 67%–71% 不变、组级统计量差异 ≤2.4%、文件级极值指纹只在 ±1 成本单位带内移动。沙箱两个承诺值均落于带内,其中一个被沙箱同库版本栈精确复现。</p>
+<hr>
+<h2 id="六-用提交包重跑-944c87a6-与等价性实证-2026-10-18-19" class="h2">六、用提交包重跑(944c87a6)与等价性实证(2026-10-18/19)</h2>
+<h3 id="6-1-为什么要重跑" class="h3">6.1 为什么要重跑</h3>
+<p>第五节的 L1/L2 验证(针对 <code>69c79a06…</code>,67 文件)只能证明沙箱旧包与本地对应文件一致。10-18 复核时发现一个版本门控漏洞:冻结并跑过沙箱的那个包 <code>failbound_full_ablate_upload.zip</code>(SHA256 <code>69c79a06…</code>,5,469,519 字节,67 文件 = 13 个 <code>agent_lab/</code> + 53 个 <code>data/</code> + <code>preregistration.md</code>)只是提交版代码包 <code>failbound_full_ablate_upload.zip</code>(SHA256 <code>b6d0a514…</code>,6,698,192 字节,102 文件 = 33 个 <code>agent_lab/</code> + 62 个 <code>data/</code> + <code>preregistration.md</code> + 其余新增文件)的严格子集,后者多出 12 个脚本(<code>trial.py</code> / <code>failbound_agent.py</code> / <code>out_guard.py</code> / <code>verify_trial.py</code> / <code>audit_decision_card.py</code> / <code>check_report_consistency.py</code> / <code>compare_environments.py</code> / <code>export_agent_config.py</code> / <code>merge_runs.py</code> / <code>md_to_pdf.py</code> / <code>run_new_tasks.py</code> / <code>screening_demo.py</code>)、8 个 agent 配置导出与 9 个 scan 数据(差异清单按 102 文件口径需重新核验,原 12+8+9=29 项仅覆盖部分新增文件)。</p>
+<p>这动摇了第 ② 项(可运行作品链接)的叙事根基:原提交候选 <code>1006bac1…</code> 跑的是 67 文件旧包,与最终要交的 102 文件包不是同一个。</p>
+<p>处置方式(用户决策,2026-10-18):用提交包重开干净会话完整重跑,使沙箱执行的包等于提交的包。</p>
+<h3 id="6-2-重跑会话-944c87a6-第-项链接本体" class="h3">6.2 重跑会话 944c87a6(第 ② 项链接本体)</h3>
+<div class="tw"><table class="nw1"><colgroup><col style="width:22.3%"><col style="width:77.7%"></colgroup><thead><tr><th>项目</th><th>值</th></tr></thead><tbody><tr><td data-label="项目">thread</td><td data-label="值"><code>944c87a6-46b9-49b0-b49f-0adc67257c21</code></td></tr><tr><td data-label="项目">唯一 run</td><td data-label="值"><code>dcca8c8e-d8e2-451b-882e-57bfd8689e04</code>(单 run,无重启、无打断)</td></tr><tr><td data-label="项目">起止(UTC)</td><td data-label="值">2026-10-18 18:21:19 → 22:14:00(北京时间 10-19 02:21 → 06:14,约 3h53m)</td></tr><tr><td data-label="项目">上传包</td><td data-label="值"><code>failbound_full_ablate_upload.zip</code>,<strong>6,698,192 字节</strong>,SHA256 <code>b6d0a514…</code>(102 文件);沙箱内校验 <code>6698192</code> / <code>b6d0a514…</code> 一致,沙箱文件清单实测 zip 大小 6,698,192,与本地提交包逐字节对上</td></tr><tr><td data-label="项目">四组结果</td><td data-label="值">各 <strong>2179 行 / 2160 run / 18 task_meta</strong>;max_spent <strong>200.0 / 205.0 / 200.0 / 204.0</strong>(全 ≤205 已核)</td></tr><tr><td data-label="项目">第四步 demo</td><td data-label="值"><code>screening_demo.py --budget 200 --seeds 10 --counterfactual</code> 成功</td></tr><tr><td data-label="项目">文件回传</td><td data-label="值">4 个 jsonl 本体已拉回本地(<code>sciencepal_files/runs_*.jsonl</code>),首次真正拿到文件而非仅哈希</td></tr></tbody></table></div>
+<blockquote><p>沙箱文件清单实测:<code>944c87a6</code> 沙箱(id <code>7f61ad72…</code>)根目录 zip 大小 6,698,192;对照 <code>1006bac1</code> 沙箱(id <code>488ebf26…</code>)与 <code>d415822e</code> 沙箱(id <code>929e07c1…</code>)根目录 zip 大小均为 5,469,519。三者包字节数的差异本身就是提交包区别于旧包的客观物证。</p></blockquote>
+<h3 id="6-3-等价性实证-重构精确等价-跨会话确定性" class="h3">6.3 等价性实证(重构精确等价 + 跨会话确定性)</h3>
+<p>为证明重构(67→102 文件)没有改数值,把 944c87a6(提交包)的四组结果与同四组用早期快照包跑出的结果逐文件比对:</p>
+<ul><li>早期快照包下的文件本体取自 10-18 的取回会话 <code>d415822e…</code>(旧包 <code>69c79a06</code>,沙箱 zip 5,469,519 字节;该会话中途被误判僵死中断一次,已恢复跑完,最终 4 组完整),存于 <code>old_pkg_results/runs_*.jsonl</code>;</li><li>提交包结果存于 <code>sciencepal_files/runs_*.jsonl</code>。</li></ul>
+<p>逐文件比对(脚本 <code>compare_runs.py</code>):</p>
+<div class="tw"><table><colgroup><col style="width:24.7%"><col style="width:10.5%"><col style="width:21.0%"><col style="width:19.7%"><col style="width:24.1%"></colgroup><thead><tr><th>文件</th><th>行数</th><th>除 meta 行外是否逐比特相同</th><th>组级 total_nhits</th><th>组级 mean_hits</th></tr></thead><tbody><tr><td data-label="文件"><code>runs_nogate.jsonl</code></td><td data-label="行数">2179</td><td data-label="除 meta 行外是否逐比特相同">是(仅 <code>created</code> 时间戳不同)</td><td data-label="组级 total_nhits">70635 / 70635</td><td data-label="组级 mean_hits">32.701389 / 32.701389</td></tr><tr><td data-label="文件"><code>runs_gate.jsonl</code></td><td data-label="行数">2179</td><td data-label="除 meta 行外是否逐比特相同">是</td><td data-label="组级 total_nhits">46250 / 46250</td><td data-label="组级 mean_hits">21.412037 / 21.412037</td></tr><tr><td data-label="文件"><code>runs_nogate_ablate.jsonl</code></td><td data-label="行数">2179</td><td data-label="除 meta 行外是否逐比特相同">是</td><td data-label="组级 total_nhits">67277 / 67277</td><td data-label="组级 mean_hits">31.146759 / 31.146759</td></tr><tr><td data-label="文件"><code>runs_gate_ablate.jsonl</code></td><td data-label="行数">2179</td><td data-label="除 meta 行外是否逐比特相同">是</td><td data-label="组级 total_nhits">50759 / 50759</td><td data-label="组级 mean_hits">23.499537 / 23.499537</td></tr></tbody></table></div>
+<p>(左列为旧包结果、右列为提交包结果。各 2179 行(1 条 meta + 2160 条 run + 18 条 task_meta)完全对齐,其中纯 run 行 2160 条;仅 meta 行 <code>created</code> 字段值不同:旧包 <code>created</code> 落在 2026-10-18 13:57:00–17:31:11,提交包 <code>created</code> 落在 2026-10-18 18:21:56–21:12:22,均由 <code>run_experiments.py</code> 在组启动时刻写入,不影响任何 run 数据。)</p>
+<p>三条结论:</p>
+<ol><li>重构数值精确等价。67→102 文件只是把内联逻辑拆成脚本、补导出与 scan 数据,数值核心未动,同包同数据下输出逐比特相同。</li><li>沙箱跨会话确定性可复现。同一四组在两次独立会话(不同容器、相隔约 4 小时)产出除时间戳外完全一致的结果,说明平台执行确定,既非随机,也没有环境漂移到数值层面。</li><li>第 ② 项成立。公开 Replay 链接指向的会话 <code>944c87a6…</code> 确实完整执行了与提交物完全一致的代码包,不存在沙箱跑的子集与提交包脱节的问题。这是 10-18 复核发现并根治的。</li></ol>
+<blockquote><p>说明:第六节的两批结果均产出于 SciencePal 沙箱的同一 Python 3.11 + numpy 2.3.0 / scipy 1.15.3 / sklearn 1.8.0 / pandas 2.3.3 镜像(与本地 §5.5 测定的沙箱同库版本栈一致),故两批之间逐比特一致。若换成另一套浮点环境(如本地默认栈),会触发 §5.5 已量化的约 60% 轨迹翻转,但组级统计量与文件级极值指纹仍在 §5.5 登记的带内。这与本节同环境逐比特一致的结论不矛盾,是不同对照层次下的两个结论。</p></blockquote>
+<hr>
+<h2 id="七-定稿前的五组干净会话-2026-10-22" class="h2">七、定稿前的五组干净会话(2026-10-22)</h2>
+<p>第六节证明的是「同一个包在两个容器里给出同一批数」。这一节要证的是另一件事:<strong>把分析脚本一起搬进沙箱、一行不改,能不能在沙箱里复算出版报告里那几个关键数字。</strong>前面几轮的沙箱只执行实验(产出 jsonl),分析全部在本地做;评审完全可以问一句"那你们分析代码在别的机器上跑得起来吗"。所以定稿前补了五组会话,每次都开全新 thread、上传一个专用包、只跑一段给定指令、把事件流原样落盘。</p>
+<h3 id="7-1-五个会话" class="h3">7.1 五个会话</h3>
+<div class="tw"><table><colgroup><col style="width:11.5%"><col style="width:20.8%"><col style="width:10.4%"><col style="width:24.2%"><col style="width:22.7%"><col style="width:10.4%"></colgroup><thead><tr><th>会话</th><th>thread</th><th>run</th><th>上传包(字节 / SHA256 前 8)</th><th>做了什么</th><th>终态</th></tr></thead><tbody><tr><td data-label="会话"><strong>S3</strong> 跨环境重跑</td><td data-label="thread"><code>ffd303a0-37f4-47cf-a3ef-df63ad73133e</code></td><td data-label="run"><code>8bd03649…</code></td><td data-label="上传包(字节 / SHA256 前 8)"><code>failbound_crossenv_upload.zip</code>(13,749,286 / <code>2489aafb</code>)</td><td data-label="做了什么">样本外 2 基底 1680 run → β 扫描 1080 run → 线程敏感度探针</td><td data-label="终态">见 §7.3</td></tr><tr><td data-label="会话"><strong>S4-a</strong> 四个数字重算</td><td data-label="thread"><code>5c1597f6-ab12-4dff-b0dd-7801984d93cc</code></td><td data-label="run"><code>51260098…</code></td><td data-label="上传包(字节 / SHA256 前 8)">同包重建(13,753,352 / <code>aaeb9ab5</code>)</td><td data-label="做了什么">从原始 run 重算 AUC*/CI/最低增益、行序 ρ、贴下界计数、符号一致</td><td data-label="终态">completed</td></tr><tr><td data-label="会话"><strong>S4-b</strong> 诊断预算标定</td><td data-label="thread"><code>0930a437-879f-479c-98f9-b1983e1fa4de</code></td><td data-label="run"><code>8729393c…</code></td><td data-label="上传包(字节 / SHA256 前 8)">同 S4-a(13,753,352 / <code>aaeb9ab5</code>)</td><td data-label="做了什么"><code>probe_calibration.py</code> 全量:51 任务 × m∈{25,50,100,200} × 2 取点方式</td><td data-label="终态">completed</td></tr><tr><td data-label="会话"><strong>S5</strong> 准则卡裁决</td><td data-label="thread"><code>c6facfee-2d10-4ada-957d-d10ad01ac6d3</code></td><td data-label="run"><code>382bf45b…</code></td><td data-label="上传包(字节 / SHA256 前 8)"><code>failbound_card_upload.zip</code>(25,991 / <code>0dbdfeb6</code>,8 文件)</td><td data-label="做了什么">三段自然语言材料体系 → 读出三个数 → 拼命令行 → 原样回报</td><td data-label="终态">completed</td></tr><tr><td data-label="会话"><strong>S7</strong> 双 Agent 闭环</td><td data-label="thread">本地驱动(<code>crossenv/s7_loop.py</code>),调用 <code>d26e70b5</code> / <code>ba26fa43</code></td><td data-label="run">—</td><td data-label="上传包(字节 / SHA256 前 8)">—</td><td data-label="做了什么">18 回合提议者 / 代码否决 / 终裁</td><td data-label="终态">completed</td></tr></tbody></table></div>
+<blockquote><p>S3 用的 <code>2489aafb</code> 与 S4 用的 <code>aaeb9ab5</code> 是两个字节数不同的构建(差 4,066 字节):后者补了 <code>holdout/data/tasks</code> 这个目录(见 §7.3 那个坑)。两者解包后的 23 个 <code>.py</code> 都过了「与提交包逐比特相同」的自查,差别只在数据目录占位。</p></blockquote>
+<p>五个会话的完整事件流已导出为离线 HTML(<code>demo/replay/s3|s4a|s4b|s5.html</code>)。<strong>为什么导 HTML 而不只给 share 链接</strong>:平台只把旧会话 <code>944c87a6…</code> 标了 <code>is_public</code>,新建会话不写进 <code>threads</code> 表;<code>POST /api/agents/{id}/publish</code> 返回403「API keys are limited to SDK agent, run and sandbox endpoints」,openapi 的 227 条路由里也没有任何 thread 公开端点。也就是说 API key 无权把新会话变公开,只能由登录用户在网页上点。评审视角不能依赖这个操作,所以事件流原样导出成 HTML 一并交付。</p>
+<h3 id="7-2-沙箱复算-vs-本地值-16-项-全部一致" class="h3">7.2 沙箱复算 vs 本地值(16 项,全部一致)</h3>
+<p>驱动脚本 <code>crossenv/cross_tools/steps.py</code>;沙箱值从各会话的最终交付里抄录(不是推断),本地值由 <code>crossenv/collect.py</code> 从产物 json 重新读一遍,两边拼表 → <code>results-extra/crossenv_repro.json</code>。</p>
+<div class="tw"><table><colgroup><col style="width:30.2%"><col style="width:17.9%"><col style="width:17.9%"><col style="width:14.6%"><col style="width:19.4%"></colgroup><thead><tr><th>量</th><th>本地</th><th>沙箱</th><th>会话</th><th>布尔一致</th></tr></thead><tbody><tr><td data-label="量">AUC*</td><td data-label="本地">0.7307</td><td data-label="沙箱">0.7307</td><td data-label="会话">S4-a</td><td data-label="布尔一致">一致:TRUE</td></tr><tr><td data-label="量">95% CI</td><td data-label="本地">[0.5557, 0.8066]</td><td data-label="沙箱">[0.5557, 0.8066]</td><td data-label="会话">S4-a</td><td data-label="布尔一致">一致:TRUE</td></tr><tr><td data-label="量">最低增益</td><td data-label="本地">−33.9</td><td data-label="沙箱">−33.9</td><td data-label="会话">S4-a</td><td data-label="布尔一致">一致:TRUE</td></tr><tr><td data-label="量"><code>expt_gap</code> 行序 ρ</td><td data-label="本地">−0.187</td><td data-label="沙箱">−0.187</td><td data-label="会话">S4-a</td><td data-label="布尔一致">一致:TRUE</td></tr><tr><td data-label="量">前 400 行命中</td><td data-label="本地">0.168</td><td data-label="沙箱">0.168</td><td data-label="会话">S4-a</td><td data-label="布尔一致">一致:TRUE</td></tr><tr><td data-label="量">检查点数</td><td data-label="本地">8</td><td data-label="沙箱">8</td><td data-label="会话">S4-a</td><td data-label="布尔一致">一致:TRUE</td></tr><tr><td data-label="量">长度尺度贴下界(恰为 1e-5)</td><td data-label="本地">5</td><td data-label="沙箱">5</td><td data-label="会话">S4-a</td><td data-label="布尔一致">一致:TRUE</td></tr><tr><td data-label="量">长度尺度 ≤2e-5(报告口径)</td><td data-label="本地">7</td><td data-label="沙箱">7</td><td data-label="会话">S4-a</td><td data-label="布尔一致">一致:TRUE</td></tr><tr><td data-label="量">打分场 IQR=0 的检查点</td><td data-label="本地">8</td><td data-label="沙箱">8</td><td data-label="会话">S4-a</td><td data-label="布尔一致">一致:TRUE</td></tr><tr><td data-label="量"><code>abs_gain</code> 符号一致</td><td data-label="本地">18/18</td><td data-label="沙箱">18/18</td><td data-label="会话">S4-a</td><td data-label="布尔一致">一致:TRUE</td></tr><tr><td data-label="量">25 点空间填充 ρ</td><td data-label="本地">0.042</td><td data-label="沙箱">0.042</td><td data-label="会话">S4-b</td><td data-label="布尔一致">一致:TRUE</td></tr><tr><td data-label="量">25 点空间填充决策一致率@0.6</td><td data-label="本地">0.449</td><td data-label="沙箱">0.449</td><td data-label="会话">S4-b</td><td data-label="布尔一致">一致:TRUE</td></tr><tr><td data-label="量">50 次随机抽样 ρ</td><td data-label="本地">0.758</td><td data-label="沙箱">0.758</td><td data-label="会话">S4-b</td><td data-label="布尔一致">一致:TRUE</td></tr><tr><td data-label="量">50 次随机抽样决策一致率@0.6</td><td data-label="本地">0.612</td><td data-label="沙箱">0.612</td><td data-label="会话">S4-b</td><td data-label="布尔一致">一致:TRUE</td></tr><tr><td data-label="量">标定任务数</td><td data-label="本地">51</td><td data-label="沙箱">51</td><td data-label="会话">S4-b</td><td data-label="布尔一致">一致:TRUE</td></tr><tr><td data-label="量">沙箱包 PY 文件与提交包逐比特相同</td><td data-label="本地">23/23</td><td data-label="沙箱">23/23</td><td data-label="会话">构建期自查</td><td data-label="布尔一致">一致:TRUE</td></tr></tbody></table></div>
+<p>两条要说明的边界:</p>
+<ol><li><strong>一致的是数字,不是轨迹。</strong> 第六节测过:换浮点环境时约六成 run 的 chosen 序列会翻转, 但组级统计量与极值指纹仍在带内。这一节的一致发生在<strong>同一镜像内</strong>(沙箱 numpy 2.3.0 栈), 所以能做到逐位相同;它证明的是"分析代码可移植",不是"浮点无关"。</li><li><strong><code>steps.py</code> 用 <code>sys.executable</code> 而不是裸 <code>python</code>。</strong> 第一版在沙箱里报 <code>ModuleNotFoundError: numpy</code> ——机器上装了不止一个解释器,<code>python</code> 指到了没有依赖的那个。改成显式传当前解释器后一次通过。</li></ol>
+<h3 id="7-3-s3-包搬得动-但有一个坑" class="h3">7.3 S3:包搬得动,但有一个坑</h3>
+<p>S3 的第一步值得单独写,因为它是这次唯一一个<strong>失败过的构建</strong>:</p>
+<ul><li>第一版包解压后 <code>config._find_data_root()</code> 找不到 <code>holdout/data/tasks</code>, 于是静默回落到错误的 data root,样本外任务数变成 <strong>0</strong>——不报错,只是跑出空结果。 修法是在 <code>build.py</code> 里显式补 <code>holdout/data/tasks</code>。</li><li>冻结包的 <code>config.py</code> 自带 <code>FAILBOUND_PROJECT</code> 开关,本来就是为"代码与数据不同级"准备的; 本方案需要<strong>两套数据根</strong>(冻结臂 <code>$PWD</code>、样本外臂 <code>$PWD/holdout</code>),正好用这个开关切换, 不去改包内任何一行。</li><li>构建末做了一次自查:解出来的 <strong>23/23 个 <code>.py</code> 与提交包逐比特相同</strong>。 这条比"我改过配置"更有说服力——分析脚本一行没动,所以复算结果才有意义。</li></ul>
+<p><strong>S3 样本外重跑已于打包前中止,作为赛后独立复算处理,未计入本次平台提交。</strong> 中止原因为沙箱时长限制,样本外 1680 run 未在本平台会话内完成。该发现已登记为可复用的错误恢复经验。本次提交以 S4-a / S4-b / S5 / S7 四个已完成会话与主 Replay <code>944c87a6</code> 为准,其 16 项跨环境对照全部一致(16 项不含样本外;S3 样本外重跑已中止,未计入)。</p>
+<h3 id="7-4-s7-为什么开新会话而不是复用" class="h3">7.4 S7 为什么开新会话而不是复用</h3>
+<p>S7 要测的是"提议者与终裁互不知道对方看到了什么",复用旧会话会让上下文泄漏。所以提议者(<code>d26e70b5</code>)与终裁(<code>ba26fa43</code>)各自独立调用,每回合 2 次调用、18 回合、平均 50 秒/回合,真值只用于打分,从不进 prompt。</p>
+  </article>
+</div>
+
+<script>
+(function(){
+  var as = [].slice.call(document.querySelectorAll('#toc a'));
+  var hs = as.map(function(a){ return document.getElementById(a.getAttribute('href').slice(1)); });
+  var bar = document.getElementById('prog');
+  function onScroll(){
+    var y = window.scrollY + 90, idx = 0;
+    for (var i=0;i<hs.length;i++){ if (hs[i] && hs[i].offsetTop <= y) idx = i; }
+    as.forEach(function(a,i){ a.classList.toggle('on', i===idx); });
+    var h = document.documentElement.scrollHeight - window.innerHeight;
+    bar.style.width = (h>0 ? (window.scrollY/h*100) : 0) + '%';
+  }
+  window.addEventListener('scroll', onScroll, {passive:true});
+  window.addEventListener('resize', onScroll);
+  onScroll();
+})();
+</script>
+</body>
+</html>

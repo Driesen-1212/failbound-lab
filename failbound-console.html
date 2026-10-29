@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>FailBound · 门控决策台</title>
+<style>
+  :root{
+    --bg:#0a0e14; --panel:#0f151d; --panel2:#141d27; --line:#1f2937; --line2:#2b3846;
+    --txt:#e8eef5; --dim:#8b98a8; --dim2:#5c6976;
+    --pos:#3ddc97; --neg:#ff6f6f; --acc:#7aa2ff; --warn:#ffb454;
+    --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,"Liberation Mono",monospace;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;background:var(--bg);color:var(--txt);
+    font:15px/1.7 -apple-system,BlinkMacSystemFont,"PingFang SC","Hiragino Sans GB",
+    "Microsoft YaHei",sans-serif;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:1080px;margin:0 auto;padding:34px 26px 80px}
+  .mono{font-family:var(--mono);font-variant-numeric:tabular-nums}
+
+  /* ---------- 页头 ---------- */
+  header{display:flex;justify-content:space-between;align-items:flex-start;gap:24px;
+    padding-bottom:22px;border-bottom:1px solid var(--line)}
+  h1{margin:0 0 6px;font-size:25px;font-weight:650;letter-spacing:.2px}
+  h1 span{color:var(--acc)}
+  .sub{color:var(--dim);font-size:14px;max-width:600px;margin:0}
+  .stamp{text-align:right;font-size:11.5px;color:var(--dim2);line-height:1.6;flex:0 0 auto}
+  .stamp b{display:block;color:var(--pos);font-weight:600;font-size:12px;letter-spacing:.4px}
+  .stamp code{font-family:var(--mono);color:var(--dim);font-size:11px}
+
+  /* ---------- 通用块 ---------- */
+  section{padding:28px 0;border-bottom:1px solid var(--line)}
+  h2{font-size:15px;font-weight:600;margin:0 0 4px;letter-spacing:.3px}
+  h2 em{font-style:normal;color:var(--dim2);font-weight:400;font-size:13px;margin-left:8px}
+  .lead{color:var(--dim);font-size:13.5px;margin:0 0 18px}
+
+  /* ---------- 控制台 ---------- */
+  .console{display:grid;grid-template-columns:300px 1fr;gap:26px;align-items:start}
+  @media(max-width:860px){.console{grid-template-columns:1fr}}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:16px}
+  .ctl{margin-bottom:20px}
+  .ctl label{display:flex;justify-content:space-between;align-items:baseline;
+    font-size:12.5px;color:var(--dim);margin-bottom:7px}
+  .ctl label b{font-family:var(--mono);font-size:15px;color:var(--txt);font-weight:600}
+  input[type=range]{-webkit-appearance:none;width:100%;height:3px;border-radius:2px;
+    background:var(--line2);outline:none}
+  input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:15px;height:15px;
+    border-radius:50%;background:var(--acc);cursor:grab;border:2px solid #0a0e14;
+    box-shadow:0 0 0 1px var(--acc)}
+  input[type=range]::-moz-range-thumb{width:13px;height:13px;border-radius:50%;
+    background:var(--acc);cursor:grab;border:2px solid #0a0e14}
+  .presets{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:4px}
+  .presets button{background:var(--panel2);color:var(--dim);border:1px solid var(--line2);
+    border-radius:6px;padding:6px 8px;font-size:11.5px;cursor:pointer;font-family:inherit;
+    transition:.15s;white-space:nowrap}
+  .presets button:hover{color:var(--txt);border-color:var(--acc);background:#182231}
+  .presets button.on{color:#0a0e14;background:var(--acc);border-color:var(--acc);font-weight:600}
+
+  .readout{display:flex;align-items:baseline;gap:14px;margin-bottom:2px}
+  .big{font-family:var(--mono);font-size:38px;font-weight:600;line-height:1.1;
+    font-variant-numeric:tabular-nums}
+  .delta{font-family:var(--mono);font-size:14px;padding:2px 8px;border-radius:5px}
+  .delta.up{color:var(--pos);background:rgba(61,220,151,.1)}
+  .delta.dn{color:var(--neg);background:rgba(255,111,111,.1)}
+  .delta.eq{color:var(--dim);background:rgba(139,152,168,.1)}
+  .unit{color:var(--dim2);font-size:12px}
+  .kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:9px;margin-top:14px}
+  .kpi{background:var(--panel);border:1px solid var(--line);border-radius:8px;
+    padding:9px 11px}
+  .kpi .n{font-family:var(--mono);font-size:19px;font-weight:600;line-height:1.25}
+  .kpi .k{font-size:11px;color:var(--dim2);letter-spacing:.2px}
+
+  /* ---------- 散点 ---------- */
+  .chart{margin-top:20px;position:relative}
+  svg{display:block;width:100%;height:auto;overflow:visible}
+  .gridline{stroke:#1b2431;stroke-width:1}
+  .axis{fill:var(--dim2);font-size:10.5px;font-family:var(--mono)}
+  .zeroline{stroke:#37475a;stroke-width:1;stroke-dasharray:4 3}
+  .thline{stroke:var(--acc);stroke-width:1.5;stroke-dasharray:5 4}
+  .thlab{fill:var(--acc);font-size:10.5px;font-family:var(--mono)}
+  .rej{fill:rgba(122,162,255,.055);stroke:none}
+  .rejhatch{opacity:.5}
+  .pt{cursor:pointer;transition:.12s}
+  .pt:hover{filter:brightness(1.35)}
+  .legend{display:flex;flex-wrap:wrap;gap:18px;margin-top:8px;font-size:11.5px;
+    color:var(--dim2)}
+  .legend i{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:5px;
+    vertical-align:-1px}
+  .tip{position:absolute;pointer-events:none;opacity:0;transform:translate(-50%,-118%);
+    background:#0b1119;border:1px solid var(--line2);border-radius:7px;padding:8px 10px;
+    font-size:11.5px;line-height:1.55;white-space:nowrap;box-shadow:0 8px 22px rgba(0,0,0,.6);
+    transition:opacity .1s;z-index:9}
+  .tip b{font-family:var(--mono);font-weight:600}
+  .tip s{text-decoration:none;color:var(--dim2)}
+
+  /* ---------- 条形对比 ---------- */
+  .bars{margin-top:22px}
+  .bar{display:grid;grid-template-columns:132px 1fr 84px;gap:12px;align-items:center;
+    margin-bottom:7px;font-size:12.5px}
+  .bar .lb{color:var(--dim);text-align:right}
+  .bar .lb.hl{color:var(--acc);font-weight:600}
+  .track{position:relative;height:15px;background:#0c121a;border-radius:3px;overflow:hidden}
+  .fill{position:absolute;left:0;top:0;bottom:0;border-radius:3px;
+    background:linear-gradient(90deg,#2a6bef,#7aa2ff);transition:width .18s ease}
+  .fill.dim{background:#2a3646}
+  .fill.accent{background:linear-gradient(90deg,#2b8f6d,#3ddc97)}
+  .bar .vl{font-family:var(--mono);font-size:12.5px;color:var(--txt);text-align:right}
+
+  /* ---------- 表格 ---------- */
+  table{width:100%;border-collapse:collapse;font-size:12.5px;margin-top:6px}
+  .tw{overflow-x:auto;-webkit-overflow-scrolling:touch}
+  th{text-align:right;color:var(--dim2);font-weight:500;font-size:11px;
+    padding:6px 8px;border-bottom:1px solid var(--line2);letter-spacing:.3px;
+    white-space:nowrap}
+  th:first-child,td:first-child{text-align:left}
+  td{padding:6px 8px;border-bottom:1px solid #141c26;text-align:right;
+    font-family:var(--mono);font-variant-numeric:tabular-nums}
+  td:first-child{font-family:inherit}
+  tr.off td{opacity:.45}
+  tr.wrong td:first-child{box-shadow:inset 2px 0 0 var(--warn)}
+  .tag{display:inline-block;font-family:inherit;font-size:10.5px;padding:1px 6px;
+    border-radius:4px;letter-spacing:.2px}
+  .tag.bo{color:#0a0e14;background:var(--pos);font-weight:600}
+  .tag.base{color:var(--dim);background:#1c2634}
+  .tag.ok{color:var(--dim2)}
+  .tag.bad{color:var(--warn);background:rgba(255,180,84,.12)}
+  .pos{color:var(--pos)} .neg{color:var(--neg)}
+  .gcell{display:flex;align-items:center;gap:7px;justify-content:flex-end}
+  .gbar{height:6px;border-radius:2px;flex:0 0 auto;opacity:.55}
+  .verdict{margin-top:14px;font-size:12.5px;color:var(--dim);display:flex;
+    flex-wrap:wrap;gap:10px 22px;align-items:center}
+  .verdict b{font-family:var(--mono);font-weight:600;color:var(--txt)}
+
+  /* ---------- 自我进化 ---------- */
+  .rsi{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:14px}
+  @media(max-width:760px){.rsi{grid-template-columns:1fr}}
+  .rsi .card{padding:14px}
+  .rsi h3{margin:0 0 2px;font-size:13px;font-weight:600}
+  .rsi .d{font-size:11.5px;color:var(--dim2);margin:0 0 11px;min-height:32px}
+  .rsi .row{display:flex;justify-content:space-between;font-size:12px;
+    padding:3px 0;color:var(--dim)}
+  .rsi .row b{font-family:var(--mono);font-weight:600;color:var(--txt)}
+  .rsi .gap{margin-top:9px;padding-top:9px;border-top:1px solid var(--line2);
+    font-size:11.5px;color:var(--dim)}
+  .rsi .gap b{font-family:var(--mono);color:var(--warn);font-size:13px}
+  .unstab{margin-top:14px;font-size:12.5px;color:var(--dim);line-height:1.75}
+  .unstab .chip{display:inline-block;font-family:var(--mono);font-size:11.5px;
+    background:var(--panel2);border:1px solid var(--line2);border-radius:5px;
+    padding:1px 7px;margin:0 3px;color:var(--txt)}
+
+  .callout{margin-top:20px;border-left:2px solid var(--acc);background:#0d141d;
+    padding:14px 18px;border-radius:0 8px 8px 0;font-size:13.5px;color:#c9d6e4}
+  .callout b{color:var(--txt)}
+  .callout .q{color:var(--acc);font-family:var(--mono)}
+
+  footer{padding-top:22px;font-size:11.5px;color:var(--dim2);line-height:1.85}
+  footer b{color:var(--dim);font-weight:500}
+  footer code{font-family:var(--mono);color:var(--dim)}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <div>
+    <h1>FailBound <span>·</span> 门控决策台</h1>
+    <p class="sub">本页装的是消融臂 18 个任务（预算 400、等成本口径）；全量 <b>36 任务 × 4 策略 × 30 种子 × 2 口径 = 8640</b> 次真实运行。下面每一个数字，
+      都能用两条滑块重新算出来，包括让我们自己难看的那几个。</p>
+  </div>
+  <div class="stamp">
+    <b id="shaState">冻结包指纹校验中…</b>
+    <code id="shaTxt"></code>
+  </div>
+</header>
+
+<section>
+  <h2>一 · 你来当这个 Agent<em>拖两条线，看它做对了几次</em></h2>
+  <p class="lead">规则只有一条：<span class="mono">AUC ≥ θ 且 描述符维数 ≥ d</span> 就用贝叶斯优化，
+    否则退回空间填充。θ 和 d 是两个可以拖的阈值，剩下的全是实测数据。</p>
+
+  <div class="console">
+    <div class="card">
+      <div class="ctl">
+        <label><span>可分性门槛 θ<sub>AUC</sub></span> <b id="vTheta">0.600</b></label>
+        <input type="range" id="sTheta" min="0.5" max="0.95" step="0.005" value="0.6">
+      </div>
+      <div class="ctl">
+        <label><span>描述符维数门槛 d</span> <b id="vDim">3</b></label>
+        <input type="range" id="sDim" min="0" max="21" step="1" value="3">
+      </div>
+      <div class="presets" id="presets">
+        <button data-th="0.6" data-d="3" class="on">人工冻结卡</button>
+        <button data-th="0.63" data-d="0">自动搜最优</button>
+        <button data-th="0.5" data-d="0">全用 BO</button>
+        <button data-th="1.1" data-d="0">全不用</button>
+      </div>
+      <p style="font-size:11px;color:var(--dim2);margin:12px 0 0;line-height:1.6">
+        「自动搜最优」= 把这族规则的阈值交还给数据去选（样本内）。它在样本内确实更高，
+        往下滚到第三块，看它在没见过的基底上掉成什么样。</p>
+    </div>
+
+    <div>
+      <div class="readout">
+        <span class="big" id="hits">1262.4</span>
+        <span class="unit">总命中（18 个任务合计）</span>
+        <span class="delta eq" id="delta">—</span>
+      </div>
+      <div class="kpis">
+        <div class="kpi"><div class="n" id="kUse">9</div><div class="k">用 BO 的任务</div></div>
+        <div class="kpi"><div class="n pos" id="kOk">12</div><div class="k">判对</div></div>
+        <div class="kpi"><div class="n neg" id="kFb">1</div><div class="k">接错（BO 反而更差）</div></div>
+        <div class="kpi"><div class="n" style="color:var(--warn)" id="kFr">5</div>
+          <div class="k">拒错（BO 本可更好）</div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="chart">
+    <svg id="scatter" viewBox="0 0 760 344" preserveAspectRatio="xMidYMid meet"></svg>
+    <div class="tip" id="tip"></div>
+    <div class="legend">
+      <span><i style="background:#3ddc97"></i>规则选择用 BO</span>
+      <span><i style="background:#404d5d"></i>规则退回基线</span>
+      <span><i style="background:transparent;box-shadow:0 0 0 2px #ffb454"></i>橙环 = 这一票判错了</span>
+      <span>圆点大小 = 描述符维数（1 / 2 / 5 / 20）</span>
+    </div>
+  </div>
+
+  <div class="bars" id="bars"></div>
+  <div class="verdict" id="verdict"></div>
+</section>
+
+<section>
+  <h2>二 · 这 18 个任务长什么样<em>横轴是可预测性，纵轴是用 BO 到底赚不赚</em></h2>
+  <p class="lead">看清楚一件事：<b style="color:var(--txt)">AUC 高不等于赚</b>。
+    <span class="mono">dielectric·rp2</span> 的 AUC 有 0.698，用 BO 却净亏 26.5；
+    <span class="mono">expt_gap·rp5</span> 只有 0.653，却净赚 65.2。散点的上下分带，就是这张卡存在的理由。</p>
+  <div class="tw">
+  <table id="tbl">
+    <thead><tr>
+      <th>任务</th><th>AUC</th><th>维数</th><th>基线命中</th><th>BO 命中</th>
+      <th>增益</th><th>规则</th><th>判定</th>
+    </tr></thead>
+    <tbody></tbody>
+  </table>
+  </div>
+  <p style="font-size:11.5px;color:var(--dim2);margin-top:12px">
+    「判对/接错/拒错」按增益符号判定；按显著性（Holm 校正）判定的版本见技术报告 §4.4：
+    漏报 0/23、误拒 7/36。两套口径我们都摆着，不挑好看的那个说。</p>
+</section>
+
+<section>
+  <h2>三 · 那让阈值自己学，行不行？<em>我们试了，结论是不行，原因在这儿</em></h2>
+  <p class="lead">上面那个「自动搜最优」按钮，就是「让 harness 自己演化参数」的最小版本。
+    为了不骗自己，我们做了严格留一基底：3 个材料体系各被留出一次，规则只能拿另外两个体系的历史反馈来拟合。</p>
+  <div class="rsi" id="rsi"></div>
+  <p class="unstab" id="unstab"></p>
+  <div class="callout">
+    样本内最优 <span class="q" id="insTxt">1271.6</span>，比人工冻结卡高
+    <span class="q">+9.2</span>；同一个搜索过程留一基底之后，三条规则分别是 1136.6 / 1184.5 / 1101.8，<b>最低只剩</b>
+    <span class="q" id="looBest">1136.6</span>（最高 1184.5），比人工卡低 <span class="q">125.8</span>。
+    这 135 个命中，就是「让系统自己调自己」在样本量不够时会制造出来的幻觉。<br>
+    <b>所以我们不做 RSI，我们做 RSI 的评估层：</b>这套留一基底回放本身就是判断「自我进化到底有没有真发生」
+    的仪器，而它给出的第一个结论是：现在还不该转动这个旋钮。
+  </div>
+</section>
+
+<footer>
+  <b>数据怎么来的：</b>全部读自冻结提交包 <code>failbound_full_ablate_upload.zip</code>
+  （<code id="fooSha"></code>，<span id="fooBytes"></span> 字节，102 个文件）解包后的
+  <code>agent_lab/results/tests.csv</code> 与 <code>task_props.csv</code>；
+  对照口径与 <code>results-extra/gate_recalibration.json</code> 逐位一致。
+  预算 400、等成本口径、<code>gp_ucb</code> 对 <code>farthest_point</code>、Holm 校正。<br>
+  <b>本页只重算决策，不重跑实验：</b>18 个任务的增益是既成结果，滑块改变的是「选哪一半结果」，
+  不是重新采样。所以它可以用来理解规则、不能用来说明显著性。<br>
+  <b>复现：</b><code>python demo/build_console.py</code> 会重新读取冻结包并重建这一页，
+  同时核对冻结核验和（<span id="shaFoot"></span>）。页面上没有一个手写常量。<br>
+  <b>这一页和提交包的关系：</b>它是只读的演示层，用来把已经跑完的 8640 次运行摆出来给人拖一拖；
+  它不参与跑分，也不改冻结包里任何一个字节。
+</footer>
+
+</div>
+
+<script>
+const D = {"meta":{"sha":"b6d0a514261846cd","shaOk":true,"bytes":6698192,"nTasks":18,"nBases":3,"budget":400,"arm":"ablate","frozen":{"auc":0.6,"dim":3,"hits":1262.4,"n":9},"allbo":{"hits":1236.23,"n":18},"allbase":{"hits":991.37,"n":0},"oracle":{"hits":1344.67,"n":13}},"tasks":[{"id":"matbench_dielectric__elem20","base":"dielectric","variant":"elem20","auc":0.8324,"dim":20,"bo":50.133333,"baseHits":40.433333,"gain":9.7,"sig":true,"p":0.00032},{"id":"matbench_dielectric__pca1","base":"dielectric","variant":"pca1","auc":0.626,"dim":1,"bo":42.8,"baseHits":60.333333,"gain":-17.533333,"sig":true,"p":3e-05},{"id":"matbench_dielectric__pca2","base":"dielectric","variant":"pca2","auc":0.7695,"dim":2,"bo":57.966667,"baseHits":91.866667,"gain":-33.9,"sig":true,"p":0.00015},{"id":"matbench_dielectric__pca5","base":"dielectric","variant":"pca5","auc":0.8786,"dim":5,"bo":157.433333,"baseHits":121.6,"gain":35.833333,"sig":true,"p":0.00032},{"id":"matbench_dielectric__rp2","base":"dielectric","variant":"rp2","auc":0.6977,"dim":2,"bo":53.533333,"baseHits":80.033333,"gain":-26.5,"sig":true,"p":8e-05},{"id":"matbench_dielectric__rp5","base":"dielectric","variant":"rp5","auc":0.8128,"dim":5,"bo":108.233333,"baseHits":118.133333,"gain":-9.9,"sig":false,"p":0.89297},{"id":"matbench_expt_gap__elem20","base":"expt_gap","variant":"elem20","auc":0.757,"dim":20,"bo":64.266667,"baseHits":46.733333,"gain":17.533333,"sig":true,"p":5e-05},{"id":"matbench_expt_gap__pca1","base":"expt_gap","variant":"pca1","auc":0.5464,"dim":1,"bo":39.833333,"baseHits":37.066667,"gain":2.766667,"sig":false,"p":0.48025},{"id":"matbench_expt_gap__pca2","base":"expt_gap","variant":"pca2","auc":0.7691,"dim":2,"bo":52.366667,"baseHits":38.3,"gain":14.066667,"sig":true,"p":0.01255},{"id":"matbench_expt_gap__pca5","base":"expt_gap","variant":"pca5","auc":0.8382,"dim":5,"bo":86.966667,"baseHits":32.0,"gain":54.966667,"sig":true,"p":3e-05},{"id":"matbench_expt_gap__rp2","base":"expt_gap","variant":"rp2","auc":0.6333,"dim":2,"bo":42.266667,"baseHits":21.566667,"gain":20.7,"sig":true,"p":3e-05},{"id":"matbench_expt_gap__rp5","base":"expt_gap","variant":"rp5","auc":0.6531,"dim":5,"bo":82.466667,"baseHits":17.3,"gain":65.166667,"sig":true,"p":3e-05},{"id":"matbench_log_gvrh__elem20","base":"log_gvrh","variant":"elem20","auc":0.7376,"dim":20,"bo":30.833333,"baseHits":25.666667,"gain":5.166667,"sig":true,"p":0.0003},{"id":"matbench_log_gvrh__pca1","base":"log_gvrh","variant":"pca1","auc":0.6438,"dim":1,"bo":49.166667,"baseHits":46.2,"gain":2.966667,"sig":false,"p":0.82553},{"id":"matbench_log_gvrh__pca2","base":"log_gvrh","variant":"pca2","auc":0.8663,"dim":2,"bo":84.333333,"baseHits":52.466667,"gain":31.866667,"sig":true,"p":0.03376},{"id":"matbench_log_gvrh__pca5","base":"log_gvrh","variant":"pca5","auc":0.9149,"dim":5,"bo":137.7,"baseHits":50.266667,"gain":87.433333,"sig":true,"p":3e-05},{"id":"matbench_log_gvrh__rp2","base":"log_gvrh","variant":"rp2","auc":0.5931,"dim":2,"bo":42.366667,"baseHits":62.966667,"gain":-20.6,"sig":true,"p":3e-05},{"id":"matbench_log_gvrh__rp5","base":"log_gvrh","variant":"rp5","auc":0.7336,"dim":5,"bo":53.566667,"baseHits":48.433333,"gain":5.133333,"sig":false,"p":0.95897}],"insample":{"hits":1271.6,"theta_auc":0.63,"theta_dim":0},"loo":[{"label":"只用 AUC 一个门槛","desc":"θ_auc 由数据自己选，维数不参与","hits":1136.6,"n":12,"inn":17.15,"out":8.07,"gap":9.08,"fits":[{"held":"dielectric","theta":0.6132,"dim":null},{"held":"expt_gap","theta":0.8226,"dim":null},{"held":"log_gvrh","theta":0.6296,"dim":null}]},{"label":"只用维数一个门槛","desc":"d 由数据自己选，AUC 不参与","hits":1184.47,"n":12,"inn":16.5,"out":10.73,"gap":5.77,"fits":[{"held":"dielectric","theta":null,"dim":0},{"held":"expt_gap","theta":null,"dim":3},{"held":"log_gvrh","theta":null,"dim":3}]},{"label":"两个门槛一起学","desc":"harness 同时演化两个技能参数","hits":1101.77,"n":10,"inn":17.86,"out":6.13,"gap":11.73,"fits":[{"held":"dielectric","theta":0.6132,"dim":0},{"held":"expt_gap","theta":0.8226,"dim":0},{"held":"log_gvrh","theta":-1.0,"dim":3}]}],"span":1.8226,"stab":[{"n":1,"span":1.8226,"fits":[{"bases":["dielectric"],"theta":0.8225812988360405},{"bases":["expt_gap"],"theta":-1.0},{"bases":["log_gvrh"],"theta":0.6184442179392142}]},{"n":2,"span":1.8226,"fits":[{"bases":["dielectric","expt_gap"],"theta":-1.0},{"bases":["dielectric","log_gvrh"],"theta":0.8225812988360405},{"bases":["expt_gap","log_gvrh"],"theta":0.6132060386780496}]},{"n":3,"span":0.0,"fits":[{"bases":["dielectric","expt_gap","log_gvrh"],"theta":0.6296253096439037}]}],"sanity":{"n_tasks":18,"fitted":{"theta_auc":-1.0,"theta_dim":0,"calib_gain":1499.1666666666665},"hits_all_bo":1499.17,"hits_under_fitted_gate":1499.17,"gate_lost_hits":0.0},"deltas":{"ins_vs_frozen":9.2,"loo_vs_frozen":-125.8,"frozen_vs_allbo":26.2,"frozen_vs_allbase":271.0,"oracle_gap":82.3}};
+const T = D.tasks, M = D.meta;
+
+/* ---------- 与 Python gain_of() 同口径 ---------- */
+function evaluate(theta, d){
+  const use = T.map(t => (t.auc >= theta && t.dim >= d));
+  let hits = 0, fb = 0, fr = 0;
+  T.forEach((t,i)=>{
+    hits += use[i] ? t.bo : t.baseHits;
+    if (use[i] && t.gain < 0) fb++;
+    if (!use[i] && t.gain > 0) fr++;
+  });
+  return {use, hits, n: use.filter(Boolean).length, fb, fr};
+}
+const r1 = x => (Math.round(x*10)/10).toFixed(1);
+const signed = x => (x>0?"+":"") + x.toFixed(1);
+
+/* ---------- 散点 ---------- */
+const W=760,H=344,ML=52,MR=12,MT=12,MB=34;
+const X = a => ML + (a-0.50)/(0.95-0.50)*(W-ML-MR);
+const Y = g => (H-MB) - (g-(-42))/(96-(-42))*(H-MT-MB);
+const R = d => 5.2 + Math.log(d+1)*1.55;
+const svg = document.getElementById('scatter');
+const NS = 'http://www.w3.org/2000/svg';
+const el = (n,at)=>{const e=document.createElementNS(NS,n);
+  for(const k in at) e.setAttribute(k,at[k]); return e;};
+
+let rejRect, rejHatch, thLine, thLabel, ptNodes = [];
+
+function buildScatter(){
+  // 网格
+  [0.5,0.6,0.7,0.8,0.9].forEach(v=>{
+    svg.appendChild(el('line',{x1:X(v),y1:MT,x2:X(v),y2:H-MB,class:'gridline'}));
+    const t = el('text',{x:X(v),y:H-MB+15,class:'axis','text-anchor':'middle'});
+    t.textContent = v.toFixed(1); svg.appendChild(t);
+  });
+  [-30,0,30,60,90].forEach(v=>{
+    svg.appendChild(el('line',{x1:ML,y1:Y(v),x2:W-MR,y2:Y(v),class:'gridline'}));
+    const t = el('text',{x:ML-8,y:Y(v)+3.5,class:'axis','text-anchor':'end'});
+    t.textContent = (v>0?'+':'')+v; svg.appendChild(t);
+  });
+  svg.appendChild(el('line',{x1:ML,y1:Y(0),x2:W-MR,y2:Y(0),class:'zeroline'}));
+  const xl = el('text',{x:W-MR,y:H-MB+29,class:'axis','text-anchor':'end'});
+  xl.textContent='可分性 AUC →'; svg.appendChild(xl);
+  const yl = el('text',{x:ML-38,y:MT+2,class:'axis','text-anchor':'start'});
+  yl.textContent='增益'; svg.appendChild(yl);
+
+  rejRect = el('rect',{x:ML,y:MT,width:0,height:H-MT-MB,class:'rej'});
+  svg.appendChild(rejRect);
+  const defs = el('defs',{});
+  defs.innerHTML = '<pattern id="hatch" width="7" height="7" patternUnits="userSpaceOnUse" ' +
+    'patternTransform="rotate(45)"><line x1="0" y1="0" x2="0" y2="7" ' +
+    'stroke="#7aa2ff" stroke-width="1.1" opacity="0.13"/></pattern>';
+  svg.appendChild(defs);
+  rejHatch = el('rect',{x:ML,y:MT,width:0,height:H-MT-MB,fill:'url(#hatch)',
+    class:'rejhatch'});
+  svg.appendChild(rejHatch);
+  const rejTxt = el('text',{x:ML+6,y:H-MB-20,class:'axis',fill:'#4d5a6b'});
+  rejTxt.textContent = '← 拒绝区：退回空间填充'; svg.appendChild(rejTxt);
+  thLine = el('line',{x1:ML,y1:MT,x2:ML,y2:H-MB,class:'thline'});
+  svg.appendChild(thLine);
+  thLabel = el('text',{x:ML+4,y:MT+11,class:'thlab'});
+  svg.appendChild(thLabel);
+
+  T.forEach((t,i)=>{
+    const c = el('circle',{cx:X(t.auc),cy:Y(t.gain),r:R(t.dim),class:'pt',
+      fill:'#404d5d',stroke:'#404d5d','stroke-width':1.5});
+    c.dataset.i = i;
+    svg.appendChild(c);
+    ptNodes.push(c);
+  });
+}
+
+/* ---------- 提示框 ---------- */
+const tip = document.getElementById('tip');
+svg.addEventListener('mousemove', e=>{
+  const i = e.target.dataset && e.target.dataset.i;
+  if(i===undefined){tip.style.opacity=0;return;}
+  const t = T[i], used = cur.use[i];
+  tip.innerHTML = `<b>${t.base} · ${t.variant}</b><br>
+    <s>AUC</s> ${t.auc.toFixed(3)} &nbsp; <s>维数</s> ${t.dim}<br>
+    <s>BO</s> ${t.bo.toFixed(1)} &nbsp; <s>基线</s> ${t.baseHits.toFixed(1)} &nbsp;
+    <s>增益</s> <span style="color:${t.gain>=0?'#3ddc97':'#ff6f6f'}">${signed(t.gain)}</span><br>
+    <s>本规则</s> ${used?'用 BO':'用基线'} &nbsp; <s>显著性</s> ${t.sig?'p<0.05':'不显著'}`;
+  const box = svg.getBoundingClientRect();
+  tip.style.left = (e.clientX - box.left) + 'px';
+  tip.style.top  = (e.clientY - box.top) + 'px';
+  tip.style.opacity = 1;
+});
+svg.addEventListener('mouseleave', ()=>{tip.style.opacity=0;});
+
+/* ---------- 主刷新 ---------- */
+let cur = {use:[],hits:0};
+
+function refresh(){
+  const th = parseFloat(document.getElementById('sTheta').value);
+  const d  = parseInt(document.getElementById('sDim').value,10);
+  document.getElementById('vTheta').textContent = th.toFixed(3);
+  document.getElementById('vDim').textContent = d;
+  cur = evaluate(th, d);
+
+  document.getElementById('hits').textContent = cur.hits.toFixed(1);
+  const dv = cur.hits - M.frozen.hits;
+  const de = document.getElementById('delta');
+  de.textContent = (Math.abs(dv)<0.05 ? '与人工卡持平' : '相对人工卡 ' + signed(dv));
+  de.className = 'delta ' + (Math.abs(dv)<0.05 ? 'eq' : (dv>0?'up':'dn'));
+  document.getElementById('kUse').textContent = cur.n;
+  document.getElementById('kOk').textContent = T.length - cur.fb - cur.fr;
+  document.getElementById('kFb').textContent = cur.fb;
+  document.getElementById('kFr').textContent = cur.fr;
+
+  // 散点
+  const wRej = Math.max(0, X(th)-ML);
+  rejRect.setAttribute('x', ML);
+  rejRect.setAttribute('width', wRej);
+  rejHatch.setAttribute('x', ML);
+  rejHatch.setAttribute('width', wRej);
+  thLine.setAttribute('x1', X(th)); thLine.setAttribute('x2', X(th));
+  thLabel.textContent = 'θ=' + th.toFixed(3) + (d>0 ? '  ·  d=' + d : '');
+  T.forEach((t,i)=>{
+    const c = ptNodes[i], used = cur.use[i];
+    const wrong = (used && t.gain<0) || (!used && t.gain>0);
+    c.setAttribute('fill', used ? '#3ddc97' : '#404d5d');
+    c.setAttribute('stroke', wrong ? '#ffb454' : (used ? '#3ddc97' : '#404d5d'));
+    c.setAttribute('stroke-width', wrong ? 2.4 : 1.5);
+    c.setAttribute('opacity', (d>0 && t.dim<d) ? 0.55 : 1);
+  });
+
+  // 条形
+  const items = [
+    {k:'全用空间填充', v:M.allbase.hits, cls:'dim'},
+    {k:'全用 BO', v:M.allbo.hits, cls:'dim'},
+    {k:'人工冻结卡', v:M.frozen.hits, cls:'accent', hl:(Math.abs(th-0.6)<1e-9 && d===3)},
+    {k:'你当前的规则', v:cur.hits, cls:'', hl:true},
+    {k:'样本内最优', v:D.insample.hits, cls:'dim'},
+    {k:'逐任务最优（上界）', v:M.oracle.hits, cls:'dim'},
+  ];
+  const lo = 940, hi = 1380;
+  document.getElementById('bars').innerHTML = items.map(it=>{
+    const w = Math.max(1, (it.v-lo)/(hi-lo)*100);
+    return `<div class="bar">
+      <div class="lb ${it.hl?'hl':''}">${it.k}</div>
+      <div class="track"><div class="fill ${it.cls}" style="width:${w}%"></div></div>
+      <div class="vl">${it.v.toFixed(1)}</div></div>`;
+  }).join('') + `<p style="font-size:10.5px;color:var(--dim2);margin:8px 0 0">
+    条形起点在 940（不是 0），只用来比较差异；上界 = 每个任务都恰好选对的那个不可能的规则。</p>`;
+
+  // 表格
+  document.querySelector('#tbl tbody').innerHTML = T.map((t,i)=>{
+    const used = cur.use[i];
+    const wrong = (used && t.gain<0) || (!used && t.gain>0);
+    const bw = Math.max(3, Math.min(44, Math.abs(t.gain)/90*44));
+    return `<tr class="${used?'':'off'} ${wrong?'wrong':''}">
+      <td>${t.base} · ${t.variant}</td>
+      <td>${t.auc.toFixed(3)}</td><td>${t.dim}</td>
+      <td>${t.baseHits.toFixed(1)}</td><td>${t.bo.toFixed(1)}</td>
+      <td><div class="gcell"><span class="gbar" style="width:${bw}px;background:${
+        t.gain>=0?'var(--pos)':'var(--neg)'}"></span><span class="${t.gain>=0?'pos':'neg'}">${
+        signed(t.gain)}</span></div></td>
+      <td><span class="tag ${used?'bo':'base'}">${used?'BO':'基线'}</span></td>
+      <td>${wrong?'<span class="tag bad">判错</span>':'<span class="tag ok">✓</span>'}</td>
+    </tr>`;
+  }).join('');
+
+  // 一句话结论
+  let costFb = 0, costFr = 0, costSaved = 0, nFb = 0, nFr = 0, nSaved = 0;
+  T.forEach((t,i)=>{
+    if (cur.use[i] && t.gain < 0) { costFb += -t.gain; nFb++; }
+    if (!cur.use[i] && t.gain > 0) { costFr += t.gain; nFr++; }
+    if (!cur.use[i] && t.gain < 0) { costSaved += -t.gain; nSaved++; }
+  });
+  document.getElementById('verdict').innerHTML =
+    `<span>接错 <b>${nFb}</b> 个 → 白亏 <b>${costFb.toFixed(1)}</b></span>` +
+    `<span>拒错 <b>${nFr}</b> 个 → 少赚 <b>${costFr.toFixed(1)}</b></span>` +
+    `<span>拒对 <b>${nSaved}</b> 个 → 避损 <b>${costSaved.toFixed(1)}</b></span>` +
+    `<span style="color:var(--dim2)">合计相对「全用 BO」${signed(cur.hits - M.allbo.hits)}</span>`;
+
+  document.querySelectorAll('#presets button').forEach(b=>{
+    const on = Math.abs(parseFloat(b.dataset.th)-th)<1e-9 && parseInt(b.dataset.d,10)===d;
+    b.classList.toggle('on', on);
+  });
+}
+
+['sTheta','sDim'].forEach(id=>{
+  document.getElementById(id).addEventListener('input', refresh);
+});
+document.querySelectorAll('#presets button').forEach(b=>{
+  b.addEventListener('click', ()=>{
+    document.getElementById('sTheta').value = b.dataset.th;
+    document.getElementById('sDim').value = b.dataset.d;
+    refresh();
+  });
+});
+
+/* ---------- 自我进化三张卡 ---------- */
+document.getElementById('rsi').innerHTML = D.loo.map(r=>`
+  <div class="card">
+    <h3>${r.label}</h3>
+    <p class="d">${r.desc}</p>
+    <div class="row"><span>留一基底后总命中</span><b>${r.hits.toFixed(1)}</b></div>
+    <div class="row"><span>用 BO 的任务</span><b>${r.n}</b></div>
+    <div class="row"><span>拟合集·每任务增益</span><b>${signed(r.inn)}</b></div>
+    <div class="row"><span>留出集·每任务增益</span><b>${signed(r.out)}</b></div>
+    <div class="gap">乐观偏差 <b>${signed(r.gap)}</b><br>
+      <span style="color:var(--dim2)">人工卡 ${D.meta.frozen.hits.toFixed(1)}，本条
+      ${(r.hits-D.meta.frozen.hits).toFixed(1)}</span></div>
+  </div>`).join('');
+
+document.getElementById('insTxt').textContent = D.insample.hits.toFixed(1);
+document.getElementById('looBest').textContent = D.loo[0].hits.toFixed(1);
+
+/* ---------- 阈值收敛性 ---------- */
+(function(){
+  // 只用 1 个体系拟合 vs 3 个体系一起拟合：同一族规则、同一份数据，只是样本量不同
+  const s1 = D.stab[0], s3 = D.stab[D.stab.length - 1];
+  const chip = v => `<span class="chip">${v <= -0.5 ? '−1（永不拒绝）' : v.toFixed(3)}</span>`;
+  const one = s1.fits.map(f => chip(f.theta)).join('、');
+  document.getElementById('unstab').innerHTML =
+    `只拿一个体系独自拟合时，θ<sub>AUC</sub> 是 ${one}，跨度 `
+    + `<b style="color:var(--warn);font-family:var(--mono)">${s1.span.toFixed(2)}</b>；`
+    + `把三个体系合起来拟合，才收敛到 ${chip(s3.fits[0].theta)}。`
+    + `<br>阈值不是常数，所以它不该被写死成一个数字；也正因为它不是常数，`
+    + `在没有更多独立基底之前，我们没资格让它自己动。`;
+})();
+
+/* ---------- 指纹 ---------- */
+document.getElementById('shaTxt').textContent = 'SHA256 ' + D.meta.sha + '…';
+document.getElementById('shaState').textContent =
+  D.meta.shaOk ? '✓ 构建时已与冻结包核对一致' : '⚠ 构建时未校验通过';
+document.getElementById('shaState').style.color = D.meta.shaOk ? 'var(--pos)' : 'var(--warn)';
+document.getElementById('fooSha').textContent = D.meta.sha + '…';
+document.getElementById('fooBytes').textContent = D.meta.bytes.toLocaleString();
+document.getElementById('shaFoot').textContent = D.meta.sha + '…';
+
+buildScatter();
+refresh();
+</script>
+</body>
+</html>

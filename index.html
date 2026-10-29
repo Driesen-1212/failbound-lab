@@ -1,0 +1,1303 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%230a0e14'/%3E%3Ctext x='16' y='22' font-family='monospace' font-size='15' fill='%237aa2ff' text-anchor='middle'%3EF%3C/text%3E%3C/svg%3E">
+<title>FailBound-Lab: 主动学习失效边界的可复现评测基准</title>
+<style>
+:root {
+  --bg: #0a0e14;
+  --panel: #0f151d;
+  --panel2: #141d27;
+  --line: #1f2937;
+  --line2: #2b3846;
+  --txt: #e8eef5;
+  --dim: #8b98a8;
+  --dim2: #5c6976;
+  --pos: #3ddc97;
+  --neg: #ff6f6f;
+  --acc: #7aa2ff;
+  --warn: #ffb454;
+  --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body {
+  background: var(--bg);
+  color: var(--txt);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans SC", sans-serif;
+  font-size: 15.5px;
+  line-height: 1.75;
+  -webkit-font-smoothing: antialiased;
+}
+a { color: var(--acc); text-decoration: none; }
+a:hover { text-decoration: underline; }
+strong { color: var(--txt); font-weight: 600; }
+em { color: var(--dim); }
+code, .mono { font-family: var(--mono); }
+
+/* ========== NAV ========== */
+nav {
+  position: sticky; top: 0; z-index: 100;
+  background: rgba(10,14,20,0.92);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--line);
+  padding: 0 24px;
+}
+.nav-inner {
+  max-width: 1080px; margin: 0 auto;
+  display: flex; align-items: center; justify-content: space-between;
+  height: 56px;
+}
+.nav-brand {
+  font-family: var(--mono); font-size: 14px; font-weight: 600;
+  color: var(--txt); letter-spacing: 0.02em;
+}
+.nav-links {
+  display: flex; gap: 4px; align-items: center;
+}
+.nav-links a {
+  font-size: 13px; color: var(--dim); padding: 6px 12px;
+  border-radius: 6px; transition: color 0.15s, background 0.15s;
+}
+.nav-links a:hover { color: var(--txt); background: var(--panel2); text-decoration: none; }
+.nav-ext {
+  display: flex; gap: 4px; margin-left: 12px;
+}
+.nav-ext a {
+  font-size: 12px; font-family: var(--mono); color: var(--dim2);
+  padding: 5px 10px; border: 1px solid var(--line); border-radius: 6px;
+}
+.nav-ext a:hover { color: var(--acc); border-color: var(--acc); text-decoration: none; }
+
+/* ========== LAYOUT ========== */
+.container { max-width: 1080px; margin: 0 auto; padding: 0 24px; }
+
+/* ========== HERO ========== */
+.hero {
+  padding: 80px 24px 56px;
+  text-align: center;
+  border-bottom: 1px solid var(--line);
+}
+.hero h1 {
+  font-size: 2.6rem; font-weight: 700; letter-spacing: -0.02em;
+  line-height: 1.2; margin-bottom: 16px;
+}
+.hero .subtitle {
+  font-size: 1.15rem; color: var(--dim); max-width: 720px;
+  margin: 0 auto 28px; line-height: 1.6;
+}
+.hero .tags {
+  display: flex; justify-content: center; gap: 12px; flex-wrap: wrap;
+  margin-bottom: 36px;
+}
+.hero .tag {
+  font-size: 12px; font-family: var(--mono); color: var(--dim2);
+  padding: 4px 12px; border: 1px solid var(--line); border-radius: 20px;
+}
+
+/* Action buttons */
+.action-row {
+  display: flex; justify-content: center; gap: 12px; flex-wrap: wrap;
+  margin-bottom: 32px;
+}
+.btn {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 10px 20px; border-radius: 8px;
+  font-size: 14px; font-weight: 500;
+  border: 1px solid var(--line2);
+  background: var(--panel); color: var(--txt);
+  transition: all 0.15s;
+}
+.btn:hover { background: var(--panel2); border-color: var(--dim2); text-decoration: none; }
+.btn.primary {
+  background: var(--acc); color: #0a0e14; border-color: var(--acc);
+  font-weight: 600;
+}
+.btn.primary:hover { background: #8fb0ff; }
+
+/* Hero metrics */
+.metrics-row {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 16px; max-width: 1080px; margin: 0 auto 24px;
+}
+.metric-card {
+  background: var(--panel); border: 1px solid var(--line);
+  border-radius: 10px; padding: 24px;
+  text-align: left;
+}
+.metric-card .label {
+  font-size: 12px; font-family: var(--mono); color: var(--dim2);
+  text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 8px;
+}
+.metric-card .value {
+  font-size: 2.2rem; font-family: var(--mono); font-weight: 700;
+  line-height: 1.1; margin-bottom: 8px;
+}
+.metric-card .value.neg { color: var(--neg); }
+.metric-card .value.pos { color: var(--pos); }
+.metric-card .value.acc { color: var(--acc); }
+.metric-card .desc {
+  font-size: 13px; color: var(--dim); line-height: 1.55;
+}
+.metrics-note {
+  text-align: center; font-size: 13px; color: var(--dim2);
+  font-family: var(--mono);
+}
+
+/* ========== SECTIONS ========== */
+section {
+  padding: 64px 24px;
+  border-bottom: 1px solid var(--line);
+}
+section:last-child { border-bottom: none; }
+.section-inner { max-width: 1080px; margin: 0 auto; }
+.section-label {
+  font-family: var(--mono); font-size: 12px; color: var(--dim2);
+  letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 8px;
+}
+.section-title {
+  font-size: 1.8rem; font-weight: 700; letter-spacing: -0.01em;
+  margin-bottom: 24px; line-height: 1.3;
+}
+.section-body { color: var(--txt); }
+.section-body p { margin-bottom: 1.1em; }
+.section-body p:last-child { margin-bottom: 0; }
+
+/* Key callout */
+.callout {
+  border-left: 3px solid var(--acc);
+  background: var(--panel);
+  padding: 20px 24px;
+  margin: 24px 0;
+  border-radius: 0 8px 8px 0;
+}
+.callout p { margin-bottom: 0.8em; }
+.callout p:last-child { margin-bottom: 0; }
+.callout.warn { border-left-color: var(--warn); }
+.callout.neg { border-left-color: var(--neg); }
+
+/* ========== TABLES ========== */
+.table-wrap {
+  overflow-x: auto; margin: 24px 0;
+  border: 1px solid var(--line); border-radius: 10px;
+}
+table {
+  width: 100%; border-collapse: collapse;
+  font-size: 14px;
+}
+thead th {
+  background: var(--panel2); color: var(--dim);
+  font-weight: 600; font-size: 13px;
+  padding: 12px 16px; text-align: left;
+  border-bottom: 1px solid var(--line);
+  white-space: nowrap;
+}
+tbody td {
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--line);
+  color: var(--txt);
+  vertical-align: top;
+}
+tbody tr:last-child td { border-bottom: none; }
+td.num, th.num { text-align: right; font-family: var(--mono); }
+.table-note {
+  font-size: 13px; color: var(--dim); margin-top: 12px;
+  line-height: 1.6;
+}
+
+/* ========== FIGURES ========== */
+.figure {
+  margin: 32px 0;
+  background: var(--panel); border: 1px solid var(--line);
+  border-radius: 10px; overflow: hidden;
+}
+.figure img {
+  width: 100%; height: auto; display: block;
+}
+.figure .caption {
+  padding: 16px 20px;
+  font-size: 13.5px; color: var(--dim); line-height: 1.6;
+  border-top: 1px solid var(--line);
+}
+.figure .caption .fig-label {
+  font-family: var(--mono); font-size: 12px; color: var(--acc);
+  margin-right: 8px;
+}
+
+/* ========== WIDE FIG：整幅说明图 ========== */
+.wide-fig {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 18px 20px 14px;
+  margin: 22px 0 26px;
+}
+.wide-fig svg { display: block; width: 100%; height: auto; }
+.wide-fig .wf-scroll { overflow-x: auto; overflow-y: hidden; -webkit-overflow-scrolling: touch; }
+.wide-fig .wf-scroll::-webkit-scrollbar { height: 6px; }
+.wide-fig .wf-scroll::-webkit-scrollbar-thumb { background: var(--line2); border-radius: 3px; }
+.wide-fig .wf-scroll.can-scroll {
+  -webkit-mask-image: linear-gradient(to right, #000 calc(100% - 30px), transparent 100%);
+  mask-image: linear-gradient(to right, #000 calc(100% - 30px), transparent 100%);
+}
+.wide-fig .wf-scroll.can-scroll.at-end {
+  -webkit-mask-image: none; mask-image: none;
+}
+.wf-hint { display: none; }
+.wide-fig .wf-cap {
+  margin-top: 14px; padding-top: 12px;
+  border-top: 1px solid var(--line);
+  font-size: 12.5px; line-height: 1.7; color: var(--dim2);
+}
+.wide-fig .wf-cap b {
+  font-family: var(--mono); font-weight: 500; color: var(--acc);
+  margin-right: 6px;
+}
+.wide-fig .wf-cap i { font-style: normal; color: var(--dim); }
+
+/* ========== SPLIT: 左文 + 右图 ========== */
+.split {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 296px;
+  gap: 56px;
+  align-items: center;
+  padding: 18px 0;
+  border-top: 1px solid var(--line);
+}
+.split:first-child { border-top: none; padding-top: 2px; }
+.split:last-child { padding-bottom: 0; }
+.split .txt p { margin-bottom: 0; }
+.split .txt p + p { margin-top: 1.1em; }
+.split-fig {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 13px 13px 11px;
+}
+.split-fig svg { display: block; width: 100%; height: auto; }
+.split-fig .sf-cap {
+  margin-top: 9px; padding-top: 8px;
+  border-top: 1px solid var(--line);
+  font-size: 11px; line-height: 1.5; color: var(--dim2);
+}
+.split-fig .sf-cap b {
+  font-family: var(--mono); font-weight: 500; color: var(--acc);
+  margin-right: 5px;
+}
+.split-fig .sf-cap i { font-style: normal; color: var(--dim); }
+
+/* ========== IFRAME SANDBOX ========== */
+.sandbox-frame {
+  margin: 24px 0;
+  border: 1px solid var(--acc);
+  border-radius: 10px;
+  overflow: hidden;
+  background: var(--panel);
+}
+.sandbox-frame iframe {
+  width: 100%; height: 720px; border: none; display: block;
+}
+
+/* ========== CITATION BLOCK ========== */
+.citation-block {
+  background: var(--panel); border: 1px solid var(--line);
+  border-radius: 10px; padding: 24px;
+  margin: 24px 0;
+  font-family: var(--mono); font-size: 13.5px;
+  line-height: 1.8; color: var(--txt);
+  white-space: pre-wrap;
+  word-break: break-all;
+}
+
+/* ========== MATERIALS LIST ========== */
+.materials-list {
+  list-style: none; margin: 16px 0;
+}
+.materials-list li {
+  padding: 10px 0;
+  border-bottom: 1px solid var(--line);
+  display: flex; align-items: baseline; gap: 12px;
+}
+.materials-list li:last-child { border-bottom: none; }
+.materials-list .mat-icon {
+  font-family: var(--mono); font-size: 12px; color: var(--dim2);
+  min-width: 24px;
+}
+.materials-list a { font-size: 14.5px; }
+
+/* ========== FOOTER ========== */
+footer {
+  padding: 48px 24px;
+  text-align: center;
+  color: var(--dim2); font-size: 13px;
+  border-top: 1px solid var(--line);
+}
+footer .footer-note {
+  max-width: 640px; margin: 0 auto 16px; line-height: 1.7;
+}
+
+/* ========== RESPONSIVE ========== */
+@media (max-width: 900px) {
+  .split { grid-template-columns: 1fr; gap: 18px; align-items: start; }
+  .split-fig { max-width: 400px; }
+  /* 整幅图宽 760，缩到 700 以下字会糊，改为可横向滑动 */
+  .wide-fig .wf-scroll svg { min-width: 640px; }
+}
+@media (max-width: 768px) {
+  nav { padding: 0 14px; }
+  .nav-inner { height: 52px; }
+  .nav-ext { margin-left: 8px; }
+  .nav-ext a { font-size: 11px; padding: 4px 8px; }
+  .hero { padding: 52px 16px 44px; }
+  .hero h1 { font-size: 1.82rem; }
+  .hero .subtitle { font-size: 1rem; }
+  .nav-links { display: none; }
+  section { padding: 44px 16px; }
+  .section-title { font-size: 1.42rem; }
+  .metrics-row { gap: 12px; }
+  .metric-card { padding: 18px; }
+  .metric-card .value { font-size: 1.9rem; }
+  .sandbox-frame iframe { height: 620px; }
+  .split-fig { max-width: 100%; }
+  .wide-fig { padding: 12px 10px 10px; border-radius: 8px; }
+  .wide-fig .wf-scroll svg { min-width: 600px; }
+  .wf-hint {
+    display: block; font-size: 11.5px; color: var(--dim2);
+    text-align: center; margin: 12px 0 2px; letter-spacing: 0.04em;
+  }
+  .callout { padding: 16px 16px 16px 18px; }
+  .table-wrap th:first-child,
+  .table-wrap td:first-child { min-width: 104px; }
+  table { font-size: 13px; }
+  thead th { padding: 10px 12px; font-size: 12px; }
+  tbody td { padding: 10px 12px; }
+  .citation-block { font-size: 12px; padding: 16px; }
+  footer { padding: 36px 16px; }
+}
+@media (max-width: 480px) {
+  .hero h1 { font-size: 1.58rem; }
+  .hero .tags { gap: 8px; }
+  .section-body { font-size: 0.97rem; }
+}
+/* 只有真正窄屏才把按钮竖排成一列 */
+@media (max-width: 600px) {
+  .metrics-row { grid-template-columns: 1fr; }
+  .action-row { flex-direction: column; align-items: center; }
+  .btn { width: 100%; max-width: 340px; justify-content: center; }
+}
+
+/* ========== POLISH PATCH ========== */
+/* 锚点跳转时不被 sticky 导航压住 */
+section { scroll-margin-top: 72px; }
+
+/* 长路径 / 长哈希在小屏必须能断行，否则撑破视口 */
+.section-body code, .callout code, li code { overflow-wrap: anywhere; }
+.section-body, .callout { overflow-wrap: break-word; }
+
+/* 表格首列给足宽度,避免中文被挤成竖排 */
+.table-wrap th:first-child,
+.table-wrap td:first-child { min-width: 132px; }
+.table-wrap th { white-space: nowrap; }
+.table-wrap td { line-height: 1.6; }
+.table-wrap code {
+  font-family: var(--mono); font-size: 12.5px;
+  color: var(--txt); background: var(--panel2);
+  padding: 1px 5px; border-radius: 4px;
+}
+
+/* 区块内三级标题 */
+h3 {
+  font-size: 0.95rem; font-weight: 600; color: var(--txt);
+  margin: 36px 0 12px; letter-spacing: 0.01em;
+}
+
+/* 沙箱 iframe 加高,避免决策台底部散点被裁 */
+.sandbox-frame iframe { height: 900px; }
+/* 4.2 结论表：第二列「结论」只有 3-5 个字，宽度不足会被挤成竖排 */
+.t42 th:nth-child(2), .t42 td:nth-child(2) { min-width: 88px; white-space: nowrap; }
+.t42 th:nth-child(1), .t42 td:nth-child(1) { min-width: 150px; }
+</style>
+</head>
+<body>
+
+<!-- ==================== NAV ==================== -->
+<nav>
+  <div class="nav-inner">
+    <div class="nav-brand">FailBound-Lab</div>
+    <div class="nav-links">
+      <a href="#overview">概览</a>
+      <a href="#evidence">实验证据</a>
+      <a href="#sandbox">交互沙箱</a>
+      <a href="#platform">平台定位</a>
+      <a href="#limitations">边界</a>
+      <a href="#materials">材料</a>
+    </div>
+    <div class="nav-ext">
+      <a href="https://sciencepal.ai/share/944c87a6-46b9-49b0-b49f-0adc67257c21" target="_blank" rel="noopener">Replay</a>
+      <a href="tech-report.pdf" target="_blank" rel="noopener">Preprint</a>
+    </div>
+  </div>
+</nav>
+
+<!-- ==================== HERO ==================== -->
+<header class="hero">
+  <h1>FailBound-Lab</h1>
+  <p class="subtitle">主动学习失效边界的可复现评测基准:一个科研 Agent 先标定自己的能力边界,再决定要不要用优化器。交付一张保守熔断卡,和一个会把自己判错的证据打印出来的 Agent。</p>
+  
+  <div class="tags">
+    <span class="tag">赛道 04 · AI Agent</span>
+    <span class="tag">验证场 · 材料信息学</span>
+    <span class="tag">单人参赛</span>
+    <span class="tag">内循环确定性 · 逐比特复现</span>
+  </div>
+
+  <div class="action-row">
+    <a href="failbound-console.html" class="btn primary">打开交互决策台</a>
+    <a href="view.html?d=data" class="btn">4320 run 消融数据</a>
+    <a href="tech-report.html" class="btn">技术报告</a>
+    <a href="sandbox-log.html" class="btn">沙箱执行记录</a>
+    <a href="https://sciencepal.ai/share/944c87a6-46b9-49b0-b49f-0adc67257c21" target="_blank" rel="noopener" class="btn">SciencePal Replay</a>
+    <a href="replay/s3.html" class="btn">跨环境复现</a>
+  </div>
+
+  <div class="metrics-row">
+    <div class="metric-card">
+      <div class="label">熔断器漏报</div>
+      <div class="value pos">0 <span style="font-size:0.9rem;color:var(--dim)">/ 27</span></div>
+      <div class="desc">放行的 27 个里没有一个显著为负(36 任务里显著负共 4 个,全被拦住)。代价是拒绝 9 个,其中 5 个本该放行:两个数一起公布</div>
+    </div>
+    <div class="metric-card">
+      <div class="label">样本外秩相关</div>
+      <div class="value acc">+0.820</div>
+      <div class="desc">两个从未参与拟合的新基底、14 个任务上,判据比样本内更准(+0.513 → +0.820,p = 0.0003)。但零增益线从 0.731 移到 0.601,所以仍不能当自动开关</div>
+    </div>
+    <div class="metric-card">
+      <div class="label">最差情形</div>
+      <div class="value neg">−33.9</div>
+      <div class="desc">4/18 个任务上 BO 输给均匀撒点,最低一处是 dielectric__pca2 单基底(Cliff's δ = −0.629)。净效果是把这条右尾,换成 +14 到 +32 的左尾少赚</div>
+    </div>
+  </div>
+
+  <p class="metrics-note">8640 次实验已完成 · 36 任务 × 4 策略 · 30 种子 × 2 口径 · seed 20261015 · pkg b6d0a514…</p>
+  <p class="metrics-note">7200 次扩展消融 · 10 个基底 · 8 个有效基底 · Agent 累计命中 773 &lt; 780(36 任务等成本口径,见 §4.4)</p>
+</header>
+
+<!-- ==================== 01 INTRODUCTION ==================== -->
+<section id="introduction">
+  <div class="section-inner">
+    <div class="section-label">01</div>
+    <h2 class="section-title">Introduction</h2>
+    <div class="section-body">
+
+      <div class="split">
+        <div class="txt">
+          <p>拿到一个新体系,该不该上主动学习?如果描述符不够好,它会不会把预算烧在错误的地方?</p>
+          <p>主动学习、贝叶斯优化几乎是材料发现的默认选项。它的收益有一个很少被检验的前提:目标与描述符之间必须可学习。描述符不足时,代理模型是在用方差编故事,把有限的合成与表征预算花在模型的自信上。这时候最朴素的均匀铺点反而更好。</p>
+          <p>我们把这件事压成一个可扫描的量:<strong>可学习性 AUC</strong>(随机森林 5 折交叉验证 ROC-AUC,标签取目标 top-10% 分位)。沿两条独立的降信息轴做全量实验,得到一条有数据支撑的边界,以及一个更重要的结论:这条边界预报不了。</p>
+        </div>
+        <div class="split-fig">
+          <svg viewBox="0 0 268 196" role="img" aria-label="可学习性 AUC 三段决策带">
+<text x="0" y="12" fill="#e8eef5" font-size="11" font-family="-apple-system,'Noto Sans SC',sans-serif" font-weight="600">可学习性 AUC · 三段决策</text>
+<text x="0" y="27" fill="#8b98a8" font-size="9" font-family="-apple-system,'Noto Sans SC',sans-serif">0.601 样本外 · 0.731 主臂 · CI 0.556–0.807</text>
+<rect x="10" y="38" width="248" height="20" rx="5" fill="#141d27" stroke="#1f2937" stroke-width="1"/>
+<rect x="10" y="38" width="49.6" height="20" rx="5" fill="#ff6f6f" opacity="0.24"/>
+<rect x="59.6" y="38" width="64.48" height="20" rx="0" fill="#ffb454" opacity="0.2"/>
+<rect x="124.08" y="38" width="133.92" height="20" rx="5" fill="#3ddc97" opacity="0.24"/>
+<rect x="37.78" y="34" width="124.5" height="28" rx="4" fill="none" stroke="#ffb454" stroke-width="1.1" stroke-dasharray="4 3"/>
+<line x1="60.1" y1="30" x2="60.1" y2="66" stroke="#ff6f6f" stroke-width="1.6"/>
+<line x1="124.58" y1="30" x2="124.58" y2="66" stroke="#3ddc97" stroke-width="1.6"/>
+<text x="60.1" y="80" fill="#ff6f6f" font-size="9.5" font-family="ui-monospace,monospace" text-anchor="middle">0.601</text>
+<text x="124.58" y="80" fill="#3ddc97" font-size="9.5" font-family="ui-monospace,monospace" text-anchor="middle">0.731</text>
+<rect x="0" y="86" width="268" height="24" rx="6" fill="#0f151d" stroke="#ff6f6f" stroke-width="0.9"/>
+<path d="M6 86 h1 v24 h-1 a6 6 0 0 1 -6 -6 v-12 a6 6 0 0 1 6 -6z" fill="#ff6f6f"/>
+<text x="14" y="102" fill="#ff6f6f" font-size="10.5" font-family="ui-monospace,monospace" font-weight="600">< 0.60</text>
+<text x="82" y="102" fill="#8b98a8" font-size="10" font-family="-apple-system,'Noto Sans SC',sans-serif">均匀铺点更好</text>
+<rect x="0" y="114" width="268" height="24" rx="6" fill="#0f151d" stroke="#ffb454" stroke-width="0.9"/>
+<path d="M6 114 h1 v24 h-1 a6 6 0 0 1 -6 -6 v-12 a6 6 0 0 1 6 -6z" fill="#ffb454"/>
+<text x="14" y="130" fill="#ffb454" font-size="10.5" font-family="ui-monospace,monospace" font-weight="600">0.60–0.73</text>
+<text x="82" y="130" fill="#8b98a8" font-size="10" font-family="-apple-system,'Noto Sans SC',sans-serif">先补描述符，再决定</text>
+<rect x="0" y="142" width="268" height="24" rx="6" fill="#0f151d" stroke="#3ddc97" stroke-width="0.9"/>
+<path d="M6 142 h1 v24 h-1 a6 6 0 0 1 -6 -6 v-12 a6 6 0 0 1 6 -6z" fill="#3ddc97"/>
+<text x="14" y="158" fill="#3ddc97" font-size="10.5" font-family="ui-monospace,monospace" font-weight="600">≥ 0.73</text>
+<text x="82" y="158" fill="#8b98a8" font-size="10" font-family="-apple-system,'Noto Sans SC',sans-serif">BO 用得上</text>
+<text x="0" y="184" fill="#ffb454" font-size="9.5" font-family="-apple-system,'Noto Sans SC',sans-serif">橙框横跨两条零增益线 → 不能当自动开关</text>
+</svg>
+          <div class="sf-cap"><b>FIG 01</b>三段阈值一图看完，<i>橙框说明这条线预报不了自己。</i></div>
+        </div>
+      </div>
+    
+    </div>
+  </div>
+</section>
+
+<!-- ==================== 02 OVERVIEW ==================== -->
+<section id="overview">
+  <div class="section-inner">
+    <div class="section-label">02</div>
+    <h2 class="section-title">Overview</h2>
+    <div class="section-body">
+      <p>我们沿两条独立的降信息轴做了全量实验,得到同一条边界。这排除了「结论只是加噪标签的产物」这一解释——边界是可学习性的函数,不是构造手法的产物。</p>
+
+      <div class="figure">
+        <img src="img/fig_two_axes.png" alt="图1 两轴对照">
+        <div class="caption">
+          <span class="fig-label">图 1</span>
+          横轴为可学习性 AUC，纵轴为绝对增益（BO 命中数 − 基线命中数）。轴 A 看不到零点；轴 B 的目标值 100% 真实，只削减描述符，出现真实零点。
+        </div>
+      </div>
+
+      <div class="figure">
+        <img src="img/fig_boundary_auc.png" alt="图2 消融轴逐任务增益 + LOWESS + 置信带">
+        <div class="caption">
+          <span class="fig-label">图 2</span>
+          消融轴上的逐任务增益与 LOWESS 拟合，阴影为置信带。不确定带内逐任务方向并不一致，这正是它不能当自动开关的原因。
+        </div>
+      </div>
+
+      <p>「维度低所以失效」是最容易被接受、也最容易被推翻的解释。我们固定基底、固定维数,只换压缩算子做了一次同维对照:</p>
+
+      <div class="figure">
+        <img src="img/fig_matched_dim.png" alt="图3 同维配对 + 预算去向">
+        <div class="caption">
+          <span class="fig-label">图 3</span>
+          左为同维配对（PCA 保留主方差 vs 随机投影打散信息），右为预算去向。6 组配对里 PCA 更好的 3 组，平均差 +26.0，符号检验 p=1.0 —— 方向不一致，不能说「换算子就能救」。
+        </div>
+      </div>
+
+      <p>同样的 2 维,增益跨度是 65.8([−33.9, +31.9]);同样的 5 维,跨度 97.3([−9.9, +87.4]);而 1 维和 20 维的跨度反而只有 20.5 与 12.4。在同一族压缩方式内部,维度既非充分也非必要,它只是这次扫描里恰好跟上场的那个变量。把「失效边界」说成「维度诅咒」是错的。</p>
+
+      <p>但上面的实验还差一步:真实的描述符缺陷不长这样。没人会把 85 维随机投影成 2 维,真正天天发生的是「漏掉一个关键物理量,维度还是几十维」。于是补了一组新实验——全篇仅一组新增 run,15 任务 × 4 策略 × 30 种子 = 1800 次:按 |Spearman(f<sub>j</sub>, y)| 删掉最相关的 k 个描述符、其余全留,85 维降到 85 / 60 / 40 / 15 / 7 维,目标值一字不动。</p>
+
+      <div class="figure">
+        <img src="img/fig_physdrop.png" alt="图4 物理量删除 vs 压缩两族">
+        <div class="caption">
+          <span class="fig-label">图 4</span>
+          左为两族在维数上的分布：删除档（红）随维数下降单调收敛到 0，压缩档（蓝）在 2–20 维区间摊开成 −33.9 至 +87.4。右为删除档的预算去向：BO 选中点的分位优势一路收到 0.005，始终没有变成「选得更差」，而压缩族负增益任务停在 −0.052。
+        </div>
+      </div>
+
+      <p>数据显示,随着关键描述符被逐个移除,增益单调衰减 +86.5 → +19.8 → +12.8 → +3.9 → −5.9,但 15 个任务里只有 3/15 个 Holm 显著为负,且全落在 AUC ≤ 0.53 的深档;AUC 0.61–0.71、40 维这一档 0/3 为负,平均 +12.8。所以 0.731 这条边界只属于「表示被压到极低维、但仍保留中等可预测性」的场景(降维、嵌入、投影),不能外推到「漏掉一个物理量」:后者只会让 BO 变不划算,不会变有害。这也解释了准则卡上为什么「≤2 维」那一条实测有用、AUC 那一条实测没用——前者代理的是「几何被压扁」,后者只代理「信息变少」。</p>
+
+      <p>上面所有数字都出自同 3 个基底。换两个基底,还成立吗?于是补了一次真正的样本外检验(与后文的 1800 run 物理量删除实验并列为两组新增实验)——matbench_log_kvrh 与 matbench_perovskites,各 7 种算子共 14 个任务、1680 次 run。这两个基底的任何数据都没有参与过边界拟合、规则搜索与诊断标定,三条判据在看结果之前就写死在脚本里。</p>
+
+      <div class="figure">
+        <img src="img/fig_holdout.png" alt="图5 样本外检验">
+        <div class="caption">
+          <span class="fig-label">图 5</span>
+          蓝线只用旧 3 个基底拟合，橙三角（新基底 14 个任务）完全没参与拟合。低 AUC 处全部贴着零线，高 AUC 处全部转正。
+        </div>
+      </div>
+
+      <p>结果两面都有。好的一面:AUC 与增益的秩相关从样本内 +0.513 升到样本外 +0.820(p=0.0003);AUC&lt;0.65 的 5 个任务负增益 0 个、平均 +5.2,AUC≥0.80 的 4 个任务 4/4 为正、平均 +68.5;只用旧基底拟合的边界,拿来预测新基底,零增益线落在 0.601,仍在样本内 95% CI [0.556, 0.807] 之内。坏的一面:负增益率从 27.8%(5/18)掉到 7.1%(1/14)(Fisher 单侧 p=0.153,不能说两组有差异,但点估计差近四倍)。</p>
+
+      <p>因此,失效并非普遍规律,而是基底 × 算子共同决定的一个窄区域——我们原来的 3 个基底落在里面,因此高估了它的普遍性。同一个检验也顺手否掉了另一个猜想:目标分布的重尾度(|skew|)与负增益率几乎无关(ρ=+0.05),expt_gap 偏度 +1.94 却一个负增益都没有;dielectric 是峰度 332 的孤例,不是一条线的端点。</p>
+    </div>
+  </div>
+</section>
+
+<!-- ==================== 03 BENCHMARK STATISTICS ==================== -->
+<section id="statistics">
+  <div class="section-inner">
+    <div class="section-label">03</div>
+    <h2 class="section-title">Benchmark Statistics</h2>
+    <div class="section-body">
+      <div class="wide-fig">
+        <div class="wf-scroll">
+        <svg viewBox="0 0 760 196" role="img" aria-label="实验规模三层分解">
+<text x="0" y="14" fill="#e8eef5" font-size="11.5" font-family="-apple-system,'Noto Sans SC',sans-serif">实验规模：三层设计，每层都能逐 run 复算</text>
+<text x="64" y="50" fill="#8b98a8" font-size="10.5" font-family="-apple-system,'Noto Sans SC',sans-serif" text-anchor="end">消融臂</text>
+<rect x="72" y="34" width="58" height="22" rx="5" fill="#141d27" stroke="#25313f" stroke-width="1"/>
+<text x="101" y="49" fill="#cfd9e4" font-size="10" font-family="ui-monospace,monospace" text-anchor="middle">3 基底</text>
+<text x="137" y="49" fill="#5c6976" font-size="10" font-family="ui-monospace,monospace" text-anchor="middle">×</text>
+<rect x="146" y="34" width="58" height="22" rx="5" fill="#141d27" stroke="#25313f" stroke-width="1"/>
+<text x="175" y="49" fill="#cfd9e4" font-size="10" font-family="ui-monospace,monospace" text-anchor="middle">6 表示</text>
+<text x="211" y="49" fill="#5c6976" font-size="10" font-family="ui-monospace,monospace" text-anchor="middle">×</text>
+<rect x="220" y="34" width="58" height="22" rx="5" fill="#141d27" stroke="#25313f" stroke-width="1"/>
+<text x="249" y="49" fill="#cfd9e4" font-size="10" font-family="ui-monospace,monospace" text-anchor="middle">4 策略</text>
+<text x="285" y="49" fill="#5c6976" font-size="10" font-family="ui-monospace,monospace" text-anchor="middle">×</text>
+<rect x="294" y="34" width="58" height="22" rx="5" fill="#141d27" stroke="#25313f" stroke-width="1"/>
+<text x="323" y="49" fill="#cfd9e4" font-size="10" font-family="ui-monospace,monospace" text-anchor="middle">2 门控</text>
+<text x="359" y="49" fill="#5c6976" font-size="10" font-family="ui-monospace,monospace" text-anchor="middle">×</text>
+<rect x="368" y="34" width="69.5" height="22" rx="5" fill="#141d27" stroke="#25313f" stroke-width="1"/>
+<text x="402.75" y="49" fill="#cfd9e4" font-size="10" font-family="ui-monospace,monospace" text-anchor="middle">30 种子</text>
+<text x="449.5" y="50" fill="#5c6976" font-size="12" font-family="ui-monospace,monospace">=</text>
+<text x="467.5" y="51" fill="#7aa2ff" font-size="15" font-family="ui-monospace,monospace" font-weight="600">4,320</text>
+<text x="527.5" y="50" fill="#5c6976" font-size="10" font-family="ui-monospace,monospace">run</text>
+<text x="559.5" y="50" fill="#5c6976" font-size="10" font-family="-apple-system,'Noto Sans SC',sans-serif">144 单元 × 30 种子</text>
+<text x="64" y="100" fill="#8b98a8" font-size="10.5" font-family="-apple-system,'Noto Sans SC',sans-serif" text-anchor="end">扩展消融</text>
+<rect x="72" y="84" width="69.5" height="22" rx="5" fill="#141d27" stroke="#25313f" stroke-width="1"/>
+<text x="106.75" y="99" fill="#cfd9e4" font-size="10" font-family="ui-monospace,monospace" text-anchor="middle">10 基底</text>
+<text x="148.5" y="99" fill="#5c6976" font-size="10" font-family="ui-monospace,monospace" text-anchor="middle">×</text>
+<rect x="157.5" y="84" width="58" height="22" rx="5" fill="#141d27" stroke="#25313f" stroke-width="1"/>
+<text x="186.5" y="99" fill="#cfd9e4" font-size="10" font-family="ui-monospace,monospace" text-anchor="middle">6 表示</text>
+<text x="222.5" y="99" fill="#5c6976" font-size="10" font-family="ui-monospace,monospace" text-anchor="middle">×</text>
+<rect x="231.5" y="84" width="58" height="22" rx="5" fill="#141d27" stroke="#25313f" stroke-width="1"/>
+<text x="260.5" y="99" fill="#cfd9e4" font-size="10" font-family="ui-monospace,monospace" text-anchor="middle">4 策略</text>
+<text x="296.5" y="99" fill="#5c6976" font-size="10" font-family="ui-monospace,monospace" text-anchor="middle">×</text>
+<rect x="305.5" y="84" width="69.5" height="22" rx="5" fill="#141d27" stroke="#25313f" stroke-width="1"/>
+<text x="340.25" y="99" fill="#cfd9e4" font-size="10" font-family="ui-monospace,monospace" text-anchor="middle">30 种子</text>
+<text x="387" y="100" fill="#5c6976" font-size="12" font-family="ui-monospace,monospace">=</text>
+<text x="405" y="101" fill="#7aa2ff" font-size="15" font-family="ui-monospace,monospace" font-weight="600">7,200</text>
+<text x="465" y="100" fill="#5c6976" font-size="10" font-family="ui-monospace,monospace">run</text>
+<text x="497" y="100" fill="#5c6976" font-size="10" font-family="-apple-system,'Noto Sans SC',sans-serif">有效 8 基底 / 48 任务</text>
+<text x="64" y="150" fill="#8b98a8" font-size="10.5" font-family="-apple-system,'Noto Sans SC',sans-serif" text-anchor="end">全套实验</text>
+<rect x="72" y="134" width="69.5" height="22" rx="5" fill="#141d27" stroke="#25313f" stroke-width="1"/>
+<text x="106.75" y="149" fill="#cfd9e4" font-size="10" font-family="ui-monospace,monospace" text-anchor="middle">36 任务</text>
+<text x="148.5" y="149" fill="#5c6976" font-size="10" font-family="ui-monospace,monospace" text-anchor="middle">×</text>
+<rect x="157.5" y="134" width="58" height="22" rx="5" fill="#141d27" stroke="#25313f" stroke-width="1"/>
+<text x="186.5" y="149" fill="#cfd9e4" font-size="10" font-family="ui-monospace,monospace" text-anchor="middle">4 策略</text>
+<text x="222.5" y="149" fill="#5c6976" font-size="10" font-family="ui-monospace,monospace" text-anchor="middle">×</text>
+<rect x="231.5" y="134" width="69.5" height="22" rx="5" fill="#141d27" stroke="#25313f" stroke-width="1"/>
+<text x="266.25" y="149" fill="#cfd9e4" font-size="10" font-family="ui-monospace,monospace" text-anchor="middle">30 种子</text>
+<text x="308" y="149" fill="#5c6976" font-size="10" font-family="ui-monospace,monospace" text-anchor="middle">×</text>
+<rect x="317" y="134" width="58" height="22" rx="5" fill="#141d27" stroke="#25313f" stroke-width="1"/>
+<text x="346" y="149" fill="#cfd9e4" font-size="10" font-family="ui-monospace,monospace" text-anchor="middle">2 口径</text>
+<text x="387" y="150" fill="#5c6976" font-size="12" font-family="ui-monospace,monospace">=</text>
+<text x="405" y="151" fill="#3ddc97" font-size="15" font-family="ui-monospace,monospace" font-weight="600">8,640</text>
+<text x="465" y="150" fill="#5c6976" font-size="10" font-family="ui-monospace,monospace">run</text>
+<text x="497" y="150" fill="#5c6976" font-size="10" font-family="-apple-system,'Noto Sans SC',sans-serif">主臂 18 + 消融臂 18</text>
+<line x1="0" y1="176" x2="760" y2="176" stroke="#1f2937" stroke-width="1"/>
+<text x="0" y="190" fill="#5c6976" font-size="9.5" font-family="-apple-system,'Noto Sans SC',sans-serif">命中口径 = 目标值落入该任务 top-10% 分位（随机期望恒 0.100）；种子 20261015 固定，子种子由 blake2b 派生</text>
+</svg>
+        </div>
+        <div class="wf-cap"><b>FIG 02</b>三层实验规模，<i>每层都附产物路径，可逐 run 复算。</i></div>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>项</th><th>值</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>材料基底</td><td>3(<code>matbench_dielectric</code> / <code>matbench_expt_gap</code> / <code>matbench_log_gvrh</code>)</td></tr>
+            <tr><td>描述符表示</td><td>6(<code>elem20</code> / <code>pca1</code> / <code>pca2</code> / <code>pca5</code> / <code>rp2</code> / <code>rp5</code>)</td></tr>
+            <tr><td>采集策略</td><td>4(<code>gp_ucb</code> / <code>gp_ei</code> / <code>farthest_point</code> / <code>random_uniform</code>)</td></tr>
+            <tr><td>门控</td><td>2(<code>gate_on</code> / <code>gate_off</code>)</td></tr>
+            <tr><td>每单元独立重复</td><td class="num">30</td></tr>
+            <tr><td>消融单元数</td><td class="num">144(3 × 6 × 4 × 2)</td></tr>
+            <tr><td>消融 run 总数</td><td class="num">4320</td></tr>
+            <tr><td>扩展消融 run 总数</td><td class="num">7200(10 基底 × 6 表示 × 4 策略 × 30 种子;有效 8 基底 × 48 任务)</td></tr>
+            <tr><td>全套实验规模</td><td class="num">8640 run(36 任务 × 4 策略 × 30 种子 × 2 口径)</td></tr>
+            <tr><td>任务构成</td><td>轴 A 18(15 降质档 + 3 零降质锚点)· 轴 B 18(描述符消融)</td></tr>
+            <tr><td>预算档</td><td>200(沙箱)· 400(本地全量)</td></tr>
+            <tr><td>候选池</td><td class="num">3000 / 基底</td></tr>
+            <tr><td>描述符维度</td><td class="num">85(原始)</td></tr>
+            <tr><td>种子</td><td><code>20261015</code> 固定,子种子由 blake2b 派生</td></tr>
+            <tr><td>命中口径</td><td>目标值落入该任务 top-10% 分位(随机期望恒为 0.100)</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ==================== 04 EXPERIMENT RESULTS ==================== -->
+<section id="evidence">
+  <div class="section-inner">
+    <div class="section-label">04</div>
+    <h2 class="section-title">Experiment Results</h2>
+    <div class="section-body">
+      <h3>4.1 端到端筛选:三个真实体系上把候选筛出来</h3>
+      <p>把 Agent 放进真实材料池跑完整流程(预算 200 × 10 种子,门控开启:排除 &gt;80 原子的超大体系、贵金属按 3× 计价)。命中 = 目标值落入该任务 top-10% 分位,随机基线的期望命中率恒为 <code>0.100</code>,所以「相对随机」一列就是 DAF(Discovery Acceleration Factor)的等价量。</p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>真实体系</th><th>目标性质</th>
+              <th class="num">可学习性 AUC</th><th class="num">选中 / 命中</th>
+              <th class="num">命中率</th><th class="num">相对随机</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>matbench_dielectric</code></td><td>介电常数</td>
+              <td class="num">0.919</td><td class="num">542 / 185</td>
+              <td class="num"><strong>0.341</strong></td><td class="num" style="color:var(--pos)"><strong>3.4×</strong></td>
+            </tr>
+            <tr>
+              <td><code>matbench_expt_gap</code></td><td>实验带隙 (eV)</td>
+              <td class="num">0.816</td><td class="num">818 / 195</td>
+              <td class="num"><strong>0.238</strong></td><td class="num" style="color:var(--pos)"><strong>2.4×</strong></td>
+            </tr>
+            <tr>
+              <td><code>matbench_log_gvrh</code></td><td>剪切模量 log(GPa)</td>
+              <td class="num">0.932</td><td class="num">870 / 190</td>
+              <td class="num"><strong>0.218</strong></td><td class="num" style="color:var(--pos)"><strong>2.2×</strong></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="table-note">产出清单带化学可行性标记:top-30 中不含放射性/高毒元素的有 20–24 个,标记而不静默剔除。候选来自公开基准数据集的历史条目——本工作的产出是「方法能在真实体系上把富集度做到随机的 2.2–3.4 倍」这一可验证的能力,<strong>不宣称发现新材料</strong>,任何材料学结论仍需实验验证。</div>
+      <div class="wide-fig">
+        <div class="wf-scroll">
+        <svg viewBox="0 0 760 240" role="img" aria-label="三个真实体系命中率对随机期望">
+<text x="0" y="14" fill="#e8eef5" font-size="11.5" font-family="-apple-system,'Noto Sans SC',sans-serif">三个真实体系：命中率对随机期望</text>
+<text x="156" y="59" fill="#cfd9e4" font-size="10.5" font-family="ui-monospace,monospace" text-anchor="end">matbench_dielectric</text>
+<text x="156" y="73" fill="#5c6976" font-size="9.5" font-family="-apple-system,'Noto Sans SC',sans-serif" text-anchor="end">介电常数</text>
+<rect x="168" y="44" width="522" height="26" rx="4" fill="#141d27"/>
+<rect x="168" y="44" width="445" height="26" rx="4" fill="#7aa2ff" opacity="0.55"/>
+<text x="623" y="62" fill="#e8eef5" font-size="11" font-family="ui-monospace,monospace" font-weight="600">0.341</text>
+<text x="667" y="62" fill="#3ddc97" font-size="11" font-family="ui-monospace,monospace" font-weight="600">3.4×</text>
+<text x="156" y="117" fill="#cfd9e4" font-size="10.5" font-family="ui-monospace,monospace" text-anchor="end">matbench_expt_gap</text>
+<text x="156" y="131" fill="#5c6976" font-size="9.5" font-family="-apple-system,'Noto Sans SC',sans-serif" text-anchor="end">实验带隙</text>
+<rect x="168" y="102" width="522" height="26" rx="4" fill="#141d27"/>
+<rect x="168" y="102" width="310.59" height="26" rx="4" fill="#7aa2ff" opacity="0.55"/>
+<text x="488.59" y="120" fill="#e8eef5" font-size="11" font-family="ui-monospace,monospace" font-weight="600">0.238</text>
+<text x="532.59" y="120" fill="#3ddc97" font-size="11" font-family="ui-monospace,monospace" font-weight="600">2.4×</text>
+<text x="156" y="175" fill="#cfd9e4" font-size="10.5" font-family="ui-monospace,monospace" text-anchor="end">matbench_log_gvrh</text>
+<text x="156" y="189" fill="#5c6976" font-size="9.5" font-family="-apple-system,'Noto Sans SC',sans-serif" text-anchor="end">剪切模量</text>
+<rect x="168" y="160" width="522" height="26" rx="4" fill="#141d27"/>
+<rect x="168" y="160" width="284.49" height="26" rx="4" fill="#7aa2ff" opacity="0.55"/>
+<text x="462.49" y="178" fill="#e8eef5" font-size="11" font-family="ui-monospace,monospace" font-weight="600">0.218</text>
+<text x="506.49" y="178" fill="#3ddc97" font-size="11" font-family="ui-monospace,monospace" font-weight="600">2.2×</text>
+<line x1="298.5" y1="30" x2="298.5" y2="216" stroke="#ffb454" stroke-width="1.2" stroke-dasharray="4 3"/>
+<text x="298.5" y="24" fill="#ffb454" font-size="9.5" font-family="ui-monospace,monospace" text-anchor="middle">随机 0.100</text>
+<line x1="0" y1="222" x2="760" y2="222" stroke="#1f2937" stroke-width="1"/>
+<text x="0" y="236" fill="#5c6976" font-size="9.5" font-family="-apple-system,'Noto Sans SC',sans-serif">命中 = 目标值落入该任务 top-10% 分位；相对随机 = 命中率 ÷ 0.100，即 DAF 等价量</text>
+</svg>
+        </div>
+        <div class="wf-cap"><b>FIG 03</b>真实体系上把富集度做到随机的 2.2–3.4 倍，<i>这是能力而非发现。</i></div>
+      </div>
+
+      <h3>4.2 四条结论:边界在哪里、能不能预报</h3>
+      <p>下表前三条数字来自本地全量 36 任务 × 4 策略 × 30 种子 × 2 口径 = 8640 条 run 轨迹,产物在 <code>results/boundary_fit.json</code>;第四条是零新增实验的离线复盘,产物在 <code>results-extra/matched_dim.json</code>。</p>
+
+      <div class="table-wrap">
+        <table class="t42">
+          <thead>
+            <tr><th>轴</th><th>结论</th><th>证据</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>目标降质主臂 18 任务<br><span style="color:var(--dim2);font-size:12px">15 降质档 + 3 锚点</span></td>
+              <td><strong>无失效边界</strong></td>
+              <td>18/18 显著为正,增益 +6.9 到 +130.1 个命中;bootstrap 2000 次仅 2.9% 支持零点存在,故不报 AUC*</td>
+            </tr>
+            <tr>
+              <td>描述符消融 18 任务<br><span style="color:var(--dim2);font-size:12px">目标值 100% 真实</span></td>
+              <td><strong>边界存在</strong></td>
+              <td>4/18 显著为负,最低 −33.9 个命中(Cliff's δ = −0.629);LOWESS 零点 AUC* = 0.731,95% CI [0.556, 0.807]</td>
+            </tr>
+            <tr>
+              <td>能否提前预报</td>
+              <td><strong>不能当开关</strong></td>
+              <td>三个候选判据与增益的秩相关:基线命中率 −0.289(p=0.246)、描述符维度 +0.452(p=0.060)、可学习性 AUC +0.513(p=0.030)。样本内它还只在不确定带里翻转方向(AUC 0.593 增益 −20.6,AUC 0.633 却 +20.7)。换到两个从未参与分析的新基底上,这个量反而更准(ρ=+0.820),但零增益线从 0.731 移到 0.601 —— 判据有效,阈值会动,所以仍不能凭它自动切策略</td>
+            </tr>
+            <tr>
+              <td>失效落在哪<br><span style="color:var(--dim2);font-size:12px">离线复盘,18 任务</span></td>
+              <td><strong>预算去向</strong></td>
+              <td>增益为负的 5 个任务上,BO 选中点的真实目标分位 0.5604,低于空间填充的 0.6125(5/5 同向,p=0.0312);增益为正的 13 个任务上关系整个反过来,0.5823 对 0.4727(13/13,p=0.0001)。不是找不到高分区,是预算被投到了看起来好、真实分位更低的地方</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="callout">
+        <p>主臂 18 个任务里,12 个来自同一个物理体系的 12 档目标降质 λ(对真实目标受控加噪,λ 越小噪声越多;不是模型正则化)——这一条值得单独看:λ→AUC 的秩相关 +1.000(12/12 单调,0.516→0.927),λ→增益 +0.944,AUC→增益也是 +0.944——同一个数。同期增益从 +6.9 走到 +130.1(18.8 倍),而描述符维度恒为 85、基线命中率极差 3.3e-4:两个「体系级」判据对这一整段变化完全不可见。压成 5 个体系后主臂 ρ 从 +0.864 掉到 +0.100(p=0.87);消融臂 3 体系 × 6 表示的完整交叉给出体系只解释 1.9%–4.4% 方差,表示占 74%–81%。结论:<strong>AUC 是「表示强度」的度量,不是「体系可学性」的度量</strong>。</p>
+      </div>
+
+      <div class="callout warn">
+        <p>补充一条统计说明:由于 18 个任务只来自 3–5 个体系,原先按任务重抽的 bootstrap 不可靠;改按体系整簇重抽后,主臂体系级 95% CI 变成 [−0.875, +0.952]——原来的 p 值不成立。所以单臂 ρ 的 p 值一律降级为描述性陈述,只留两条抗簇结构的证据:5 个体系内部 ρ 全为正(5/5 同号,p=0.031)、51 任务合并后体系级 CI [+0.422, +0.861](p=0.0004)。产物:<code>results-extra/repr_effect.json</code>、<code>results-extra/cluster_robust.json</code>,脚本 <code>repr_effect.py</code> / <code>cluster_robust.py</code>。</p>
+      </div>
+
+      <div class="callout">
+        <p>所以交付物不是自动开关,是一张保守熔断卡。它原有两个参数:描述符 ≤2 维或 AUC &lt; 0.60 时拒绝贝叶斯优化。事后我们把两条参数拆开、按基底逐个留出重算,发现 AUC 那一条在 8 个基底上一次都没赚过:主臂上它拦下的 4 个任务实测 +6.9 到 +10.8,全是误杀,净亏 35.40;而 ≤2 维那一条触发 9 次命中 4 次,靠的是避损 98.53 对放弃 72.37 的赔率。于是现行卡只剩一条:描述符 ≤2 维就停,改用空间填充。36 任务口径下它比全用 BO 高 26.17(原两参数卡是 −9.23),拒 9 个里 4 个真输、5 个误杀,放行 27 个里漏报 0。净效果是把 −33.9 的右尾灾难,换成 +14 到 +32 的左尾少赚。</p>
+      </div>
+
+      <div class="callout">
+        <p><strong>删完之后还剩下一个真问题:这条卡能不能被更聪明地改进?</strong>我们把 36 个任务的逐任务表给模型,不给卡的定义、不给任何「哪条规则有效」的结论、不给 48 任务的任何数字,要它提一条只用维度与 AUC 的规则。它提的是 <code>dim&gt;2 或 AUC≥0.75</code>——把布尔连接从「且」改成「或」,理由是几何被压扁与信息不足,任一个单独出现都不致命。冻结(SHA256 + 时间戳)之后才在 8 基底 48 任务上评估:净 <strong>+55.70</strong>,人工卡 +18.47,差 +37.23。</p>
+        <p>这条规则的功劳要落在具体处:它和人工卡<strong>只在 5 个任务上判定不同</strong>(全是 <code>dim≤2 且 AUC≥0.75</code> 的「救援」),4 对 1 错,其中错的那个是 <code>dielectric__pca2</code>(AUC 0.769,实测 <strong>−33.90</strong>);其余 43 个任务两卡判定完全相同。留一基底 8/8 为正、最小余量 +5.37,但 <code>log_gvrh</code> 与 <code>log_kvrh</code> 同时留出即转 <strong>−19.20</strong>——不被任何单一基底承重,但被前两个基底共同承重。</p>
+        <p>更该说准的是<strong>这 +37.23 落在哪</strong>:模型只喂了 36 个任务(主臂 18 个 dim=85 + 消融臂 18 个),评估用的 48 任务是纯消融表示,两者只在消融臂的 18 个上重合,<strong>30 个任务它没见过</strong>。逐任务归属的结果是——<strong>+25.20 落在没见过的任务上</strong>,见过的 3 个合计 +12.04(含那个 −33.90)。但按基底看另一回事:3 个全新基底(jdft2d / mp_e_form / phonons,18 个任务)里<strong>只有 <code>phonons__pca2</code> 一个判定,收益 +0.63</strong>。所以任务级样本外 2/2 为正(n=2,过不了任何显著性门槛),基底级样本外几乎没有证据(n=1)。结论是:在未见任务上没有反转;跨体系有效性尚无证据。</p>
+        <p>另一处需要澄清的结论:那句「样本外 ρ=+0.820 高于样本内 +0.513」容易被读成跨体系泛化。把 48 任务拆成组内与组间后——<strong>组内中心化 ρ=+0.690</strong>(48 点)、<strong>体系级 8 点 ρ=+0.167(p=0.69)</strong>——结论是 AUC 只在同一体系内换算子时预报增益,跨体系不带信息。跨基底留一也做了:符号准确 0.771,低于「全判正」的平凡基线 0.812——留一预测不如什么都不做,这条不作为交付物。</p>
+        <p>所以这条规则不作为交付物,只作为「按风险偏好选」的备选。产物:<code>results-extra/rule_v18.json</code>、<code>results-extra/lobo_v19.json</code>、<code>results-extra/within_between.json</code>、<code>results-extra/rule_attribution.json</code>,脚本 <code>sp_glm_rule_propose.py</code> / <code>_v19_lobo.py</code> / <code>_v21_within_between.py</code> / <code>_v22_rule_attribution.py</code>。</p>
+      </div>
+
+      <div class="callout neg">
+        <p>附带的负结果:我们试过让 harness 自己学阈值。样本内穷举能拿到 1271.6(比人工卡高 9.2),严格留一基底之后只剩 1136.6(低 125.8)。中间那 135 个命中,就是自己改自己时的幻觉。原因不在算法,在样本量:3 个基底不足以让规则找到阈值。</p>
+      </div>
+
+      <!-- 4.3 扩展消融臂 -->
+      <h3 style="margin:32px 0 16px;font-size:1.15rem;font-weight:600">4.3 扩展消融臂:从 3 个基底加到 8 个</h3>
+      <p>把消融臂从 3 个基底扩到 10 个材料基底,设计为 <strong>10 个材料基底 × 6 种描述符表示 × 4 种采集策略 × 30 个种子 = 7200 条 run</strong>,预算 400,门控关闭。</p>
+      <p>剔除两个分类基底与一个退化基底(<code>matbench_glass</code> 的 top-10% 分位在 400 次采样里期望命中 282–285 次,命中口径失效),剩 <strong>8 个有效基底 × 6 表示 = 48 个任务</strong>。</p>
+      <p>方差分解结果(归一化口径:命中数 ÷ 同格纯随机命中数):</p>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>方法</th><th class="num">体系</th><th class="num">表示</th><th class="num">交互</th><th class="num">48 格变异系数</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><code>gp-UCB</code></td><td class="num">12.4%</td><td class="num"><strong>49.4%</strong></td><td class="num">38.2%</td><td class="num">47.1%</td></tr>
+            <tr><td><code>gp-EI</code></td><td class="num">13.5%</td><td class="num"><strong>50.8%</strong></td><td class="num">35.7%</td><td class="num">42.4%</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>对照原 3 基底:gp-UCB 体系 4.4% / 表示 74.1% / 交互 21.5%;gp-EI 3.0% / 81.1% / 15.9%。</p>
+      <p>新基底上 BO 显著劣于空间填充的任务占比:<strong>10.0%(3/30)</strong>,原 3 基底为 <strong>22.2%(4/18)</strong>。</p>
+      <p>8 基底上最差任务仍是 <code>matbench_dielectric__pca2</code>,BO 比空间填充少 <strong>33.9</strong> 个命中(Cliff's δ = −0.629);<strong>新增</strong>基底上最差是 <code>matbench_log_kvrh__rp2</code>,少 <strong>27.7</strong> 个命中(δ = −0.956)。</p>
+      <div class="callout">
+        <p>表示是主导因素,不是表示几何定律。8 基底上表示仍是最大单一来源(49.4% vs 体系 12.4%,约 4 倍),但体系效应从 3 基底的 4.4% 升到 12.4%、交互项升到 38%,表示的强度从 74% 落到 49%。强度随基底集合变化,因此正确表述是"表示主导",而非"表示决定"。</p>
+      </div>
+      <div class="figure">
+        <img src="img/fig_repr_effect.png" alt="图6 单策略口径三因素分解">
+        <div class="caption">
+          <span class="fig-label">图 6</span>
+          <strong>单策略口径</strong>的三因素分解（3 基底 × 6 表示 × 3 策略 = 54 格，预算 400，门控关闭）。左：表示决定了 BO 与空间填充之间的差距，同一基底内换算子，命中数从 39.9 走到 127.4；右：体系只解释 1.9%，表示 41.1%，策略 19.9%，全部交互 37.1%。这是<strong>格均值口径</strong>;4.2 的四因素表是<strong>个体 run 口径</strong>（4320 条，含组内误差 32.0%），两表不可直接相加比较。
+        </div>
+      </div>
+
+      <!-- 四因素方差分解 -->
+      <h3 style="margin:32px 0 16px;font-size:1.15rem;font-weight:600">四因素方差分解(4320 条个体 run,平衡设计)</h3>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>效应</th><th class="num">η²</th><th class="num">自由度</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>表示(Representation)</td><td class="num">17.1%</td><td class="num">5</td></tr>
+            <tr><td>采集策略(Strategy)</td><td class="num">9.7%</td><td class="num">3</td></tr>
+            <tr><td>体系(Dataset)</td><td class="num">7.2%</td><td class="num">2</td></tr>
+            <tr><td>门控(Gate)</td><td class="num">4.1%</td><td class="num">1</td></tr>
+            <tr><td>体系 × 表示 交互</td><td class="num">4.9%</td><td class="num">10</td></tr>
+            <tr><td>组内误差</td><td class="num">32.0%</td><td class="num">4176</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="table-note">表中为各效应占总变异之比,未列出的高阶交互项合计约 24.4%,故各行之和不足 100%;该分解基于全部 4320 条个体 run(144 单元 × 30 次重复)。<strong>只统计单策略口径时</strong>,体系解释 1.9%–4.4% 方差、表示占 74%–81%;加入策略与门控后两者分别稀释到 7.2% / 17.1%,方向一致:<strong>表示的影响大于体系</strong>(17.1 / 7.2 ≈ 2.4 倍)。扩到 8 个有效基底后,同一分解为体系 12.4% / 表示 49.4% / 交互 38.2%(gp-UCB),方向不变但强度下降,见 4.3。</p>
+
+      <!-- 策略排名 -->
+      <h3 style="margin:32px 0 16px;font-size:1.15rem;font-weight:600">策略排名(4320 单元平均命中数)</h3>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>策略</th><th class="num">平均命中数</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><code>gp_ucb</code></td><td class="num">32.77</td></tr>
+            <tr><td><code>gp_ei</code></td><td class="num">31.38</td></tr>
+            <tr><td><code>farthest_point</code></td><td class="num">27.45</td></tr>
+            <tr><td><code>random_uniform</code></td><td class="num">17.69</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- 门控代价 -->
+      <h3 style="margin:32px 0 16px;font-size:1.15rem;font-weight:600">门控代价(开启失效界定门控后,命中数下降)</h3>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>范围</th><th class="num">命中数变化</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>全库平均</td><td class="num" style="color:var(--neg)">−24.6%</td></tr>
+            <tr><td><code>matbench_dielectric</code></td><td class="num" style="color:var(--neg)">−23.6%</td></tr>
+            <tr><td><code>matbench_expt_gap</code></td><td class="num" style="color:var(--neg)">−19.0%</td></tr>
+            <tr><td><code>matbench_log_gvrh</code></td><td class="num" style="color:var(--neg)">−30.6%</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="table-note">门控不是免费的,它的代价就是少发现约四分之一的材料——这是代价-收益权衡中必须公开的一面。</p>
+    </div>
+  </div>
+</section>
+
+<!-- ==================== 05 INTERACTIVE SANDBOX ==================== -->
+<section id="sandbox">
+  <div class="section-inner">
+    <div class="section-label">05</div>
+    <h2 class="section-title">Interactive Sandbox</h2>
+    <div class="section-body">
+      <p>这是 18 个任务的可交互决策台。拖两条阈值线,看总命中与四类判决计数如何变化。它验证的主张是:<strong>熔断卡不是「更准」,是把 −33.9 的右尾灾难换成 +14~+32 的左尾少赚</strong>。</p>
+
+      <div class="sandbox-frame">
+        <iframe src="failbound-console.html" loading="lazy" title="FailBound 门控决策台"></iframe>
+      </div>
+
+      <p>四组预设值的期望结果(供访客自检):</p>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>预设</th><th class="num">总命中</th><th>说明</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>人工冻结卡</td><td class="num">1262.4</td><td>用 BO 9 个</td></tr>
+            <tr><td>自动搜最优</td><td class="num">1271.6</td><td>+9.2</td></tr>
+            <tr><td>样本外重拟合</td><td class="num">1136.6</td><td>−125.8</td></tr>
+            <tr><td>全用 BO</td><td class="num">1236.2</td><td>—</td></tr>
+            <tr><td>全不用</td><td class="num">991.4</td><td>—</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="table-note">沙箱总命中为 18 个消融任务在预算 400 下的<strong>互补选择</strong>总和(每个任务按卡要么用 BO、要么用空间填充),与首屏 773/780 的 36 任务等成本口径不可直接比较。</p>
+      <div class="wide-fig">
+        <div class="wf-scroll">
+        <svg viewBox="0 0 760 250" role="img" aria-label="沙箱五组预设总命中对比">
+<text x="0" y="14" fill="#e8eef5" font-size="11.5" font-family="-apple-system,'Noto Sans SC',sans-serif">五组预设的沙箱总命中（18 任务，预算 400）</text>
+<text x="156" y="57" fill="#8b98a8" font-size="10.5" font-family="-apple-system,'Noto Sans SC',sans-serif" text-anchor="end">全不用 BO</text>
+<rect x="168" y="40" width="522" height="24" rx="4" fill="#141d27"/>
+<rect x="168" y="40" width="61.75" height="24" rx="4" fill="#5c6976" opacity="0.62"/>
+<text x="237.75" y="56" fill="#e8eef5" font-size="10.5" font-family="ui-monospace,monospace" font-weight="600">991.4</text>
+<text x="156" y="93" fill="#8b98a8" font-size="10.5" font-family="-apple-system,'Noto Sans SC',sans-serif" text-anchor="end">样本外重拟合</text>
+<rect x="168" y="76" width="522" height="24" rx="4" fill="#141d27"/>
+<rect x="168" y="76" width="278.3" height="24" rx="4" fill="#ffb454" opacity="0.62"/>
+<text x="454.3" y="92" fill="#e8eef5" font-size="10.5" font-family="ui-monospace,monospace" font-weight="600">1136.6</text>
+<text x="156" y="129" fill="#8b98a8" font-size="10.5" font-family="-apple-system,'Noto Sans SC',sans-serif" text-anchor="end">全用 BO</text>
+<rect x="168" y="112" width="522" height="24" rx="4" fill="#141d27"/>
+<rect x="168" y="112" width="426.85" height="24" rx="4" fill="#6f7d8c" opacity="0.62"/>
+<text x="602.85" y="128" fill="#e8eef5" font-size="10.5" font-family="ui-monospace,monospace" font-weight="600">1236.2</text>
+<text x="156" y="165" fill="#e8eef5" font-size="10.5" font-family="-apple-system,'Noto Sans SC',sans-serif" text-anchor="end">人工冻结卡</text>
+<rect x="168" y="148" width="522" height="24" rx="4" fill="#141d27"/>
+<rect x="168" y="148" width="465.92" height="24" rx="4" fill="#3ddc97" opacity="0.8"/>
+<text x="641.92" y="164" fill="#e8eef5" font-size="10.5" font-family="ui-monospace,monospace" font-weight="600">1262.4</text>
+<text x="156" y="201" fill="#e8eef5" font-size="10.5" font-family="-apple-system,'Noto Sans SC',sans-serif" text-anchor="end">自动搜最优</text>
+<rect x="168" y="184" width="522" height="24" rx="4" fill="#141d27"/>
+<rect x="168" y="184" width="479.64" height="24" rx="4" fill="#7aa2ff" opacity="0.62"/>
+<text x="655.64" y="200" fill="#e8eef5" font-size="10.5" font-family="ui-monospace,monospace" font-weight="600">1271.6</text>
+
+<text x="700" y="30" fill="#3ddc97" font-size="9.5" font-family="-apple-system,'Noto Sans SC',sans-serif" text-anchor="end">人工卡距最优 +9.2（0.7%）</text>
+<line x1="0" y1="216" x2="760" y2="216" stroke="#1f2937" stroke-width="1"/>
+<text x="0" y="231" fill="#5c6976" font-size="9.5" font-family="-apple-system,'Noto Sans SC',sans-serif">只重算决策、不重跑实验：滑块改变的是「选哪一半结果」，能说明规则，不能用来说明显著性</text>
+</svg>
+        </div>
+        <div class="wf-cap"><b>FIG 04</b>人工卡距理论最优只差 9.2（0.7%），<i>换掉的是右尾灾难。</i></div>
+      </div>
+
+      <p style="font-size:13.5px;color:var(--dim2);margin-top:16px"><em>页面只重算决策、不重跑实验;滑块改变的是「选哪一半结果」,所以它能说明规则,不能用来说明显著性。</em></p>
+    </div>
+  </div>
+</section>
+
+<!-- ==================== 06 PRIOR ART ==================== -->
+<section id="prior-art">
+  <div class="section-inner">
+    <div class="section-label">06</div>
+    <h2 class="section-title">Prior Art</h2>
+    <div class="section-body">
+      <p><em>「主动学习可能不如随机」不是本文的发现。前人证明了「会输」,本文把「什么时候输」标定在一个可提前测的变量上,并公开标定自身的错误率。</em></p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>工作</th><th>结论</th><th>与本文的关系</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Bergstra &amp; Bengio, JMLR 2012</td><td>随机搜索在仅少数维度重要时与 BO 相当</td><td>本文失效机制的形式先例</td></tr>
+            <tr><td>Lowell, Lipton &amp; Wallace, EMNLP 2019</td><td>AL 收益不稳定,换模型后常不如 i.i.d. 随机</td><td>「AL 不是普适默认项」的跨领域先例</td></tr>
+            <tr><td>Karamcheti et al., ACL 2021</td><td>8 种 AL 在 5 模型 × 4 数据集上全面输给随机</td><td>我们在材料池上量化了同一机制:预算被投到目标分位更低的候选</td></tr>
+            <tr><td>Rohr et al., Chem. Sci. 2020</td><td>材料侧顺序学习横评,选错可显著劣于随机</td><td>给出失效位置而非仅告警</td></tr>
+            <tr><td>Tamura et al., Sci. Rep. 2024</td><td>低维、输入均匀时 AL 稳赢随机</td><td>方向相反的对照,我们用同维对照处理</td></tr>
+            <tr><td>Wang et al., JAIR 2016(REMBO)</td><td>BO 取决于内在有效维度 d<sub>e</sub> 而非名义维度</td><td>本文措辞据此修正为「d<sub>e</sub> 被打坏」而非「维度诅咒」</td></tr>
+            <tr><td>Riebesell et al., Nat. Mach. Intell. 2025</td><td>区分 retrospective/prospective,提出 DAF</td><td>本文「相对随机」倍数即 DAF 等价量</td></tr>
+            <tr><td>Panickssery, Bowman &amp; Feng, NeurIPS 2024</td><td>LLM 自评偏好随自识别能力增强</td><td>「审计层不得由被审计者编写」的实证依据</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p style="margin-top:24px">本文新增的三件事:</p>
+      <p>① 把失效标定在可学习性 AUC 上并量出该变量自身的两处限制;② 用两条独立降信息轴区分「标签噪声」与「表征不足」;③ 把边界交付为带错误率公示的熔断器(放行 27 漏报 0、拒绝 9 误杀 5),而非自动开关。</p>
+    </div>
+  </div>
+</section>
+
+<!-- ==================== 07 LIMITATIONS ==================== -->
+<section id="limitations">
+  <div class="section-inner">
+    <div class="section-label">07</div>
+    <h2 class="section-title">边界与适用范围 / Scope &amp; Boundaries</h2>
+    <div class="section-body">
+            <div class="split">
+        <div class="txt">
+          <p><strong>跨轴差异未达显著。</strong>关键的低 AUC 区间,两轴增益差异 p=0.052,且未做多重校正。我们只声称两轴方向一致,超出该方向一致性的两轴后果差异尚无证据。</p>
+        </div>
+        <div class="split-fig">
+          <svg viewBox="0 0 268 152" role="img" aria-label="两轴差异 p 值示意">
+            <text x="0" y="13" fill="#8b98a8" font-size="10.5" font-family="-apple-system,'Noto Sans SC',sans-serif">两轴增益差异（低 AUC 区间）</text>
+            <text x="0" y="41" fill="#ffb454" font-size="19" font-family="ui-monospace,monospace" font-weight="600">p = 0.052</text>
+            <text x="110" y="41" fill="#5c6976" font-size="10" font-family="-apple-system,'Noto Sans SC',sans-serif">未做多重校正</text>
+            <rect x="0" y="66" width="268" height="12" rx="6" fill="#141d27" stroke="#1f2937"/>
+            <path d="M6 66 h128 a6 6 0 0 1 0 12 H6 a6 6 0 0 1 0-12z" fill="#3ddc97" opacity="0.16"/>
+            <line x1="134" y1="58" x2="134" y2="86" stroke="#8b98a8" stroke-width="1" stroke-dasharray="3 3"/>
+            <text x="130" y="56" text-anchor="end" fill="#8b98a8" font-size="9.5" font-family="ui-monospace,monospace">0.05</text>
+            <circle cx="139.4" cy="72" r="4.6" fill="#ffb454" stroke="#0a0e14" stroke-width="1.4"/>
+            <text x="148" y="56" fill="#ffb454" font-size="10" font-family="ui-monospace,monospace">0.052</text>
+            <text x="67" y="96" text-anchor="middle" fill="#3ddc97" font-size="9.5" font-family="-apple-system,'Noto Sans SC',sans-serif">显著</text>
+            <text x="201" y="96" text-anchor="middle" fill="#5c6976" font-size="9.5" font-family="-apple-system,'Noto Sans SC',sans-serif">不显著</text>
+            <line x1="0" y1="108" x2="268" y2="108" stroke="#1f2937"/>
+            <text x="0" y="127" fill="#8b98a8" font-size="10" font-family="-apple-system,'Noto Sans SC',sans-serif">方向一致</text>
+            <text x="62" y="127" fill="#3ddc97" font-size="10" font-family="-apple-system,'Noto Sans SC',sans-serif">✓ 可陈述</text>
+            <text x="0" y="143" fill="#8b98a8" font-size="10" font-family="-apple-system,'Noto Sans SC',sans-serif">后果不同</text>
+            <text x="62" y="143" fill="#ff6f6f" font-size="10" font-family="-apple-system,'Noto Sans SC',sans-serif">✗ 不能断言</text>
+          </svg>
+          <div class="sf-cap"><b>FIG 05</b>p = 0.052 卡在阈值外,<i>仅支持方向一致。</i></div>
+        </div>
+      </div>
+
+            <div class="split">
+        <div class="txt">
+          <p><strong>有效样本量远小于任务数。</strong>名义 36 个任务,独立基底只有 5 个(按晶体结构去重后 4 个;主臂与消融臂共享这些体系,5+3 不能相加)。稳健性验证(留一基底重拟合:逐基底留出、各自重算一次零点):零点在 0.578 到 0.805 之间移动;本轮补的 2 个新基底把消融臂的基底数提到 5,重拟合零点 0.601 仍落在原 CI 内。我们只声称「零点大致在 0.6–0.73 之间」,超出该范围的「0.731 是一个精确阈值」尚无证据。</p>
+        </div>
+        <div class="split-fig">
+          <svg viewBox="0 0 268 152" role="img" aria-label="名义任务数与独立基底数对比">
+            <defs>
+              <marker id="arL" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto">
+                <path d="M0,0 L6,3 L0,6 Z" fill="#5c6976"/>
+              </marker>
+            </defs>
+            <text x="0" y="12" fill="#8b98a8" font-size="10.5" font-family="-apple-system,'Noto Sans SC',sans-serif">名义任务 vs 独立基底</text>
+            <g fill="#4a5a6b"><circle cx="4" cy="22" r="2"/><circle cx="13" cy="22" r="2"/><circle cx="22" cy="22" r="2"/><circle cx="31" cy="22" r="2"/><circle cx="40" cy="22" r="2"/><circle cx="49" cy="22" r="2"/><circle cx="4" cy="31" r="2"/><circle cx="13" cy="31" r="2"/><circle cx="22" cy="31" r="2"/><circle cx="31" cy="31" r="2"/><circle cx="40" cy="31" r="2"/><circle cx="49" cy="31" r="2"/><circle cx="4" cy="40" r="2"/><circle cx="13" cy="40" r="2"/><circle cx="22" cy="40" r="2"/><circle cx="31" cy="40" r="2"/><circle cx="40" cy="40" r="2"/><circle cx="49" cy="40" r="2"/><circle cx="4" cy="49" r="2"/><circle cx="13" cy="49" r="2"/><circle cx="22" cy="49" r="2"/><circle cx="31" cy="49" r="2"/><circle cx="40" cy="49" r="2"/><circle cx="49" cy="49" r="2"/><circle cx="4" cy="58" r="2"/><circle cx="13" cy="58" r="2"/><circle cx="22" cy="58" r="2"/><circle cx="31" cy="58" r="2"/><circle cx="40" cy="58" r="2"/><circle cx="49" cy="58" r="2"/><circle cx="4" cy="67" r="2"/><circle cx="13" cy="67" r="2"/><circle cx="22" cy="67" r="2"/><circle cx="31" cy="67" r="2"/><circle cx="40" cy="67" r="2"/><circle cx="49" cy="67" r="2"/></g>
+            <text x="26" y="84" text-anchor="middle" fill="#8b98a8" font-size="10" font-family="-apple-system,'Noto Sans SC',sans-serif">36 个任务</text>
+            <line x1="62" y1="45" x2="96" y2="45" stroke="#5c6976" stroke-width="1.2" marker-end="url(#arL)"/>
+            <g fill="none" stroke="#7aa2ff" stroke-width="1.3">
+              <circle cx="116" cy="45" r="6.5"/><circle cx="138" cy="45" r="6.5"/><circle cx="160" cy="45" r="6.5"/>
+              <circle cx="182" cy="45" r="6.5"/><circle cx="204" cy="45" r="6.5"/>
+            </g>
+            <text x="160" y="84" text-anchor="middle" fill="#7aa2ff" font-size="10" font-family="-apple-system,'Noto Sans SC',sans-serif">5 个独立体系(去重后 4)</text>
+            <line x1="0" y1="92" x2="268" y2="92" stroke="#1f2937"/>
+            <text x="0" y="108" fill="#5c6976" font-size="9.5" font-family="-apple-system,'Noto Sans SC',sans-serif">留一基底重拟合,零点区间</text>
+            <line x1="4" y1="128" x2="264" y2="128" stroke="#2b3846"/>
+            <rect x="28" y="124" width="197" height="8" rx="4" fill="#7aa2ff" opacity="0.2"/>
+            <line x1="161" y1="118" x2="161" y2="138" stroke="#ffb454" stroke-width="1.4"/>
+            <text x="28" y="149" text-anchor="middle" fill="#5c6976" font-size="9" font-family="ui-monospace,monospace">0.578</text>
+            <text x="161" y="149" text-anchor="middle" fill="#ffb454" font-size="9" font-family="ui-monospace,monospace">0.731</text>
+            <text x="225" y="149" text-anchor="middle" fill="#5c6976" font-size="9" font-family="ui-monospace,monospace">0.805</text>
+          </svg>
+          <div class="sf-cap"><b>FIG 06</b>36 个任务,<i>独立体系为 5 个。</i></div>
+        </div>
+      </div>
+
+      <div class="split">
+        <div class="txt">
+          <p><strong>失效是基底依赖的,而且范围比原稿窄。</strong>3 个消融基底里只有 2 个出现过显著负增益,expt_gap 在全部 6 种削减下从未失效;补上 2 个新基底的样本外检验后,负增益率从 27.8%(5/18)掉到 7.1%(1/14)。我们只声称它是一个真实存在、但由基底 × 算子共同决定的窄区域,不是普遍规律;原稿的 3 个基底落在里面。</p>
+        </div>
+        <div class="split-fig">
+          <svg viewBox="0 0 268 152" role="img" aria-label="负增益任务占比对比">
+            <text x="0" y="13" fill="#8b98a8" font-size="10.5" font-family="-apple-system,'Noto Sans SC',sans-serif">负增益任务占比</text>
+            <text x="0" y="32" fill="#8b98a8" font-size="10" font-family="-apple-system,'Noto Sans SC',sans-serif">原稿 3 个基底(样本内)</text>
+            <rect x="0" y="38" width="230" height="14" rx="4" fill="#141d27"/>
+            <rect x="0" y="38" width="63.9" height="14" rx="4" fill="#ff6f6f"/>
+            <text x="72" y="49" fill="#ff6f6f" font-size="10.5" font-family="ui-monospace,monospace">27.8%</text>
+            <text x="112" y="49" fill="#5c6976" font-size="9.5" font-family="ui-monospace,monospace">5/18</text>
+            <text x="0" y="76" fill="#8b98a8" font-size="10" font-family="-apple-system,'Noto Sans SC',sans-serif">补 2 个新基底(样本外)</text>
+            <rect x="0" y="82" width="230" height="14" rx="4" fill="#141d27"/>
+            <rect x="0" y="82" width="16.3" height="14" rx="4" fill="#3ddc97"/>
+            <text x="24" y="93" fill="#3ddc97" font-size="10.5" font-family="ui-monospace,monospace">7.1%</text>
+            <text x="60" y="93" fill="#5c6976" font-size="9.5" font-family="ui-monospace,monospace">1/14</text>
+            <line x1="0" y1="112" x2="268" y2="112" stroke="#1f2937"/>
+            <text x="0" y="131" fill="#8b98a8" font-size="10" font-family="-apple-system,'Noto Sans SC',sans-serif">3 个消融基底里只有 2 个失效</text>
+            <text x="0" y="147" fill="#8b98a8" font-size="10" font-family="-apple-system,'Noto Sans SC',sans-serif"><tspan fill="#3ddc97">expt_gap</tspan> 在 6 种削减下从未失效</text>
+          </svg>
+          <div class="sf-cap"><b>FIG 07</b>负增益率 27.8% → 7.1%,<i>失效是窄区域。</i></div>
+        </div>
+      </div>
+
+      <div class="callout warn">
+        <p>补一条第 4 条结论自身的限度:预算去向的效应量只有 0.052 个分位(0.5604 对 0.6125),分母是 5 个任务;它也是拿到 8640 条轨迹之后补做的离线复盘,不在预注册范围内。我们只声称它是机制提示,超出该范围的独立验证尚无证据。另有一条范围削减写在 Overview 末段:删特征的实测表明 0.731 只对「表示被压到极低维」成立,对「漏掉一个物理量」不成立,故这条边界的作用面比原稿窄。</p>
+      </div>
+
+      <div class="callout">
+        <p>稳健性验证:行序混淆已排除。<code>matbench_expt_gap</code> 的池子保留了原始行序,行号与目标相关(ρ=−0.187),前 400 行命中率 16.8%(全池 10%)。把行序打乱后重跑 6 任务 × 4 策略 × 30 种子(720 run),与原始逐条比对 <strong>720/720 不同</strong>;平均增益 <strong>+29.2 → +31.2</strong>,增益为正 <strong>6/6 → 6/6</strong>。结论:增益对行序稳健,不是行序红利的产物(<code>results-extra/shuffle_expt_gap.json</code>)。</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ==================== 08 PLATFORM ==================== -->
+<section id="platform">
+  <div class="section-inner">
+    <div class="section-label">08</div>
+    <h2 class="section-title">Platform</h2>
+    <div class="section-body">
+      <p>赛前论坛上有人提醒过一类失败:智能体设计了损失函数却没有实现,直接返回固定值,于是优化效果看起来很好。我们把系统按回路切开,让这类事情无处发生——同时把真正该由 Agent 做的那一层交出去。</p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>回路</th><th>由谁完成</th><th>约束</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>内循环</strong><br><span style="color:var(--dim2);font-size:12px">GP 拟合、UCB 采集、选点,共 8640 次</span></td>
+              <td>确定性代码<br><code>failbound_agent.py</code></td>
+              <td>零 LLM 调用、零网络请求。LLM 一进来,8640 次 run 就无法逐比特复现</td>
+            </tr>
+            <tr>
+              <td><strong>外循环</strong><br><span style="color:var(--dim2);font-size:12px">该不该用 BO、该测哪个假设、这个数字能不能信</span></td>
+              <td>平台 Agent<br><code>ba26fa43</code> 执行 / <code>d26e70b5</code> 判断</td>
+              <td>只产出提案,提案由代码执行并打分。规则:它的每句判断都必须能被判真假</td>
+            </tr>
+            <tr>
+              <td><strong>审计层</strong><br><span style="color:var(--dim2);font-size:12px">错误率、校准数据、对抗审查</span></td>
+              <td>代码记账 + Agent 对抗</td>
+              <td>自我评估不由被评估者单独撰写:放行 27 漏报 0、拒绝 9 误杀 5、命中 773 / 780 / 833 / 539 全部随结论打印</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>这条规则我们真的执行了两次,两次结果都写进了报告,包括对我们不利的那次。</p>
+
+      <p><strong>① 让 Agent 自己判断该不该上 BO。</strong>18 个任务改名 Task-A..R(matbench 是公开数据集,给名字就等于让它背答案),只给开题时真实可见的信息:池几何 + 一次 25 点探针结果。它要预测"BO 会不会赢、赢多少"。</p>
+
+      <div class="wide-fig">
+        <div class="wf-scroll">
+        <svg viewBox="0 0 760 300" role="img" aria-label="Agent 预测与真实增益散点">
+<text x="0" y="14" fill="#e8eef5" font-size="11.5" font-family="-apple-system,'Noto Sans SC',sans-serif">18 个任务：Agent 跑实验前的预测 vs 真实增益</text>
+<rect x="96" y="205.48" width="604" height="18.3" rx="0" fill="#7aa2ff" opacity="0.1"/>
+<line x1="96" y1="220.89" x2="700" y2="220.89" stroke="#2b3846" stroke-width="1"/>
+<line x1="273.65" y1="32" x2="273.65" y2="250" stroke="#2b3846" stroke-width="1"/>
+<line x1="220.35" y1="244" x2="700" y2="36" stroke="#ffb454" stroke-width="1.2" stroke-dasharray="5 4"/>
+<text x="584.53" y="66.81" fill="#ffb454" font-size="9.5" font-family="-apple-system,'Noto Sans SC',sans-serif" text-anchor="middle">若判得准，点落在这条线上</text>
+<circle cx="316.73" cy="217.04" r="3.4" fill="#7aa2ff" opacity="0.9"/>
+<circle cx="195.78" cy="219.93" r="3.4" fill="#7aa2ff" opacity="0.9"/>
+<circle cx="123.09" cy="219.93" r="3.4" fill="#7aa2ff" opacity="0.9"/>
+<circle cx="432.79" cy="218" r="3.4" fill="#7aa2ff" opacity="0.9"/>
+<circle cx="155.96" cy="218.58" r="3.4" fill="#7aa2ff" opacity="0.9"/>
+<circle cx="229.68" cy="208.37" r="3.4" fill="#7aa2ff" opacity="0.9"/>
+<circle cx="351.52" cy="223.78" r="3.4" fill="#7aa2ff" opacity="0.9"/>
+<circle cx="285.93" cy="223.2" r="3.4" fill="#7aa2ff" opacity="0.9"/>
+<circle cx="336.12" cy="218" r="3.4" fill="#7aa2ff" opacity="0.9"/>
+<circle cx="517.76" cy="216.07" r="3.4" fill="#7aa2ff" opacity="0.9"/>
+<circle cx="365.58" cy="205.48" r="3.4" fill="#7aa2ff" opacity="0.9"/>
+<circle cx="563.06" cy="218" r="3.4" fill="#7aa2ff" opacity="0.9"/>
+<circle cx="296.59" cy="217.42" r="3.4" fill="#7aa2ff" opacity="0.9"/>
+<circle cx="286.82" cy="222.43" r="3.4" fill="#7aa2ff" opacity="0.9"/>
+<circle cx="661.95" cy="216.07" r="3.4" fill="#7aa2ff" opacity="0.9"/>
+<circle cx="182.16" cy="217.42" r="3.4" fill="#7aa2ff" opacity="0.9"/>
+<circle cx="296.44" cy="217.42" r="3.4" fill="#7aa2ff" opacity="0.9"/>
+<circle cx="415.17" cy="212.8" r="3.4" fill="#7aa2ff" opacity="0.9"/>
+<circle cx="123.09" cy="219.93" r="4.6" fill="none" stroke="#ff6f6f" stroke-width="1.3"/>
+<circle cx="182.16" cy="217.42" r="4.6" fill="none" stroke="#ff6f6f" stroke-width="1.3"/>
+<circle cx="661.95" cy="216.07" r="4.6" fill="none" stroke="#ff6f6f" stroke-width="1.3"/>
+<text x="96" y="262" fill="#5c6976" font-size="9.5" font-family="ui-monospace,monospace" text-anchor="middle">-40</text>
+<text x="273.65" y="262" fill="#5c6976" font-size="9.5" font-family="ui-monospace,monospace" text-anchor="middle">+0</text>
+<text x="451.29" y="262" fill="#5c6976" font-size="9.5" font-family="ui-monospace,monospace" text-anchor="middle">+40</text>
+<text x="628.94" y="262" fill="#5c6976" font-size="9.5" font-family="ui-monospace,monospace" text-anchor="middle">+80</text>
+<text x="700" y="262" fill="#5c6976" font-size="9.5" font-family="-apple-system,'Noto Sans SC',sans-serif" text-anchor="end">真实增益</text>
+<text x="90" y="224.89" fill="#5c6976" font-size="9.5" font-family="ui-monospace,monospace" text-anchor="end">0</text>
+<text x="90" y="209.48" fill="#5c6976" font-size="9.5" font-family="ui-monospace,monospace" text-anchor="end">+8</text>
+<text x="696" y="198.48" fill="#7aa2ff" font-size="9.5" font-family="-apple-system,'Noto Sans SC',sans-serif" text-anchor="end">预测带 −1.5…+8.0</text>
+<text x="0" y="284" fill="#5c6976" font-size="9.5" font-family="-apple-system,'Noto Sans SC',sans-serif">18 个点全部落在预测带内；真实增益从 −33.9 到 +87.4，跨度是预测的 12.8 倍</text>
+<text x="0" y="298" fill="#ff6f6f" font-size="9.5" font-family="-apple-system,'Noto Sans SC',sans-serif">判对 9/18 · Spearman ρ=+0.384（p=0.12）· 预测从不给负结果</text>
+</svg>
+        </div>
+        <div class="wf-cap"><b>FIG 08</b>横轴是真实增益，纵轴是 Agent 在跑实验之前的预测。若判得准，点应落在橙色虚线上；<i>实际全部压在 0 附近（红圈为 Task-C −33.9、Task-Q −20.6、Task-P +87.4），而真实跨度是 −34 到 +87。</i></div>
+      </div>
+
+      <p>结果:决策准确率 0.500(5 个真负增益只抓到 3 个),预测范围 ±8 对真实 ±87,Spearman ρ=+0.384(p=0.12)。<strong>"用 LLM 判断替代诊断"被我们自己的实验否掉了</strong>——这恰好是这份作品为什么需要一个可复算判据(AUC)和一个可证错误率(放行 27 漏报 0、拒绝 9 误杀 5)的最好理由。它的失效方式也很具体:系统性乐观,从不给负结果。</p>
+
+      <p>副作用里有个意外收获:25 点探针的命中数与增益 ρ=−0.468(p=0.050),方向反直觉——探针里随手撒点就能大量命中的体系,说明空间填充已经够好了,BO 反而没优势。它比"用同样 25 点去估 AUC"(ρ=0.042)强得多,而且是可部署的。</p>
+
+      <p><strong>② 让 Agent 当对抗审稿人。</strong>给它 12 条主张与支撑数字,不给我们自己的自查清单(否则测的是抄写能力)。它攻出 8 条,其中 3 条是我们漏掉的真问题,两条当场用数据解决:</p>
+
+      <p>· 样本外两组的算子集合不同(旧 6 种 / 新 7 种),基底与算子混杂 → 只用共有算子重算:负数率 27.8% vs 8.3%(Fisher p=0.204),方向不变、证据变弱。<br>
+      · "预算去向"与增益共用同一批被选点,18/18 可能是定义使然 → 标签置换 20000 次:零分布均值 10.8/18,P(≥18)=0.0003,不是构造性的。</p>
+
+      <p>跨环境复现做了五层核对:代码与数据 SHA256 逐比特一致(101/101,这里的"逐比特"只指代码与数据文件,不指 run 输出)、任务参数 26/26 观测点一致、结构与行为指纹比对。验证跑完退码 0,冻结包在沙箱与本地的哈希相同。</p>
+
+      <p><strong>③ 把否决权交给代码,而不是交给另一个模型。</strong>提议者(d26e70b5)只看盲态卡给出判断;否决者是一段确定性决策函数加它的审计错误率;两者冲突时交审计 Agent(ba26fa43),它拿着代码判据但看不到真值。18 个回合:</p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>指标</th><th class="num">提议者</th><th class="num">代码卡</th><th class="num">终裁(闭环)</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>逐任务判对</td><td class="num">13/18</td><td class="num">12/18</td><td class="num">12/18</td></tr>
+            <tr><td>风险调整后总增益</td><td class="num">+259.6</td><td class="num">+271.0</td><td class="num">+271.0</td></tr>
+            <tr><td>5 个负增益拦住几个</td><td class="num">1/5</td><td class="num">4/5</td><td class="num">4/5</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>逐任务判对 13/18 &gt; 卡 12/18——LLM 在判对率上确实更强;换成「选 BO 就吃真实增益、选基线记 0」这个风险口径,卡的稳健性更好(+271.0 对 +259.6)。差的 11.4 次命中全在尾部——提议者放过了 −33.9 与 −26.5 两个灾难。另一个结果同样重要:<strong>7 次冲突审计者全部站代码,没有一次推翻</strong>。所以这不是「多一个 Agent 更聪明」,而是一条分工边界:判断位交给 Agent(它判得更准),风险闸门留在代码(它兜得更稳)。</p>
+
+      <p style="font-size:13.5px;color:var(--dim)">
+        Agent 判断逐条回放:18 次盲态预测(含 run_id 与原话理由) | 会话记录可离线查看:跨环境重跑 · 四个数字重算 · 诊断标定 · 准则卡裁决(平台 thread 默认不公开,故原样导出事件流)
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- ==================== 09 CITATION & MATERIALS ==================== -->
+<section id="materials">
+  <div class="section-inner">
+    <div class="section-label">09</div>
+    <h2 class="section-title">Citation &amp; Materials</h2>
+    <div class="section-body">
+      <div class="citation-block">FailBound-Lab: 主动学习失效边界的可复现评测基准.
+单人参赛作品,赛道 04 AI Agent, 验证场 材料信息学, 2026.
+数据基准: MatBench v0.1 · 种子 20261015 · 代码包 SHA256 b6d0a514…</div>
+
+      <h3 style="margin:32px 0 16px;font-size:1.15rem;font-weight:600">材料清单</h3>
+      <ul class="materials-list">
+        <li><span class="mat-icon">→</span><a href="tech-report.pdf">技术报告(完整版)</a></li>
+        <li><span class="mat-icon">→</span><a href="sandbox-execution-log.pdf">沙箱执行记录</a></li>
+        <li><span class="mat-icon">→</span><a href="originality-statement.pdf">原创性声明</a></li>
+        <li><span class="mat-icon">→</span><a href="project-overview-5p.pdf">5 页说明</a></li>
+        <li><span class="mat-icon">→</span><a href="evidence_4320runs.csv">4320 次消融数据</a></li>
+        <li><span class="mat-icon">→</span><a href="https://sciencepal.ai/share/944c87a6-46b9-49b0-b49f-0adc67257c21" target="_blank" rel="noopener">沙箱 Replay(SciencePal 站内)</a></li>
+        <li><span class="mat-icon">→</span><a href="replay/s3.html">跨环境复现子页:S3</a> · <a href="replay/s4a.html">S4a</a> · <a href="replay/s4b.html">S4b</a> · <a href="replay/s5.html">S5</a> · <a href="replay/forecast.html">forecast</a></li>
+        <li><span class="mat-icon">→</span><a href="img/fig_repr_effect.png">图 6 原图</a></li>
+        <li><span class="mat-icon">→</span>7200 条扩展消融原始轨迹 <code>ext11/agent_lab/results/runs_nogate_ablate.jsonl</code>(6.7 MB,随提交包提供)</li>
+      </ul>
+
+      <h3 style="margin:40px 0 16px;font-size:1.15rem;font-weight:600">复现命令</h3>
+      <p>跑出同样的数字只要这几条命令(任意 Python 3.11+ 环境,固定种子):</p>
+      <div class="citation-block"># ① 四组全跑:36 任务 × 4 策略 × 30 种子 × 2 口径 = 8640(缺一组就凑不齐)
+python run_experiments.py no-gate 30 --max-budget 200 --proc 4
+python run_experiments.py gate 30 --max-budget 200 --proc 4
+# 消融臂必须用 --arm ablate 指定;group 只认 no-gate / gate
+python run_experiments.py no-gate 30 --arm ablate --max-budget 200 --proc 4
+python run_experiments.py gate 30 --arm ablate --max-budget 200 --proc 4
+# ② 统计 + 边界拟合
+python analyze.py both
+# ③ 端到端筛选 + 反事实检验
+python screening_demo.py --budget 200 --seeds 10 --counterfactual</div>
+      <p style="font-size:13.5px;color:var(--dim)">子种子由 blake2b 从 SEED=20261015 派生,跨机器稳定。文档里的每个数字都能由 <code>results/</code> 下的产物复算。</p>
+    </div>
+  </div>
+</section>
+
+<!-- ==================== FOOTER ==================== -->
+<footer>
+  <div class="footer-note">
+    数据为 matbench v0.1(88 维描述符,候选池 3000,成本模型来自真实化学式),模型只用了 scikit-learn。<br>
+    候选来自公开基准的历史条目,不宣称发现新材料,任何材料结论仍需实验验证。
+  </div>
+  <p>FailBound-Lab · 2026</p>
+</footer>
+
+</body>
+<script>
+(function () {
+  var wraps = [].slice.call(document.querySelectorAll('.wide-fig .wf-scroll'));
+  function check(el) {
+    var can = el.scrollWidth > el.clientWidth + 4;
+    el.classList.toggle('can-scroll', can);
+    var atEnd = el.scrollLeft + el.clientWidth >= el.scrollWidth - 4;
+    el.classList.toggle('at-end', atEnd);
+    var hint = el.parentNode.querySelector('.wf-hint');
+    if (can && !hint) {
+      var d = document.createElement('div');
+      d.className = 'wf-hint';
+      d.textContent = '← 左右滑动查看完整图 →';
+      el.parentNode.insertBefore(d, el.nextSibling);
+    } else if (!can && hint) {
+      hint.remove();
+    }
+    if (!el.dataset.bound) {
+      el.dataset.bound = '1';
+      el.addEventListener('scroll', function () {
+        el.classList.toggle('at-end', el.scrollLeft + el.clientWidth >= el.scrollWidth - 4);
+      }, { passive: true });
+    }
+  }
+  function all() { wraps.forEach(check); }
+  all();
+  var t;
+  window.addEventListener('resize', function () { clearTimeout(t); t = setTimeout(all, 150); });
+})();
+</script>
+</html>

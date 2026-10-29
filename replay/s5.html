@@ -1,0 +1,161 @@
+<!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
+<title>S5 · 准则卡：自然语言 → 代码裁决</title>
+<style>
+ :root{--bg:#0f1115;--fg:#e7e9ee;--dim:#9aa3b2;--line:#252a33;--accent:#7aa2f7}
+ *{box-sizing:border-box}
+ body{margin:0;background:var(--bg);color:var(--fg);
+   font:14px/1.6 -apple-system,"Segoe UI","Noto Sans SC",sans-serif}
+ header{padding:28px 32px 18px;border-bottom:1px solid var(--line)}
+ h1{margin:0 0 6px;font-size:19px;font-weight:600}
+ .sub{color:var(--dim);font-size:12.5px}
+ main{padding:22px 32px 60px;max-width:1080px}
+ .ev{border-left:2px solid var(--line);margin:0 0 14px;padding:2px 0 2px 16px}
+ .ev.call{border-color:var(--accent)}
+ .ev.say{border-color:#4b5563}
+ .hd{color:var(--accent);font-size:12px;letter-spacing:.04em;margin-bottom:3px}
+ .out .hd{color:#8b949e}
+ pre{margin:0;white-space:pre-wrap;word-break:break-word;font:12.5px/1.55
+   ui-monospace,SFMono-Regular,Menlo,monospace;color:#cdd3de}
+ .say pre{color:var(--fg)}
+</style></head><body>
+<header><h1>S5 · 准则卡：自然语言 → 代码裁决</h1>
+<div class="sub">会话事件流原样导出（24 条），未做剪辑。
+平台 thread 默认不公开，故以本地 HTML 形式交付。</div></header>
+<main><div class="ev call"><div class="hd">调用 · execute_command</div><pre>{&quot;command&quot;: &quot;cd /workspace &amp;&amp; ls -la failbound_card_upload.zip &amp;&amp; sha256sum failbound_card_upload.zip&quot;}</pre></div><div class="ev say"><pre>I&#x27;ll start by checking the uploaded file and understanding the task. Let me first verify the upload and extract it.</pre></div><div class="ev out"><div class="hd">输出 · execute_command</div><pre>{&quot;cwd&quot;: &quot;/workspace&quot;, &quot;output&quot;: &quot;(venv) root@ba4461cb-07c0-481d-ae62-c2b876c5d608:/workspace# eval &#x27;set -o pipefa\nil; cd /workspace &amp;&amp; cd /workspace &amp;&amp; ls -la failbound_card_upload.zip &amp;&amp; sha256\nsum failbound_card_upload.zip&#x27;; command printf &#x27;%s\\n&#x27; \&quot;$?\&quot; &gt; /tmp/_agent_cmd_f83\n1a3a869d84ac5a255caebe33cf5b7.rc\n-rw-r--r-- 1 root root 25991 Oct 22 14:50 failbound_card_upload.zip\n0dbdfeb6d32f4c4a6f75c80468bb8c31196b4856a97a0d69cefddafdf78742c2  failbound_card\n_upload.zip\n(venv) root@ba4461cb-07c0-481d-ae62-c2b876c5d608:/workspace#\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n&quot;, &quot;status&quot;: &quot;Command completed. Reuse this result; do not poll again.&quot;, &quot;completed&quot;: true, &quot;exit_code&quot;: 0, &quot;terminated&quot;: false, &quot;session_name&quot;: &quot;session_2535dc4f&quot;, &quot;completion_file&quot;: &quot;/tmp/_agent_cmd_f831a3a869d84ac5a255caebe33cf5b7.rc&quot;, &quot;output_truncated&quot;: false, &quot;output_original_chars&quot;: 514}</pre></div><div class="ev call"><div class="hd">调用 · execute_command</div><pre>{&quot;command&quot;: &quot;cd /workspace &amp;&amp; unzip -o failbound_card_upload.zip &amp;&amp; echo \&quot;---EXTRACTED---\&quot; &amp;&amp; ls -la cross_tools/ unzipped/ 2&gt;/dev/null&quot;}</pre></div><div class="ev say"><pre>SHA256 matches the expected `0dbdfeb6...`. Now let me extract the zip and look at the usage.</pre></div><div class="ev out"><div class="hd">输出 · execute_command</div><pre>{&quot;cwd&quot;: &quot;/workspace&quot;, &quot;output&quot;: &quot;(venv) root@ba4461cb-07c0-481d-ae62-c2b876c5d608:/workspace# eval &#x27;set -o pipefa\nil; cd /workspace &amp;&amp; cd /workspace &amp;&amp; unzip -o failbound_card_upload.zip &amp;&amp; echo\n \&quot;---EXTRACTED---\&quot; &amp;&amp; ls -la cross_tools/ unzipped/ 2&gt;/dev/null&#x27;; command printf\n &#x27;%s\\n&#x27; \&quot;$?\&quot; &gt; /tmp/_agent_cmd_623a1ae0c4c6411aad4667c24b710ee0.rc\nArchive:  failbound_card_upload.zip\n  inflating: CARD.md\n  inflating: MANIFEST.json\n  inflating: cross_tools/card.py\n  inflating: unzipped/agent_lab/config.py\n  inflating: unzipped/agent_lab/cost_model.py\n  inflating: unzipped/agent_lab/failbound_agent.py\n  inflating: unzipped/agent_lab/strategies.py\n  inflating: unzipped/agent_lab/trial.py\n  inflating: unzipped/agent_lab/results/decision_card_audit.csv\n---EXTRACTED---\ncross_tools/:\ntotal 12\ndrwxr-xr-x 2 root root   29 Oct 22 14:50 .\ndrwxr-xr-x 1 root root 4096 Oct 22 14:50 ..\n-rw-rw-rw- 1 root root 5405 Oct 22  2026 card.py\n\nunzipped/:\ntotal 4\ndrwxr-xr-x 3 root root   23 Oct 22 14:50 .\ndrwxr-xr-x 1 root root 4096 Oct 22 14:50 ..\ndrwxr-xr-x 3 root root  122 Oct 22 14:50 agent_lab\n(venv) root@ba4461cb-07c0-481d-ae62-c2b876c5d608:/workspace#\n&quot;, &quot;status&quot;: &quot;Command completed. Reuse this result; do not poll again.&quot;, &quot;completed&quot;: true, &quot;exit_code&quot;: 0, &quot;terminated&quot;: false, &quot;session_name&quot;: &quot;session_ea601174&quot;, &quot;completion_file&quot;: &quot;/tmp/_agent_cmd_623a1ae0c4c6411aad4667c24b710ee0.rc&quot;, &quot;output_truncated&quot;: false, &quot;output_original_chars&quot;: 1111}</pre></div><div class="ev call"><div class="hd">调用 · execute_command</div><pre>{&quot;command&quot;: &quot;cd /workspace &amp;&amp; head -20 CARD.md&quot;}</pre></div><div class="ev say"><pre>Extracted successfully. Now let me look at the usage documentation as instructed.</pre></div><div class="ev out"><div class="hd">输出 · execute_command</div><pre>{&quot;cwd&quot;: &quot;/workspace&quot;, &quot;output&quot;: &quot;(venv) root@ba4461cb-07c0-481d-ae62-c2b876c5d608:/workspace# eval &#x27;set -o pipefa\nil; cd /workspace &amp;&amp; cd /workspace &amp;&amp; head -20 CARD.md&#x27;; command printf &#x27;%s\\n&#x27; \&quot;\n$?\&quot; &gt; /tmp/_agent_cmd_4f53f37598514de9a03b17fbcf3e6bdf.rc\n# 准则卡（可调用形态）\n\n一个 200 行的决策函数 + 一张 36 行的审计表。没有训练、没有推理，只有阈值和实测错\n误率。\n\n```bash\npython cross_tools/card.py --auc 0.62 --dim 2 --base-hit 0.10\npython cross_tools/card.py --auc 0.52 --dim 85\npython cross_tools/card.py --dim 5 --auc 0.86 --json\n```\n\n三个输入：\n  `--auc`      可学习性 AUC（用 25 点空间填充探针估得；不知道就不传，卡会降低置\n信度）\n  `--dim`      描述符维数\n  `--base-hit` 空间填充基线的命中率（可选，&gt;0.20 会告警）\n\n输出：裁决（gp_ucb / farthest_point）、触发了哪条规则、置信度，\n以及**这类裁决在 36 个任务上错过多频**（误拒率 / 漏报率 / 两种错的代价区间）。\n\n## 为什么错误率是输出的一部分\n\n(venv) root@ba4461cb-07c0-481d-ae62-c2b876c5d608:/workspace#\n&quot;, &quot;status&quot;: &quot;Command completed. Reuse this result; do not poll again.&quot;, &quot;completed&quot;: true, &quot;exit_code&quot;: 0, &quot;terminated&quot;: false, &quot;session_name&quot;: &quot;session_9233e71f&quot;, &quot;completion_file&quot;: &quot;/tmp/_agent_cmd_4f53f37598514de9a03b17fbcf3e6bdf.rc&quot;, &quot;output_truncated&quot;: false, &quot;output_original_chars&quot;: 756}</pre></div><div class="ev call"><div class="hd">调用 · execute_command</div><pre>{&quot;command&quot;: &quot;cd /workspace &amp;&amp; python cross_tools/card.py --auc 0.63 --dim 2 --base-hit 0.10&quot;}</pre></div><div class="ev call"><div class="hd">调用 · execute_command</div><pre>{&quot;command&quot;: &quot;cd /workspace &amp;&amp; python cross_tools/card.py --auc 0.52 --dim 85 --base-hit 0.10&quot;}</pre></div><div class="ev call"><div class="hd">调用 · execute_command</div><pre>{&quot;command&quot;: &quot;cd /workspace &amp;&amp; python cross_tools/card.py --auc 0.86 --dim 85 --base-hit 0.09&quot;}</pre></div><div class="ev say"><pre>I understand the usage. Now let me read the three scenarios and extract the numbers:
+
+**场景 1**: 2874 钙钛矿, 85 维 Magpie 描述符, 随机投影压到 **2 维**。AUC = **0.63**。基线命中率 ≈ **10%** (0.10)。
+- `--auc 0.63 --dim 2 --base-hit 0.10`
+
+**场景 2**: 3000 合金, 描述符 **85 维**。AUC = **0.52**。基线命中率 **10%** (0.10)。
+- `--auc 0.52 --dim 85 --base-hit 0.10`
+
+**场景 3**: 同一批合金, 不降维不删减, 描述符 **85 维**。AUC = **0.86**。基线命中率 **9%** (0.09)。
+- `--auc 0.86 --dim 85 --base-hit 0.09`
+
+All three scenarios provide all three numbers. Let me run all three commands. These are independent, so I&#x27;ll run them in parallel.</pre></div><div class="ev out"><div class="hd">输出 · execute_command</div><pre>{&quot;cwd&quot;: &quot;/workspace&quot;, &quot;output&quot;: &quot;(venv) root@ba4461cb-07c0-481d-ae62-c2b876c5d608:/workspace# eval &#x27;set -o pipefa\nil; cd /workspace &amp;&amp; cd /workspace &amp;&amp; python cross_tools/card.py --auc 0.63 --di\nm 2 --base-hit 0.10&#x27;; command printf &#x27;%s\\n&#x27; \&quot;$?\&quot; &gt; /tmp/_agent_cmd_643bc9fd4ee14\nd5ea94d9ed9ac0169e5.rc\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n&quot;, &quot;status&quot;: &quot;Command is still running. Use watch_task(session_name) to wait without polling.&quot;, &quot;completed&quot;: false, &quot;exit_code&quot;: null, &quot;terminated&quot;: false, &quot;session_name&quot;: &quot;session_b8937843&quot;, &quot;completion_file&quot;: &quot;/tmp/_agent_cmd_643bc9fd4ee14d5ea94d9ed9ac0169e5.rc&quot;, &quot;output_truncated&quot;: false, &quot;output_original_chars&quot;: 286}</pre></div><div class="ev out"><div class="hd">输出 · execute_command</div><pre>{&quot;cwd&quot;: &quot;/workspace&quot;, &quot;output&quot;: &quot;(venv) root@ba4461cb-07c0-481d-ae62-c2b876c5d608:/workspace# eval &#x27;set -o pipefa\nil; cd /workspace &amp;&amp; cd /workspace &amp;&amp; python cross_tools/card.py --auc 0.52 --di\nm 85 --base-hit 0.10&#x27;; command printf &#x27;%s\\n&#x27; \&quot;$?\&quot; &gt; /tmp/_agent_cmd_64e304be0dda\n439e8a02b54676ee6e01.rc\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n&quot;, &quot;status&quot;: &quot;Command is still running. Use watch_task(session_name) to wait without polling.&quot;, &quot;completed&quot;: false, &quot;exit_code&quot;: null, &quot;terminated&quot;: false, &quot;session_name&quot;: &quot;session_4351b8da&quot;, &quot;completion_file&quot;: &quot;/tmp/_agent_cmd_64e304be0dda439e8a02b54676ee6e01.rc&quot;, &quot;output_truncated&quot;: false, &quot;output_original_chars&quot;: 287}</pre></div><div class="ev out"><div class="hd">输出 · execute_command</div><pre>{&quot;cwd&quot;: &quot;/workspace&quot;, &quot;output&quot;: &quot;(venv) root@ba4461cb-07c0-481d-ae62-c2b876c5d608:/workspace# eval &#x27;set -o pipefa\nil; cd /workspace &amp;&amp; cd /workspace &amp;&amp; python cross_tools/card.py --auc 0.86 --di\nm 85 --base-hit 0.09&#x27;; command printf &#x27;%s\\n&#x27; \&quot;$?\&quot; &gt; /tmp/_agent_cmd_12b348306511\n4349b8a2c7efdacada04.rc\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n&quot;, &quot;status&quot;: &quot;Command is still running. Use watch_task(session_name) to wait without polling.&quot;, &quot;completed&quot;: false, &quot;exit_code&quot;: null, &quot;terminated&quot;: false, &quot;session_name&quot;: &quot;session_e2dff887&quot;, &quot;completion_file&quot;: &quot;/tmp/_agent_cmd_12b3483065114349b8a2c7efdacada04.rc&quot;, &quot;output_truncated&quot;: false, &quot;output_original_chars&quot;: 287}</pre></div><div class="ev call"><div class="hd">调用 · watch_task</div><pre>{&quot;session_name&quot;: &quot;session_b8937843&quot;}</pre></div><div class="ev call"><div class="hd">调用 · watch_task</div><pre>{&quot;session_name&quot;: &quot;session_4351b8da&quot;}</pre></div><div class="ev call"><div class="hd">调用 · watch_task</div><pre>{&quot;session_name&quot;: &quot;session_e2dff887&quot;}</pre></div><div class="ev say"><pre>All three commands are running. Let me wait for each to complete.</pre></div><div class="ev out"><div class="hd">输出 · watch_task</div><pre>{&quot;output&quot;: &quot;(venv) root@ba4461cb-07c0-481d-ae62-c2b876c5d608:/workspace# eval &#x27;set -o pipefa\nil; cd /workspace &amp;&amp; cd /workspace &amp;&amp; python cross_tools/card.py --auc 0.63 --di\nm 2 --base-hit 0.10&#x27;; command printf &#x27;%s\\n&#x27; \&quot;$?\&quot; &gt; /tmp/_agent_cmd_643bc9fd4ee14\nd5ea94d9ed9ac0169e5.rc\n==================================================================\n准则卡裁决\n==================================================================\n输入   AUC=0.630  dim=2  基线命中=0.100  预算档=400\n阈值   AUC&lt;0.60 拒绝 · AUC&lt;0.75 不确定带 · dim≤2 拒绝 · 基线命中&gt;0.20 告警\n\n裁决   farthest_point（拒绝 BO）  置信度=medium\n  · AUC=0.630 处于 0.60–0.75 的不确定带\n  · 描述符仅 2 维：实测 4 个显著负增益任务中有 3 个来自 ≤2 维\n  ! 该区间内逐任务结果不一致（AUC 0.593 的增益是 −20.6，AUC 0.633 却是 +20.7），\nAUC 在此区间预测力有限（ρ=+0.513）\n\n历史实测对照（36 个任务，预算 400，等成本口径，Holm α=0.05）\n  卡判「拒绝」13 个：真拒绝 4 · 误拒 7 · 噪声 2   → 误拒率 7/13\n  卡判「采用」23 个：漏报 0 · 真赢 21 · 噪声 2   → 漏报率 0/23\n\n  两种错的代价不对称：\n    真拒绝  4 个，实测增益 -33.9 ~ -17.5（躲掉的亏）\n    误拒    7 个，实测增益 +6.9 ~ +31.9（少赚）\n    漏报    0 个，实测增益 —（该躲没躲）\n\n  注：本卡是熔断器，不是预报器。它不声称能预测增益（AUC 的秩相关只有 ρ=+0.513）\n，\n      只声称被它拒绝的区域里实测出现过灾难性损失。\n(venv) root@ba4461cb-07c0-481d-ae62-c2b876c5d608:/workspace#\n&quot;, &quot;status&quot;: &quot;Command completed. Reuse this result; do not poll again.&quot;, &quot;completed&quot;: true, &quot;exit_code&quot;: 0, &quot;terminated&quot;: false, &quot;session_name&quot;: &quot;session_b8937843&quot;, &quot;completion_file&quot;: &quot;/tmp/_agent_cmd_643bc9fd4ee14d5ea94d9ed9ac0169e5.rc&quot;, &quot;output_truncated&quot;: false, &quot;output_original_chars&quot;: 1093}</pre></div><div class="ev out"><div class="hd">输出 · watch_task</div><pre>{&quot;output&quot;: &quot;(venv) root@ba4461cb-07c0-481d-ae62-c2b876c5d608:/workspace# eval &#x27;set -o pipefa\nil; cd /workspace &amp;&amp; cd /workspace &amp;&amp; python cross_tools/card.py --auc 0.52 --di\nm 85 --base-hit 0.10&#x27;; command printf &#x27;%s\\n&#x27; \&quot;$?\&quot; &gt; /tmp/_agent_cmd_64e304be0dda\n439e8a02b54676ee6e01.rc\n==================================================================\n准则卡裁决\n==================================================================\n输入   AUC=0.520  dim=85  基线命中=0.100  预算档=400\n阈值   AUC&lt;0.60 拒绝 · AUC&lt;0.75 不确定带 · dim≤2 拒绝 · 基线命中&gt;0.20 告警\n\n裁决   farthest_point（拒绝 BO）  置信度=medium\n  · AUC=0.520 &lt; 0.60，落入实测失效区（轴 B 最低增益 −33.9）\n\n历史实测对照（36 个任务，预算 400，等成本口径，Holm α=0.05）\n  卡判「拒绝」13 个：真拒绝 4 · 误拒 7 · 噪声 2   → 误拒率 7/13\n  卡判「采用」23 个：漏报 0 · 真赢 21 · 噪声 2   → 漏报率 0/23\n\n  两种错的代价不对称：\n    真拒绝  4 个，实测增益 -33.9 ~ -17.5（躲掉的亏）\n    误拒    7 个，实测增益 +6.9 ~ +31.9（少赚）\n    漏报    0 个，实测增益 —（该躲没躲）\n\n  注：本卡是熔断器，不是预报器。它不声称能预测增益（AUC 的秩相关只有 ρ=+0.513）\n，\n      只声称被它拒绝的区域里实测出现过灾难性损失。\n(venv) root@ba4461cb-07c0-481d-ae62-c2b876c5d608:/workspace#\n&quot;, &quot;status&quot;: &quot;Command completed. Reuse this result; do not poll again.&quot;, &quot;completed&quot;: true, &quot;exit_code&quot;: 0, &quot;terminated&quot;: false, &quot;session_name&quot;: &quot;session_4351b8da&quot;, &quot;completion_file&quot;: &quot;/tmp/_agent_cmd_64e304be0dda439e8a02b54676ee6e01.rc&quot;, &quot;output_truncated&quot;: false, &quot;output_original_chars&quot;: 984}</pre></div><div class="ev out"><div class="hd">输出 · watch_task</div><pre>{&quot;output&quot;: &quot;(venv) root@ba4461cb-07c0-481d-ae62-c2b876c5d608:/workspace# eval &#x27;set -o pipefa\nil; cd /workspace &amp;&amp; cd /workspace &amp;&amp; python cross_tools/card.py --auc 0.86 --di\nm 85 --base-hit 0.09&#x27;; command printf &#x27;%s\\n&#x27; \&quot;$?\&quot; &gt; /tmp/_agent_cmd_12b348306511\n4349b8a2c7efdacada04.rc\n==================================================================\n准则卡裁决\n==================================================================\n输入   AUC=0.860  dim=85  基线命中=0.090  预算档=400\n阈值   AUC&lt;0.60 拒绝 · AUC&lt;0.75 不确定带 · dim≤2 拒绝 · 基线命中&gt;0.20 告警\n\n裁决   gp_ucb（采用 BO）  置信度=medium\n  · 未触发任何失效条件，按默认（BO）执行\n\n历史实测对照（36 个任务，预算 400，等成本口径，Holm α=0.05）\n  卡判「拒绝」13 个：真拒绝 4 · 误拒 7 · 噪声 2   → 误拒率 7/13\n  卡判「采用」23 个：漏报 0 · 真赢 21 · 噪声 2   → 漏报率 0/23\n\n  两种错的代价不对称：\n    真拒绝  4 个，实测增益 -33.9 ~ -17.5（躲掉的亏）\n    误拒    7 个，实测增益 +6.9 ~ +31.9（少赚）\n    漏报    0 个，实测增益 —（该躲没躲）\n\n  注：本卡是熔断器，不是预报器。它不声称能预测增益（AUC 的秩相关只有 ρ=+0.513）\n，\n      只声称被它拒绝的区域里实测出现过灾难性损失。\n(venv) root@ba4461cb-07c0-481d-ae62-c2b876c5d608:/workspace#\n&quot;, &quot;status&quot;: &quot;Command completed. Reuse this result; do not poll again.&quot;, &quot;completed&quot;: true, &quot;exit_code&quot;: 0, &quot;terminated&quot;: false, &quot;session_name&quot;: &quot;session_e2dff887&quot;, &quot;completion_file&quot;: &quot;/tmp/_agent_cmd_12b3483065114349b8a2c7efdacada04.rc&quot;, &quot;output_truncated&quot;: false, &quot;output_original_chars&quot;: 955}</pre></div><div class="ev say"><pre>All three commands completed successfully. Now let me deliver the results exactly as required — pasting the raw command output verbatim, without rewriting or adding conclusions.
+
+---
+
+## 场景 1
+
+**命令行:**
+```
+python cross_tools/card.py --auc 0.63 --dim 2 --base-hit 0.10
+```
+(读出: AUC=0.63, dim=2, base_hit=0.10)
+
+**完整输出:**
+```
+==================================================================
+准则卡裁决
+==================================================================
+输入   AUC=0.630  dim=2  基线命中=0.100  预算档=400
+阈值   AUC&lt;0.60 拒绝 · AUC&lt;0.75 不确定带 · dim≤2 拒绝 · 基线命中&gt;0.20 告警
+
+裁决   farthest_point(拒绝 BO)  置信度=medium
+  · AUC=0.630 处于 0.60–0.75 的不确定带
+  · 描述符仅 2 维:实测 4 个显著负增益任务中有 3 个来自 ≤2 维
+  ! 该区间内逐任务结果不一致(AUC 0.593 的增益是 −20.6,AUC 0.633 却是 +20.7),
+AUC 在此区间预测力有限(ρ=+0.513)
+
+历史实测对照(36 个任务,预算 400,等成本口径,Holm α=0.05)
+  卡判「拒绝」13 个:真拒绝 4 · 误拒 7 · 噪声 2   → 误拒率 7/13
+  卡判「采用」23 个:漏报 0 · 真赢 21 · 噪声 2   → 漏报率 0/23
+
+  两种错的代价不对称:
+    真拒绝  4 个,实测增益 -33.9 ~ -17.5(躲掉的亏)
+    误拒    7 个,实测增益 +6.9 ~ +31.9(少赚)
+    漏报    0 个,实测增益 —(该躲没躲)
+
+  注:本卡是熔断器,不是预报器。它不声称能预测增益(AUC 的秩相关只有 ρ=+0.513)
+,
+      只声称被它拒绝的区域里实测出现过灾难性损失。
+```
+
+**省掉的参数:** 都有(三个数都读到了)。
+
+---
+
+## 场景 2
+
+**命令行:**
+```
+python cross_tools/card.py --auc 0.52 --dim 85 --base-hit 0.10
+```
+(读出: AUC=0.52, dim=85, base_hit=0.10)
+
+**完整输出:**
+```
+==================================================================
+准则卡裁决
+==================================================================
+输入   AUC=0.520  dim=85  基线命中=0.100  预算档=400
+阈值   AUC&lt;0.60 拒绝 · AUC&lt;0.75 不确定带 · dim≤2 拒绝 · 基线命中&gt;0.20 告警
+
+裁决   farthest_point(拒绝 BO)  置信度=medium
+  · AUC=0.520 &lt; 0.60,落入实测失效区(轴 B 最低增益 −33.9)
+
+历史实测对照(36 个任务,预算 400,等成本口径,Holm α=0.05)
+  卡判「拒绝」13 个:真拒绝 4 · 误拒 7 · 噪声 2   → 误拒率 7/13
+  卡判「采用」23 个:漏报 0 · 真赢 21 · 噪声 2   → 漏报率 0/23
+
+  两种错的代价不对称:
+    真拒绝  4 个,实测增益 -33.9 ~ -17.5(躲掉的亏)
+    误拒    7 个,实测增益 +6.9 ~ +31.9(少赚)
+    漏报    0 个,实测增益 —(该躲没躲)
+
+  注:本卡是熔断器,不是预报器。它不声称能预测增益(AUC 的秩相关只有 ρ=+0.513)
+,
+      只声称被它拒绝的区域里实测出现过灾难性损失。
+```
+
+**省掉的参数:** 都有(三个数都读到了)。
+
+---
+
+## 场景 3
+
+**命令行:**
+```
+python cross_tools/card.py --auc 0.86 --dim 85 --base-hit 0.09
+```
+(读出: AUC=0.86, dim=85, base_hit=0.09)
+
+**完整输出:**
+```
+==================================================================
+准则卡裁决
+==================================================================
+输入   AUC=0.860  dim=85  基线命中=0.090  预算档=400
+阈值   AUC&lt;0.60 拒绝 · AUC&lt;0.75 不确定带 · dim≤2 拒绝 · 基线命中&gt;0.20 告警
+
+裁决   gp_ucb(采用 BO)  置信度=medium
+  · 未触发任何失效条件,按默认(BO)执行
+
+历史实测对照(36 个任务,预算 400,等成本口径,Holm α=0.05)
+  卡判「拒绝」13 个:真拒绝 4 · 误拒 7 · 噪声 2   → 误拒率 7/13
+  卡判「采用」23 个:漏报 0 · 真赢 21 · 噪声 2   → 漏报率 0/23
+
+  两种错的代价不对称:
+    真拒绝  4 个,实测增益 -33.9 ~ -17.5(躲掉的亏)
+    误拒    7 个,实测增益 +6.9 ~ +31.9(少赚)
+    漏报    0 个,实测增益 —(该躲没躲)
+
+  注:本卡是熔断器,不是预报器。它不声称能预测增益(AUC 的秩相关只有 ρ=+0.513)
+,
+      只声称被它拒绝的区域里实测出现过灾难性损失。
+```
+
+**省掉的参数:** 都有(三个数都读到了)。
+
+---
+
+## 汇总表
+
+| 场景 | 读出的 (AUC, dim, base_hit) | 裁决 | 误拒率 | 漏报率 |
+|------|------------------------------|------|--------|--------|
+| 1 | (0.63, 2, 0.10) | farthest_point(拒绝 BO) | 7/13 | 0/23 |
+| 2 | (0.52, 85, 0.10) | farthest_point(拒绝 BO) | 7/13 | 0/23 |
+| 3 | (0.86, 85, 0.09) | gp_ucb(采用 BO) | 7/13 | 0/23 |
+
+三次裁决均来自三次真实的命令执行,输出原样粘贴,未修改任何 .py 文件,未自行添加结论。</pre></div></main></body></html>

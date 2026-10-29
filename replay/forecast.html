@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Agent 判断回放｜18 次盲态预测 · FailBound-Lab</title>
+<style>
+:root{--bg:#fbfaf8;--card:#fff;--txt:#1a1a1a;--dim:#6b6b6b;--line:#e5e2dd;--acc:#2f6f4e;--neg:#c0392b;--pos:#1e7a46;--warn:#b8860b;}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--txt);font:15px/1.7 -apple-system,"PingFang SC","Microsoft YaHei",sans-serif;padding:32px 20px 64px}
+.wrap{max-width:1180px;margin:0 auto}
+h1{font-size:26px;margin:0 0 6px;letter-spacing:-.3px}
+.sub{color:var(--dim);font-size:14px;margin-bottom:24px}
+.mono{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12.5px}
+.dim{color:var(--dim)}
+.box{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:18px 20px;margin-bottom:18px}
+.box h2{font-size:15px;margin:0 0 10px;color:var(--acc)}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:18px}
+.kpi{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px 16px}
+.kpi .n{font-size:24px;font-weight:700;letter-spacing:-.5px}
+.kpi .k{font-size:12.5px;color:var(--dim);margin-top:2px}
+table{width:100%;border-collapse:collapse;background:var(--card);border:1px solid var(--line);border-radius:10px;overflow:hidden;font-size:13px}
+th{background:#f3f1ec;text-align:left;padding:9px 8px;font-weight:600;font-size:12px;color:#454545;white-space:nowrap;border-bottom:1px solid var(--line)}
+td{padding:8px;border-bottom:1px solid #f0eee9;vertical-align:top}
+tr:last-child td{border-bottom:none}
+.num{text-align:right;white-space:nowrap}
+.neg{color:var(--neg)} .pos{color:var(--pos)}
+.vd{font-size:12px;white-space:nowrap}
+tr.fp td.vd,tr.fn td.vd{color:var(--neg);font-weight:600}
+tr.tp td.vd,tr.tn td.vd{color:var(--pos)}
+.rs{font-size:12px;color:#4a4a4a;max-width:330px;line-height:1.55}
+.note{background:#fffdf5;border:1px solid #efe3c0;border-radius:10px;padding:14px 18px;font-size:13.5px;color:#5a4a1a}
+.foot{margin-top:26px;color:var(--dim);font-size:12.5px;line-height:1.8}
+.ba{display:flex;gap:10px;align-items:center;margin-top:8px;font-size:13px;color:var(--dim)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Agent 判断回放：18 次盲态预测</h1>
+  <div class="sub">
+    这是技术报告 §5.3.1 的原始留痕。平台上的判断 Agent（<span class="mono">FailBound-Forecaster</span>，<span class="mono">d26e70b5</span>）
+    在<b>看不到真实增益</b>的条件下，逐个任务预测「主动学习会不会赢、赢多少」。18 条记录各带一个平台 <span class="mono">run_id</span>，
+    可对照 SciencePal 会话逐条核验。
+  </div>
+
+  <div class="box">
+    <h2>当时它看到了什么</h2>
+    <p style="margin:0">只给两样东西：① 候选池的<b>几何信息</b>（候选数、描述符维度、重复率）；② <b>25 点空间填充探针</b>的命中结果。
+    不给真实增益、不给任务真名（任务被改名为 <span class="mono">Task-A…Task-R</span>，防背答案）、不给任何历史结论。
+    真实任务名与增益在<b>事后</b>才用于判对错——下表右半部分即为事后核对。</p>
+    <div class="ba"><span>预测范围 <b>[-1.5, +8.0]</b></span>
+    <span>·</span><span>真实范围 <b>[-33.9, +87.4]</b></span>
+    <span>·</span><span>MAE <b>24.9</b> 个命中</span></div>
+  </div>
+
+  <div class="kpis">
+    <div class="kpi"><div class="n">0.500</div><div class="k">决策准确率（9/18）</div></div>
+    <div class="kpi"><div class="n">+0.384</div><div class="k">预测增益 vs 真实增益 Spearman（p=0.116）</div></div>
+    <div class="kpi"><div class="n">+0.291</div><div class="k">预测 p(赢) vs 真实增益 Spearman（p=0.241）</div></div>
+    <div class="kpi"><div class="n">−0.468</div><div class="k">25 点探针命中 vs 真实增益 Spearman（p=0.050）</div></div>
+  </div>
+
+  <table>
+    <thead><tr>
+      <th>别名</th><th>真实任务（事后公开）</th><th>Agent p(赢)</th><th>Agent 预测增益</th><th>真实增益</th>
+      <th>判定</th><th>AUC</th><th>探针命中/25</th><th>耗时 s</th><th>run_id</th><th>Agent 给出的理由（原话）</th>
+    </tr></thead>
+    <tbody>
+<tr class="fn">
+  <td class="mono">Task-A</td>
+  <td class="mono dim">matbench_dielectric__elem20</td>
+  <td class="num">0.35</td>
+  <td class="num">+2.0</td>
+  <td class="num pos"><b>+9.7</b></td>
+  <td class="vd">判错（报了会输，实际赢）</td>
+  <td class="num dim">0.832</td>
+  <td class="num dim">11</td>
+  <td class="num dim">25.8</td>
+  <td class="mono dim">4895eb05</td>
+  <td class="rs">High duplicates (58%) and low dim (20) make surrogate easy; but probe already finds 11/25 hits, leaving little headroom.</td>
+</tr><tr class="tn">
+  <td class="mono">Task-B</td>
+  <td class="mono dim">matbench_dielectric__pca1</td>
+  <td class="num">0.15</td>
+  <td class="num">+0.5</td>
+  <td class="num neg"><b>-17.5</b></td>
+  <td class="vd">判对</td>
+  <td class="num dim">0.626</td>
+  <td class="num dim">5</td>
+  <td class="num dim">23.8</td>
+  <td class="mono dim">d5599d47</td>
+  <td class="rs">1D descriptor, rank 1, tiny nn-distance; space-filling already covers well, BO gains little.</td>
+</tr><tr class="tn">
+  <td class="mono">Task-C</td>
+  <td class="mono dim">matbench_dielectric__pca2</td>
+  <td class="num">0.35</td>
+  <td class="num">+0.5</td>
+  <td class="num neg"><b>-33.9</b></td>
+  <td class="vd">判对</td>
+  <td class="num dim">0.769</td>
+  <td class="num dim">12</td>
+  <td class="num dim">22.9</td>
+  <td class="mono dim">8d615311</td>
+  <td class="rs">Low dim (2), smooth landscape, space-filling already finds 12/25 hits; BO gains modestly.</td>
+</tr><tr class="tp">
+  <td class="mono">Task-D</td>
+  <td class="mono dim">matbench_dielectric__pca5</td>
+  <td class="num">0.55</td>
+  <td class="num">+1.5</td>
+  <td class="num pos"><b>+35.8</b></td>
+  <td class="vd">判对</td>
+  <td class="num dim">0.879</td>
+  <td class="num dim">12</td>
+  <td class="num dim">24.3</td>
+  <td class="mono dim">049d5ba7</td>
+  <td class="rs">Low dim (5), sparse duplicates, smooth landscape; BO exploits structure well, moderate gain over space-filling.</td>
+</tr><tr class="tn">
+  <td class="mono">Task-E</td>
+  <td class="mono dim">matbench_dielectric__rp2</td>
+  <td class="num">0.35</td>
+  <td class="num">+1.2</td>
+  <td class="num neg"><b>-26.5</b></td>
+  <td class="vd">判对</td>
+  <td class="num dim">0.698</td>
+  <td class="num dim">10</td>
+  <td class="num dim">21.5</td>
+  <td class="mono dim">a423faa6</td>
+  <td class="rs">Low 2D dim, smooth landscape, space-filling already finds hits; BO gains modestly.</td>
+</tr><tr class="fp">
+  <td class="mono">Task-F</td>
+  <td class="mono dim">matbench_dielectric__rp5</td>
+  <td class="num">0.78</td>
+  <td class="num">+6.5</td>
+  <td class="num neg"><b>-9.9</b></td>
+  <td class="vd">判错（报了会赢，实际输）</td>
+  <td class="num dim">0.813</td>
+  <td class="num dim">10</td>
+  <td class="num dim">30.5</td>
+  <td class="mono dim">28c063d7</td>
+  <td class="rs">Low 5-dim smooth landscape; GP models well. Probe shows 40% hits, BO concentrates further, modest gain over space-filling.</td>
+</tr><tr class="fn">
+  <td class="mono">Task-G</td>
+  <td class="mono dim">matbench_expt_gap__elem20</td>
+  <td class="num">0.12</td>
+  <td class="num">-1.5</td>
+  <td class="num pos"><b>+17.5</b></td>
+  <td class="vd">判错（报了会输，实际赢）</td>
+  <td class="num dim">0.757</td>
+  <td class="num dim">1</td>
+  <td class="num dim">23.3</td>
+  <td class="mono dim">7afb91c5</td>
+  <td class="rs">High duplicate fraction (0.60) and 20-dim sparse landscape; probe only 1/25 hits, median 0, so BO gains little.</td>
+</tr><tr class="fn">
+  <td class="mono">Task-H</td>
+  <td class="mono dim">matbench_expt_gap__pca1</td>
+  <td class="num">0.15</td>
+  <td class="num">-1.2</td>
+  <td class="num pos"><b>+2.8</b></td>
+  <td class="vd">判错（报了会输，实际赢）</td>
+  <td class="num dim">0.546</td>
+  <td class="num dim">3</td>
+  <td class="num dim">25.3</td>
+  <td class="mono dim">b554a76b</td>
+  <td class="rs">1D, near-duplicate dense landscape, median 0 far below threshold; BO gains little over space-filling.</td>
+</tr><tr class="fn">
+  <td class="mono">Task-I</td>
+  <td class="mono dim">matbench_expt_gap__pca2</td>
+  <td class="num">0.35</td>
+  <td class="num">+1.5</td>
+  <td class="num pos"><b>+14.1</b></td>
+  <td class="vd">判错（报了会输，实际赢）</td>
+  <td class="num dim">0.769</td>
+  <td class="num dim">0</td>
+  <td class="num dim">23.7</td>
+  <td class="mono dim">c0782303</td>
+  <td class="rs">2D landscape, sparse hits (0/25 probe), threshold near max; BO may find rare peaks but gain modest.</td>
+</tr><tr class="tp">
+  <td class="mono">Task-J</td>
+  <td class="mono dim">matbench_expt_gap__pca5</td>
+  <td class="num">0.55</td>
+  <td class="num">+2.5</td>
+  <td class="num pos"><b>+55.0</b></td>
+  <td class="vd">判对</td>
+  <td class="num dim">0.838</td>
+  <td class="num dim">2</td>
+  <td class="num dim">24.6</td>
+  <td class="mono dim">56259b80</td>
+  <td class="rs">5D smooth landscape, low duplicates, sparse hits (8%) but high max; BO can exploit gradient despite low probe rate.</td>
+</tr><tr class="tp">
+  <td class="mono">Task-K</td>
+  <td class="mono dim">matbench_expt_gap__rp2</td>
+  <td class="num">0.80</td>
+  <td class="num">+8.0</td>
+  <td class="num pos"><b>+20.7</b></td>
+  <td class="vd">判对</td>
+  <td class="num dim">0.633</td>
+  <td class="num dim">0</td>
+  <td class="num dim">31.5</td>
+  <td class="mono dim">e6290ecf</td>
+  <td class="rs">Low-dim 2D smooth landscape, no duplicates; BO exploits smoothness to reach peak near threshold despite sparse probe hits.</td>
+</tr><tr class="fn">
+  <td class="mono">Task-L</td>
+  <td class="mono dim">matbench_expt_gap__rp5</td>
+  <td class="num">0.35</td>
+  <td class="num">+1.5</td>
+  <td class="num pos"><b>+65.2</b></td>
+  <td class="vd">判错（报了会输，实际赢）</td>
+  <td class="num dim">0.653</td>
+  <td class="num dim">1</td>
+  <td class="num dim">22.0</td>
+  <td class="mono dim">d0103cca</td>
+  <td class="rs">5D smooth landscape, low duplicates, but probe median 0 far below threshold; sparse hits limit BO advantage.</td>
+</tr><tr class="fn">
+  <td class="mono">Task-M</td>
+  <td class="mono dim">matbench_log_gvrh__elem20</td>
+  <td class="num">0.35</td>
+  <td class="num">+1.8</td>
+  <td class="num pos"><b>+5.2</b></td>
+  <td class="vd">判错（报了会输，实际赢）</td>
+  <td class="num dim">0.738</td>
+  <td class="num dim">4</td>
+  <td class="num dim">21.6</td>
+  <td class="mono dim">c0da8e71</td>
+  <td class="rs">High duplicate fraction, 20-dim sparse landscape; probe hit rate 16% suggests modest BO advantage.</td>
+</tr><tr class="fn">
+  <td class="mono">Task-N</td>
+  <td class="mono dim">matbench_log_gvrh__pca1</td>
+  <td class="num">0.12</td>
+  <td class="num">-0.8</td>
+  <td class="num pos"><b>+3.0</b></td>
+  <td class="vd">判错（报了会输，实际赢）</td>
+  <td class="num dim">0.644</td>
+  <td class="num dim">4</td>
+  <td class="num dim">26.9</td>
+  <td class="mono dim">281d0e8e</td>
+  <td class="rs">1D landscape, near-duplicate dense, low probe hit rate; BO gains little over space-filling.</td>
+</tr><tr class="tp">
+  <td class="mono">Task-P</td>
+  <td class="mono dim">matbench_log_gvrh__pca5</td>
+  <td class="num">0.55</td>
+  <td class="num">+2.5</td>
+  <td class="num pos"><b>+87.4</b></td>
+  <td class="vd">判对</td>
+  <td class="num dim">0.915</td>
+  <td class="num dim">2</td>
+  <td class="num dim">21.7</td>
+  <td class="mono dim">26fd2168</td>
+  <td class="rs">5D smooth landscape, low duplicates, sparse hits (8%) suggest BO can concentrate on high-value region.</td>
+</tr><tr class="fp">
+  <td class="mono">Task-Q</td>
+  <td class="mono dim">matbench_log_gvrh__rp2</td>
+  <td class="num">0.55</td>
+  <td class="num">+1.8</td>
+  <td class="num neg"><b>-20.6</b></td>
+  <td class="vd">判错（报了会赢，实际输）</td>
+  <td class="num dim">0.593</td>
+  <td class="num dim">4</td>
+  <td class="num dim">22.8</td>
+  <td class="mono dim">f3845ba1</td>
+  <td class="rs">2D smooth landscape, low duplicates; probe 16% hit rate suggests exploitable structure favoring BO.</td>
+</tr><tr class="tp">
+  <td class="mono">Task-R</td>
+  <td class="mono dim">matbench_log_gvrh__rp5</td>
+  <td class="num">0.55</td>
+  <td class="num">+1.8</td>
+  <td class="num pos"><b>+5.1</b></td>
+  <td class="vd">判对</td>
+  <td class="num dim">0.734</td>
+  <td class="num dim">5</td>
+  <td class="num dim">19.2</td>
+  <td class="mono dim">fae2f37f</td>
+  <td class="rs">5D smooth landscape, low duplicates, 20% probe hit rate; moderate exploitable structure favors BO.</td>
+</tr><tr class="tp">
+  <td class="mono">Task-O</td>
+  <td class="mono dim">matbench_log_gvrh__pca2</td>
+  <td class="num">0.72</td>
+  <td class="num">+4.2</td>
+  <td class="num pos"><b>+31.9</b></td>
+  <td class="vd">判对</td>
+  <td class="num dim">0.866</td>
+  <td class="num dim">6</td>
+  <td class="num dim">21.9</td>
+  <td class="mono dim">3ddd7c00</td>
+  <td class="rs">2D smooth landscape, low duplicates; probe 24% hit rate suggests exploitable structure favoring BO.</td>
+</tr>
+    </tbody>
+  </table>
+
+  <div class="note" style="margin-top:18px">
+    <b>这份回放说明的是失败，我们照原样放出来。</b>决策准确率正好 <b>0.500</b>（6 真阳 / 2 假阳 / 7 假阴 / 3 真阴），等于抛硬币，而且<b>错在两个方向</b>：
+    <br>· <b>对灾难性负增益偏乐观</b>：真实负增益 5 个里只拦下 3 个（2 个灾难被放行）；
+    <br>· <b>对正常正增益偏悲观</b>：真实正增益 13 个里有 7 个被判成「会输」，白白拒掉。
+    <br>预测范围 [-1.5, +8.0] 远窄于真实 [-33.9, +87.4]——<b>它不敢给大数，无论正负</b>。
+    所以「让 LLM 判断替代可复算诊断」这条路被这个实验否掉；而同一批数据里 <b>25 点探针命中数</b>反而与增益 ρ=−0.468（p=0.050）——这条 AI 副产品后来被写进了准则卡。
+  </div>
+
+  <div class="foot">
+    判定口径：Agent 输出 p≥0.5 记为「预测会赢」，真实增益 &gt; 0 记为「真赢」；两者同向即为判对。<br>
+    数据文件：<span class="mono">results-extra/forecast_raw.jsonl</span>（18 行原始返回）与
+    <span class="mono">results-extra/forecast_scores.json</span>（逐任务真实值与汇总）。<br>
+    平台会话：<span class="mono">sciencepal.ai/share/944c87a6-46b9-49b0-b49f-0adc67257c21</span>（公开 Replay）。
+  </div>
+</div>
+</body>
+</html>
