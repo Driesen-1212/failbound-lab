@@ -418,6 +418,33 @@ h3 {
 /* 4.2 结论表：第二列「结论」只有 3-5 个字，宽度不足会被挤成竖排 */
 .t42 th:nth-child(2), .t42 td:nth-child(2) { min-width: 88px; white-space: nowrap; }
 .t42 th:nth-child(1), .t42 td:nth-child(1) { min-width: 150px; }
+
+/* ========== 视频区块 ========== */
+.video-frame {
+  position: relative;
+  background: #000;
+  border: 1px solid var(--line2);
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 18px 48px rgba(0,0,0,0.45);
+}
+.video-frame video {
+  display: block; width: 100%; height: auto;
+  aspect-ratio: 16 / 9;
+  background: #000;
+}
+.video-meta {
+  display: flex; flex-wrap: wrap; gap: 8px 20px;
+  margin-top: 14px;
+  font-family: var(--mono); font-size: 12px; color: var(--dim2);
+  letter-spacing: 0.02em;
+}
+.video-meta b { color: var(--dim); font-weight: 600; }
+.video-note { margin-top: 10px; font-size: 13.5px; color: var(--dim); }
+@media (max-width: 768px) {
+  .video-meta { gap: 6px 14px; font-size: 11.5px; }
+  .video-note { font-size: 12.5px; }
+}
 </style>
 </head>
 <body>
@@ -427,6 +454,7 @@ h3 {
   <div class="nav-inner">
     <div class="nav-brand">FailBound-Lab</div>
     <div class="nav-links">
+      <a href="#video">视频</a>
       <a href="#overview">概览</a>
       <a href="#evidence">实验证据</a>
       <a href="#sandbox">交互沙箱</a>
@@ -466,7 +494,7 @@ h3 {
     <div class="metric-card">
       <div class="label">熔断器漏报</div>
       <div class="value pos">0 <span style="font-size:0.9rem;color:var(--dim)">/ 27</span></div>
-      <div class="desc">放行的 27 个里没有一个显著为负(36 任务里显著负共 4 个,全被拦住)。代价是拒绝 9 个,其中 5 个本该放行:两个数一起公布</div>
+      <div class="desc">放行的 27 个里没有一个显著为负(36 任务里显著负共 4 个,全被拦住)。代价是拒绝 9 个,其中 5 个没有显著为负(3 个显著为正、2 个不显著):两个数一起公布</div>
     </div>
     <div class="metric-card">
       <div class="label">样本外秩相关</div>
@@ -483,6 +511,30 @@ h3 {
   <p class="metrics-note">8640 次实验已完成 · 36 任务 × 4 策略 · 30 种子 × 2 口径 · seed 20261015 · pkg b6d0a514…</p>
   <p class="metrics-note">7200 次扩展消融 · 10 个基底 · 8 个有效基底 · Agent 累计命中 773 &lt; 780(36 任务等成本口径,见 §4.4)</p>
 </header>
+
+<!-- ==================== 00 VIDEO ==================== -->
+<section id="video">
+  <div class="section-inner">
+    <div class="section-label">00 / video</div>
+    <h2 class="section-title">四分钟看完全部结论</h2>
+    <div class="section-body">
+      <div class="video-frame">
+        <video controls preload="metadata" playsinline
+               poster="media/failbound-promo-poster.jpg">
+          <source src="media/failbound-promo.mp4" type="video/mp4">
+          你的浏览器不支持内嵌播放,<a href="media/failbound-promo.mp4">点此下载(10 MB)</a>。
+        </video>
+      </div>
+      <div class="video-meta">
+        <span><b>时长</b> 4:17</span>
+        <span><b>规格</b> 1920×1080 · 30fps · 10 MB</span>
+        <span><b>顺序</b> 8640 次实验 → 失效边界 → 熔断卡与错误率</span>
+        <span><a href="media/failbound-promo.mp4" download>下载 mp4</a></span>
+      </div>
+      <p class="video-note">片中的每个数字都能在<a href="tech-report.html">技术报告</a>里找到对应的复算命令,视频、主页、报告三处口径一致。</p>
+    </div>
+  </div>
+</section>
 
 <!-- ==================== 01 INTRODUCTION ==================== -->
 <section id="introduction">
@@ -803,7 +855,7 @@ h3 {
       </div>
 
       <div class="callout">
-        <p>所以交付物不是自动开关,是一张保守熔断卡。它原有两个参数:描述符 ≤2 维或 AUC &lt; 0.60 时拒绝贝叶斯优化。事后我们把两条参数拆开、按基底逐个留出重算,发现 AUC 那一条在 8 个基底上一次都没赚过:主臂上它拦下的 4 个任务实测 +6.9 到 +10.8,全是误杀,净亏 35.40;而 ≤2 维那一条触发 9 次命中 4 次,靠的是避损 98.53 对放弃 72.37 的赔率。于是现行卡只剩一条:描述符 ≤2 维就停,改用空间填充。36 任务口径下它比全用 BO 高 26.17(原两参数卡是 −9.23),拒 9 个里 4 个真输、5 个误杀,放行 27 个里漏报 0。净效果是把 −33.9 的右尾灾难,换成 +14 到 +32 的左尾少赚。</p>
+        <p>所以交付物不是自动开关,是一张保守熔断卡。它原有两个参数:描述符 ≤2 维或 AUC &lt; 0.60 时拒绝贝叶斯优化。事后我们把两条参数拆开、按基底逐个留出重算,发现 AUC 那一条在 8 个基底上一次都没赚过:主臂上它拦下的 4 个任务实测 +6.9 到 +10.8,全是误杀,净亏 35.40;而 ≤2 维那一条触发 9 次命中 4 次,靠的是避损 98.53 对放弃 72.37 的赔率。于是现行卡只剩一条:描述符 ≤2 维就停,改用空间填充。36 任务口径下它比全用 BO 高 26.17(原两参数卡是 −9.23),拒 9 个里 4 个真输、5 个误杀,放行 27 个里漏报 0。预注册的两参数卡在同一批 36 个任务上是放行 23、漏报 0、误拒 7(另 2 个不显著),两套口径都留着:<code>audit_decision_card.py</code> 不加参数跑交付版,加 <code>--two-param</code> 跑预注册版,逐任务可复算。净效果是把 −33.9 的右尾灾难,换成 +14 到 +32 的左尾少赚。</p>
       </div>
 
       <div class="callout">
@@ -1232,6 +1284,7 @@ h3 {
 
       <h3 style="margin:32px 0 16px;font-size:1.15rem;font-weight:600">材料清单</h3>
       <ul class="materials-list">
+        <li><span class="mat-icon">→</span><a href="media/failbound-promo.mp4" download>演示视频(4:17,10 MB,mp4)</a></li>
         <li><span class="mat-icon">→</span><a href="tech-report.pdf">技术报告(完整版)</a></li>
         <li><span class="mat-icon">→</span><a href="sandbox-execution-log.pdf">沙箱执行记录</a></li>
         <li><span class="mat-icon">→</span><a href="originality-statement.pdf">原创性声明</a></li>
