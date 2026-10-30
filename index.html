@@ -951,6 +951,36 @@ h3 {
         </table>
       </div>
       <p class="table-note">门控不是免费的,它的代价就是少发现约四分之一的材料——这是代价-收益权衡中必须公开的一面。</p>
+
+      <!-- 4.4 预算截断 -->
+      <h3 style="margin:32px 0 16px;font-size:1.15rem;font-weight:600">4.4 卡之后:BO 该拿多少预算</h3>
+      <p>准则卡只说该不该用 BO,没说用多少——而后者才是开题时真正要填的空。把 400 次实验切成两段:<strong>前 k 次归 GP-UCB,其余归 max-min 空间填充,总预算不变</strong>。两个臂各 18 个任务 × 12 个切换点 × 30 种子 = <strong>12960 次反事实重跑</strong>,每一次都真把搜索跑到预算上限,不是对已有结果做插值。两端落在同一条 run、同一套初始化、同一个预算上,所以 k 从 5 走到 400 的差,就是「BO 那 395 个自适应决策值多少钱」。</p>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>切换点 k</th><th class="num">BO 占比</th><th class="num">绝对命中</th><th class="num">增益</th><th class="num">最差任务</th><th class="num">亏损总额</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>5(完全不用 BO)</td><td class="num">1%</td><td class="num">55.0</td><td class="num">—</td><td class="num">0</td><td class="num">0</td></tr>
+            <tr><td>80</td><td class="num">20%</td><td class="num">58.0</td><td class="num" style="color:var(--pos)">+2.97</td><td class="num">−1.7</td><td class="num">−4.0</td></tr>
+            <tr><td>160</td><td class="num">40%</td><td class="num">61.5</td><td class="num" style="color:var(--pos)">+6.49</td><td class="num">−5.5</td><td class="num">−12.3</td></tr>
+            <tr><td><strong>240</strong></td><td class="num">60%</td><td class="num">65.1</td><td class="num" style="color:var(--pos)">+10.08</td><td class="num">−12.3</td><td class="num">−29.0</td></tr>
+            <tr><td>400(完全用 BO)</td><td class="num">100%</td><td class="num">68.7</td><td class="num" style="color:var(--pos)">+13.69</td><td class="num" style="color:var(--neg)">−34.6</td><td class="num" style="color:var(--neg)">−108.3</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="figure">
+        <img src="img/fig_schedule_cn.png" alt="图7 预算截断的收益-风险曲线">
+        <div class="caption">
+          <span class="fig-label">图 7</span>
+          左:平均增益一路涨到全用 BO(+13.7),但最差任务同时掉到 −34.6;灰带 40–60% 是两者同时可接受的区间。右:按基底切开——全用 BO 时 dielectric 是负的(−6.8),截断 60% 时三个基底全为正。
+        </div>
+      </div>
+
+      <p><strong>三条读法。</strong>① 在安全区(dim&gt;2 的 9 个任务),曲线单调升到全用(+30.49),截断是纯损失——卡说「可以用 BO」就该用满,一分别留。② 在失效区(dim≤2 的 9 个任务),<strong>两端都不是最优</strong>:全用 BO 是 −3.10、全拒是 0、截断 160–240 是 +0.8。所以「失效」不等于「BO 一点用没有」,而是 BO 的自适应部分在把信息榨干之后开始倒赔——前几十步仍在有效地缩小搜索区域,过了那个点,UCB 挑的每个新点都在重复已知区域。③ 真正拉开差距的是「你不知道自己在哪个区」:按基底切开,全用 BO 时三个基底里<strong>有一个是负的</strong>,截断 60% 时<strong>三个全正</strong>(+2.77 / +16.47 / +10.99),代价是平均少赚 26%、亏损总额从 −108.3 收到 −29.0(<strong>−73%</strong>)。</p>
+      <p><strong>主臂的 6480 次:同一条曲线的另一半。</strong>消融臂之外,主臂 18 个任务用同一套代码重跑了一遍:曲线<strong>单调</strong>,全用 BO <strong>+38.59</strong>、<strong>18/18 任务全正</strong>(最差 +7.3),而且从 k=160 起<strong>没有任何一个任务是负的</strong>——截断在这条臂上纯属丢钱。两臂合起来才是完整的调度规则:<strong>卡判「可用」就用满,判「不可用」或判不准就截在 60%</strong>。两个分支各有 6480 次完整重跑支撑。</p>
+      <p><strong>所以交付变两条</strong>:判得准时按卡全用;判不准(或不想判)就把 BO 截断在 60% 的实验次数——<strong>不带阈值、不需诊断</strong>,是本项目唯一一条「不知道也能用」的建议。它不是一个拟合出来的最优点:k=240 取自 12 点网格,做留一基底时按「最大化训练均值」选出的 k 是 320–400(跨基底仍然不迁移,与 4.4.1 的病一样);按「收益保留 ≥45% 且亏损总额 ≤ 全用的 30%」筛,网格上通过的是 <strong>160–240(40–60%)</strong>;收紧到「保留 ≥70% 且亏损 ≤30%」,就只剩 <strong>k=240 一个点</strong>。所以交付的是一条带判据的区间加一个默认值,不是一个调好的超参。</p>
     </div>
   </div>
 </section>
