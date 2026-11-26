@@ -280,10 +280,10 @@
   <div class="step"><div class="n">1</div><div class="body"><b>打开终端</b>
     <div class="d">按键盘 <code>Win + R</code>，输入 <code>cmd</code> 回车。弹出的黑窗口就是终端——它是「用打字代替点击来操作电脑」的工具。</div></div></div>
   <div class="step"><div class="n">2</div><div class="body"><b>进入项目目录</b>
-    <pre><code>cd /d D:\WorkBuddy\personal-workspace\AI4S_Hackathon\_brainstorm_share</code></pre>
+    <pre><code>cd /d D:\failbound-lab</code></pre>
     <div class="d">「cd」= change directory（换文件夹），告诉终端「接下来在这个文件夹里干活」。<code>/d</code> 表示允许跨盘符跳转。</div></div></div>
   <div class="step"><div class="n">3</div><div class="body"><b>告诉程序数据在哪</b>
-    <pre><code>set FAILBOUND_RESULTS=D:\WorkBuddy\personal-workspace\AI4S_Hackathon\unzipped\agent_lab\results</code></pre>
+    <pre><code>set FAILBOUND_RESULTS=agent_lab\results</code></pre>
     <div class="d">「set」= 设一个环境变量（临时记号）。ask.py 会读这个记号去找结果文件夹。（等交付闭环做完、脚本进公开仓库后，这一步会省掉。）</div></div></div>
   <div class="step"><div class="n">4</div><div class="body"><b>跑起来（三个例子）</b>
     <pre><code>python ask.py --task matbench_dielectric__pca1   :: 拒对的例子
@@ -349,7 +349,7 @@ python ask.py --task matbench_log_gvrh__pca2     :: 拒错的例子（误杀）<
   </table>
 </section>
 
-<footer>FailBound-Lab 讲解册 · HTML 图文版 · 2026-11-17 · 配套：《决赛答辩台本》《决赛文案包_终版》《一页总账》</footer>
+<footer>FailBound-Lab 讲解册 · HTML 图文版 · 2026-11-17</footer>
 </div>
 </body>
 </html>
