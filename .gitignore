@@ -14,3 +14,5 @@ _stat_upgrade2.py
 Thumbs.db
 ~$*
 *.swp
+_gh_public.py
+_gh_pages.py
