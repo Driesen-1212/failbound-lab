@@ -51,7 +51,7 @@ python reconciliation/replay_card_on_holdout.py  # HEADLINE = -8.60
 
 | 位置 | 内容 |
 |---|---|
-| `index.html` | 项目主页（`index-full.html` 是早前的长版页面） |
+| `index.html` | 项目主页 |
 | `tech-report.html` / `.pdf` | 技术报告，HTML 与 PDF 同源 |
 | `project-overview-5p.pdf` | 五页概览 |
 | `agent_lab/` | 实验代码：bench / strategies / analyze / audit 等 |

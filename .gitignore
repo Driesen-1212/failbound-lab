@@ -16,3 +16,6 @@ Thumbs.db
 *.swp
 _gh_public.py
 _gh_pages.py
+
+# 临时脚本
+_*.py
