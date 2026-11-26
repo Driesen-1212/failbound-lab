@@ -1,0 +1,15 @@
+task,dim,card_decision,bo_gpucb,sf_farthest,gap_strict,ok_strict,bo_bestmax,sf_bestmax,gap_max,ok_max
+matbench_log_kvrh__elem20,20,use_bo,31.633,22.033,9.6,True,31.633,40.667,-9.033,False
+matbench_log_kvrh__full,85,use_bo,189.233,61.567,127.667,True,189.233,61.567,127.667,True
+matbench_log_kvrh__pca1,1,withhold_bo,52.333,51.5,0.833,False,52.333,51.5,0.833,False
+matbench_log_kvrh__pca2,2,withhold_bo,92.967,68.4,24.567,False,101.5,68.4,33.1,False
+matbench_log_kvrh__pca5,5,use_bo,156.7,63.633,93.067,True,156.7,63.633,93.067,True
+matbench_log_kvrh__rp2,2,withhold_bo,42.3,70.033,-27.733,True,42.7,70.033,-27.333,True
+matbench_log_kvrh__rp5,5,use_bo,69.033,62.367,6.667,True,69.433,62.367,7.067,True
+matbench_perovskites__elem20,20,use_bo,81.067,69.2,11.867,True,81.067,69.2,11.867,True
+matbench_perovskites__full,85,use_bo,69.367,40.467,28.9,True,70.433,40.467,29.967,True
+matbench_perovskites__pca1,1,withhold_bo,42.133,41.533,0.6,False,42.667,42.333,0.333,False
+matbench_perovskites__pca2,2,withhold_bo,42.067,38.033,4.033,False,44.633,41.667,2.967,False
+matbench_perovskites__pca5,5,use_bo,53.833,42.9,10.933,True,53.9,42.9,11.0,True
+matbench_perovskites__rp2,2,withhold_bo,43.4,37.1,6.3,False,43.4,40.167,3.233,False
+matbench_perovskites__rp5,5,use_bo,51.567,47.267,4.3,True,51.833,47.267,4.567,True

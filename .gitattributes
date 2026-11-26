@@ -1,0 +1,12 @@
+# 证据包的 sha256 锚定算的是字节，任何行尾转换都会让校验失败
+* text=auto eol=lf
+*.jsonl -text
+*.csv -text
+*.pdf -text
+*.pptx -text
+*.docx -text
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.mp4 binary
+evidence/checksums/SHA256SUMS.txt -text

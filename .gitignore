@@ -1,0 +1,16 @@
+__pycache__/
+*.pyc
+*.pyo
+
+# 本地临时与备份（不入库）
+_bak_*/
+_peek_ppt_nums.py
+_promote_home.py
+_stat_upgrade.py
+_stat_upgrade2.py
+
+# 编辑器/系统
+.DS_Store
+Thumbs.db
+~$*
+*.swp

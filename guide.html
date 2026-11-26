@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FailBound-Lab 讲解册 · 图文版</title>
+<style>
+  :root{
+    --bg:#f7f7f4; --card:#ffffff; --ink:#1f2933; --sub:#52606d;
+    --accent:#1a56db; --accent-soft:#e8effc; --warn:#b45309; --warn-soft:#fef3e2;
+    --good:#047857; --good-soft:#e6f4ef; --line:#e4e7eb; --mono:#0f172a;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:-apple-system,"Segoe UI","Microsoft YaHei","PingFang SC",sans-serif;
+    line-height:1.75;font-size:16.5px}
+  .wrap{max-width:860px;margin:0 auto;padding:32px 20px 80px}
+  header.hero{background:linear-gradient(135deg,#12233f,#1a56db);color:#fff;
+    border-radius:16px;padding:36px 32px;margin-bottom:28px}
+  header.hero h1{margin:0 0 8px;font-size:30px;letter-spacing:1px}
+  header.hero p{margin:4px 0;color:#dbe7ff;font-size:15px}
+  nav.toc{background:var(--card);border:1px solid var(--line);border-radius:14px;
+    padding:18px 22px;margin-bottom:32px}
+  nav.toc b{color:var(--sub);font-size:13px;letter-spacing:2px}
+  nav.toc a{display:inline-block;margin:6px 10px 0 0;color:var(--accent);
+    text-decoration:none;font-size:14.5px;background:var(--accent-soft);
+    padding:4px 12px;border-radius:999px}
+  nav.toc a:hover{background:#d5e2fa}
+  section{background:var(--card);border:1px solid var(--line);border-radius:14px;
+    padding:28px 30px;margin-bottom:26px}
+  h2{margin:0 0 18px;font-size:22px;border-left:5px solid var(--accent);
+    padding-left:12px}
+  h3{margin:26px 0 10px;font-size:17.5px;color:#12233f}
+  p{margin:10px 0}
+  .lead{color:var(--sub);font-size:14.5px}
+  .analogy{background:var(--accent-soft);border-radius:12px;padding:16px 18px;margin:14px 0}
+  .analogy b{color:#123a8f}
+  .term{border-top:1px dashed var(--line);padding:14px 0}
+  .term:first-of-type{border-top:none}
+  .term .name{font-weight:700;font-size:16.5px}
+  .pron{display:inline-block;background:#fdf2d4;color:#7a4d05;border-radius:6px;
+    padding:1px 8px;font-size:13.5px;margin-left:8px;font-family:Consolas,monospace}
+  .term .what{margin:6px 0 2px}
+  .term .like{margin:2px 0;color:var(--sub)}
+  .term .like b{color:var(--warn)}
+  .numcards{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin:16px 0}
+  .numcard{background:#12233f;color:#fff;border-radius:12px;padding:16px;text-align:center}
+  .numcard .big{font-size:26px;font-weight:800;font-family:Consolas,monospace}
+  .numcard .small{font-size:12.5px;color:#b9c8e4;margin-top:4px}
+  table{width:100%;border-collapse:collapse;margin:14px 0;font-size:14.5px}
+  th{background:#eef1f6;text-align:left;padding:8px 10px;border:1px solid var(--line)}
+  td{padding:8px 10px;border:1px solid var(--line);vertical-align:top}
+  tr:nth-child(even) td{background:#fafbfc}
+  code{background:#eef1f6;color:var(--mono);border-radius:5px;padding:1px 7px;
+    font-family:Consolas,monospace;font-size:14px}
+  pre{background:#0f172a;color:#dbe7ff;border-radius:12px;padding:16px 18px;
+    overflow-x:auto;font-family:Consolas,monospace;font-size:14px;line-height:1.6}
+  pre code{background:none;color:inherit;padding:0}
+  .warnbox{background:var(--warn-soft);border-left:4px solid var(--warn);
+    border-radius:8px;padding:12px 16px;margin:14px 0}
+  .goodbox{background:var(--good-soft);border-left:4px solid var(--good);
+    border-radius:8px;padding:12px 16px;margin:14px 0}
+  .qa{border-left:4px solid var(--accent);background:#f4f7fe;border-radius:8px;
+    padding:12px 16px;margin:12px 0}
+  .qa .q{font-weight:700;color:#123a8f}
+  .qa .a{margin-top:6px}
+  .step{display:flex;gap:14px;margin:16px 0}
+  .step .n{flex:0 0 34px;height:34px;border-radius:50%;background:var(--accent);
+    color:#fff;font-weight:800;display:flex;align-items:center;justify-content:center}
+  .step .body{flex:1}
+  .step .body b{font-size:16px}
+  .step .body .d{color:var(--sub);font-size:14.5px}
+  .pill{display:inline-block;background:#eef1f6;border:1px solid var(--line);
+    border-radius:999px;padding:2px 12px;font-size:13px;color:var(--sub);margin:2px 4px 2px 0}
+  footer{color:var(--sub);font-size:13px;text-align:center;margin-top:30px}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  @media(max-width:640px){.grid2{grid-template-columns:1fr}}
+  .mini{background:#f4f7fe;border-radius:12px;padding:14px 16px}
+  .mini h4{margin:0 0 8px;font-size:15px;color:#123a8f}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header class="hero">
+  <h1>FailBound-Lab 讲解册</h1>
+  <p>目的：让你完全听懂自己的项目，现场每个词都念得对。</p>
+  <p>读法：第 1 章大类比（5 分钟）→ 第 2 章三分钟版 → 概念课按顺序啃 → 赛前背第 6 章 → 亲手跑一遍第 9 章。</p>
+  <p>标法：<span class="pron" style="background:#facc15;color:#422006">发音</span> = 中文念法 + 用汉字拼出的英文近似音。</p>
+</header>
+
+<nav class="toc">
+  <b>目录</b><br>
+  <a href="#c1">1 大类比</a><a href="#c2">2 三分钟版</a><a href="#c3">3 概念课</a>
+  <a href="#c4">4 数字8640</a><a href="#c5">5 三个发现</a><a href="#c6">6 必背数字</a>
+  <a href="#c7">7 评委问答</a><a href="#c8">8 急救包</a><a href="#c9">9 怎么操作（手把手）</a>
+  <a href="#c10">10 术语速查</a>
+</nav>
+
+<!-- ============ 第1章 ============ -->
+<section id="c1">
+  <h2>第 1 章 · 一个大类比讲完整个项目</h2>
+  <div class="analogy">
+    <b>场景：你在一家有 1000 道菜的餐厅，只能尝 35 口，想找出全场最好吃的菜。</b>
+  </div>
+  <ul>
+    <li><b>闭眼乱试</b>（随机撒点）：闭上眼睛随便指。35 口里大概能命中 3~4 口特别好吃的（命中率 0.100）。</li>
+    <li><b>聪明吃法</b>（贝叶斯优化 BO）：每尝一口都记住味道，推测哪一类菜可能更好吃，下一口专门往那去。听起来必然更聪明，对吧？</li>
+    <li><b>菜单标签</b>（描述符）：还没尝的时候能看到的只有菜单信息——照片、辣度、价格。信息<span style="white-space:nowrap">的<b>数量</b></span>就是「维数」。</li>
+    <li><b>问题来了</b>：菜单上只有 1~2 条信息时，「聪明吃法」会根据价格瞎猜，<b>自信地绕开真正好吃的菜</b>——真实实验里（预算 400），最差的任务它比闭眼乱试<b>少 33.9 个命中</b>。</li>
+    <li><b>我们做的事</b>：先看一眼菜单信息够不够。<b>够，就用聪明吃法；不够，就老实闭眼乱试。</b>这张「先看一眼再决定」的小卡片 = <b>熔断卡</b>。</li>
+    <li><b>最特别的一点</b>：我们不但交卡，还把<b>它自己判错的历史</b>印在菜单上——拒绝过 9 次，4 次拒对，5 次拒错。全场没有第二个人敢把自己的错账打印出来。</li>
+  </ul>
+  <div class="goodbox"><b>一句话：别人在比赛谁的吃法聪明，我们在研究「什么时候聪明吃法会变蠢」——并且给出带价签的判断卡。</b></div>
+</section>
+
+<!-- ============ 第2章 ============ -->
+<section id="c2">
+  <h2>第 2 章 · 三分钟版本（项目干了什么）</h2>
+  <ol>
+    <li><b>背景</b>：找新材料（更好的电池、半导体），候选几千个，实验室一次实验几周、几千块。「下一个实验做哪个」是值钱的问题。全世界默认用贝叶斯优化（BO）。</li>
+    <li><b>没人检验的事</b>：BO 好用的前提是「输入信息（描述符）和目标性质之间有关系」。我们不检验「BO 好不好」，检验「<b>BO 什么时候会坏</b>」。</li>
+    <li><b>怎么做</b>：36 个任务 × 4 种策略 × 30 个种子 × 2 种口径 = <b>8640 次</b>完整实验轨迹，每条都落盘、可复算。故意把任务变难：目标搞模糊（15 个）、描述符砍到 1~20 维（18 个）。</li>
+    <li><b>三个发现</b>：正常任务 BO 全赢（18/18 显著为正）；信息不足会输（4 个显著为负，最差少 33.9）；机制是「自信地错」（选中点真实分位 0.560 vs 老实撒点 0.613，p=0.031）。</li>
+    <li><b>交付物</b>：一张熔断卡（描述符 ≤2 维就拒绝 BO）+ 完整错误率（真拒 4、误杀 5、<b>显著</b>漏报 0）+ 8640 条可复算数据。比「无脑全用 BO」多命中 <b>26.17</b> 个。</li>
+    <li><b>最重要的诚实</b>：这卡不聪明（p 不显著、会误杀），但它错在哪、错多少钱全写在报告里——<b>错误率定价，而不是假装它万能</b>。</li>
+  </ol>
+</section>
+
+<!-- ============ 第3章 ============ -->
+<section id="c3">
+  <h2>第 3 章 · 概念课（每个词：是什么 → 类比 → 发音）</h2>
+
+  <h3>3.1 材料发现与优化</h3>
+  <div class="term"><span class="name">候选集 candidate pool</span><span class="pron">CAN-di-dit「坎-迪-德」</span>
+    <p class="what">所有可以试着做的材料清单，几千个。</p><p class="like"><b>类比</b>：菜单上那 1000 道菜。</p></div>
+  <div class="term"><span class="name">实验预算 budget</span><span class="pron">「巴-吉特」BUD-get</span>
+    <p class="what">实际能做的实验次数，常用档位 400。</p><p class="like"><b>类比</b>：你只付得起 35 口的账单。</p></div>
+  <div class="term"><span class="name">目标性质 target property</span><span class="pron">「普罗-泼-提」PROP-er-tee</span>
+    <p class="what">想优化的那个性质，比如介电常数越高越好。</p></div>
+  <div class="term"><span class="name">命中 hit</span><span class="pron">「嘿特」</span>
+    <p class="what">结束时选中的点落进「全场最好的前 10%」就算命中。随机期望命中率恒为 0.100。</p><p class="like"><b>类比</b>：35 口里命中了几道 top 菜。<b>注意：越高越好！</b></p></div>
+
+  <h3>3.2 优化方法</h3>
+  <div class="term"><span class="name">贝叶斯优化 Bayesian Optimization（BO）</span><span class="pron">「贝叶斯 bèi-yè-sī」/ 英文近似 BEY-zhee-un「贝-日恩」，重音在前</span>
+    <p class="what">边试边学：每测一个点，更新对全貌的猜测，挑下一个最值得测的点。</p><p class="like"><b>类比</b>：聪明吃法。口语直接说 <b>B-O</b>（「比-欧」）。</p></div>
+  <div class="term"><span class="name">代理模型 surrogate model</span><span class="pron">「瑟-若-给特」SUR-uh-git，重音在第一音节</span>
+    <p class="what">BO 内部那个「对全貌的猜测」，便宜，代替真实实验做推演。<b>答辩容易被问，先练三遍。</b></p><p class="like"><b>类比</b>：你脑中「这家店大概什么口味」的印象。</p></div>
+  <div class="term"><span class="name">高斯过程 Gaussian Process（GP）</span><span class="pron">「高斯 gāo-sī」/ GOW-see-an「高-斯-恩」</span>
+    <p class="what">最常用的代理模型：一条会给自己留余地的曲线——没测过的地方不但给预测值，还给「我不确定」的范围。</p></div>
+  <div class="term"><span class="name">gp_ucb</span><span class="pron">字母连读「G-P-U-C-B」</span>
+    <p class="what">主策略名 = GP + UCB（Upper Confidence Bound 信心上界）：挑点时预测值 + 不确定性奖励。</p><p class="like"><b>类比</b>：「这地方没去过，看起来可能好吃，赌一把」。</p></div>
+  <div class="term"><span class="name">基线 baseline</span><span class="pron">「贝斯-莱恩」BASE-line</span>
+    <p class="what">用来对比的「笨办法」：<b>空间填充</b>（space-filling，均匀铺满，不猜不学）。</p>
+    <div class="warnbox"><b>坑</b>：报告早期用过 LHS（拉丁超立方抽样）当基线，后来发现铺法退化，换算法后 8640 次全部重跑——这就是答辩自曝第三件事。</div></div>
+  <div class="term"><span class="name">种子 seed</span><span class="pron">「西-德」，一个音节</span>
+    <p class="what">随机数的「起点编号」。同一 seed 跑出的过程完全一样。每个配置 30 个种子 = 排除运气。</p><p class="like"><b>类比</b>：同一实验让 30 个人独立做一遍。</p></div>
+
+  <h3>3.3 表示与任务</h3>
+  <div class="term"><span class="name">描述符 descriptor</span><span class="pron">「迪-斯克里普-特」dih-SKRIP-ter，重音在 SKRIP</span>
+    <p class="what">材料的「数字画像」。维数 = 画像由几个数组成：85 维 = 85 个数，2 维 = 只有 2 个。<b>本项目最重要的词，念熟。</b></p><p class="like"><b>类比</b>：菜单标签的数量。</p></div>
+  <div class="term"><span class="name">降维 / 消融 ablation</span><span class="pron">「阿-布雷-申」uh-BLAY-shun，重音在 BLAY</span>
+    <p class="what">故意把描述符砍短（1/2/5/20/85 维），看系统什么时候失灵。</p><p class="like"><b>类比</b>：把菜单标签一条条撕掉，看吃货什么时候点错菜。</p></div>
+  <div class="term"><span class="name">六个基底名（公开数据集，任务名 = 数据集__变形）</span>
+    <ul>
+      <li><b>matbench_dielectric</b><span class="pron">「代-勒克-垂克」= 介电</span>：预测介电常数。</li>
+      <li><b>matbench_perovskites</b><span class="pron">「佩-罗夫斯-凯特」= 钙钛矿</span>：一类晶体结构。</li>
+      <li><b>log_gvrh</b>：剪切模量（多难掰弯）取对数。口语「log 剪切模量」。</li>
+      <li><b>log_kvrh</b>：体积模量（多难压扁）取对数。口语「log 体积模量」。</li>
+      <li><b>expt_gap</b>：实验带隙（band gap，半导体导电性的关键量）。口语「实验带隙」。</li>
+      <li>其他：jdft2d（二维材料）、mp_e_form（形成能）、phonons<span class="pron">「佛-农」FOH-nong 声子</span>。</li>
+    </ul></div>
+  <div class="term"><span class="name">基底 base system</span><span class="pron">「贝斯」</span>
+    <p class="what">一个材料体系/数据集。36 个任务来自约 5 个基底——独立单元少，是对手最爱打的点，我们主动承认。</p></div>
+
+  <h3>3.4 统计课（评委最爱问）</h3>
+  <div class="term"><span class="name">p 值 p-value</span><span class="pron">直接念「p 值」</span>
+    <p class="what">「如果真相其实什么都没发生，看到这么极端结果的概率」。p&lt;0.05 通常叫显著。</p><p class="like"><b>类比</b>：抛硬币连 8 次正面——p 值就是纯靠运气抛出这个结果的概率。</p></div>
+  <div class="term"><span class="name">显著性 significant</span><span class="pron">「西格-尼-菲-肯特」sig-NIF-i-cant</span>
+    <p class="what">p 过了线。报告里 <code>significant=True</code> = 过了检验。</p></div>
+  <div class="term"><span class="name">Holm 校正 p_holm</span><span class="pron">「霍姆/厚姆」</span>
+    <p class="what">一次做 36 个检验总有碰巧显著的，Holm 把「碰巧率」压回去。所有 p 值都报校正后的。</p></div>
+  <div class="term"><span class="name">Cliff's δ（delta）</span><span class="pron">「克里夫斯-戴尔塔」</span>
+    <p class="what">效应量：不看差多少，看两组分开多干净。δ=−0.629 中等偏强。</p><p class="like"><b>类比</b>：随便挑一个甲，有 70% 概率比乙高。</p></div>
+  <div class="term"><span class="name">秩相关 ρ（Spearman rho）</span><span class="pron">「肉」一个音节；Spearman「斯皮尔-曼」</span>
+    <p class="what">两个排名像不像。+1 完全同向，0 没关系。衡量「AUC 能不能预报 BO 增益」。</p></div>
+  <div class="term"><span class="name">置信区间 CI</span><span class="pron">「因特-沃」IN-ter-vul</span>
+    <p class="what">真实值大概率落的范围。AUC 0.731 的 CI [0.556, 0.807]——下界接近 0.5（瞎猜），所以说「下界接近随机」。</p></div>
+  <div class="term"><span class="name">bootstrap</span><span class="pron">「布特-斯特拉普」BOOT-strap</span>
+    <p class="what">反复重抽已有数据（2000 次）估波动，不需要数学假设。</p><p class="like"><b>类比</b>：全班成绩单反复洗牌抽样，看平均分能波动多大。</p></div>
+  <div class="term"><span class="name">留出集 holdout / 留一基底 leave-one-base-out</span><span class="pron">「厚德-奥特」</span>
+    <p class="what">故意藏几个体系不参与规则拟合，最后拿出来考——检验「换个体系还灵不灵」。</p></div>
+  <div class="term"><span class="name">回溯性 retrospective vs 前瞻性 prospective</span><span class="pron">reh-truh-SPEK-tiv / pruh-SPEK-tiv</span>
+    <p class="what">retrospective = 事后用已有数据总结；prospective = 先定规则再跑全新实验。我们全部结论是回溯性的——如实写明。</p></div>
+
+  <h3>3.5 我们的交付物</h3>
+  <div class="term"><span class="name">熔断卡 fuse card</span><span class="pron">circuit「瑟-kit」breaker「布雷-克尔」；口语「熔断卡」</span>
+    <p class="what">极简规则：<b>描述符 ≤2 维就拒绝用 BO，改用空间填充。</b></p><p class="like"><b>类比</b>：保险丝——电流过大就熔断，宁可断电不让房子烧。它不管哪一秒出事，只管出事时房子别烧。</p></div>
+  <div class="term"><span class="name">四个格子（2×2 判定矩阵）</span>
+    <table>
+      <tr><th>格子</th><th>含义</th><th>数量</th></tr>
+      <tr><td>真拒（拒对）</td><td>卡说拒绝，实测 BO 确实更差</td><td><b>4 个</b></td></tr>
+      <tr><td>误杀 false kill<span class="pron">「佛尔斯-克尔」</span></td><td>卡说拒绝，但 BO 其实更好</td><td><b>5 个</b>（区间 21.2%~86.3%）</td></tr>
+      <tr><td>显著漏报 miss<span class="pron">「密斯」</span></td><td>卡说放行，实测 BO 显著更差</td><td><b>0 个</b>（上界 12.8%；有 1 个 −9.9 但 p=0.89 不显著）</td></tr>
+      <tr><td>真放</td><td>卡说放行，BO 更好</td><td>其余 22 个</td></tr>
+    </table></div>
+  <div class="term"><span class="name">代价不对称（为什么误杀 5 个还能接受）</span>
+    <p class="what">误杀 5 个：最多少赚 31.9 个命中。真拒 4 个：最差躲过 −33.9 的灾难。<b>少赚 vs 踩坑，不对称</b>——所以叫保险丝，不叫仪表。</p></div>
+  <div class="term"><span class="name">披露单 disclosure sheet</span><span class="pron">「迪斯-克罗-热」dis-CLOH-zher</span>
+    <p class="what">我们方法论的名字：判据可复用、阈值如实标注、随卡公布自己的错误率。</p></div>
+</section>
+
+<!-- ============ 第4章 ============ -->
+<section id="c4">
+  <h2>第 4 章 · 8640 这个数字怎么来的</h2>
+  <pre><code>8640 = 36 个任务 × 4 种策略 × 30 个种子 × 2 种口径</code></pre>
+  <ul>
+    <li><b>36 个任务</b> = 主臂 18（正常任务）+ 消融臂 18（描述符被砍短）。严谨说法：「36 个<b>任务-臂</b>」。</li>
+    <li><b>4 种策略</b> = gp_ucb 等 4 种「下一个实验选哪」的方法。</li>
+    <li><b>30 个种子</b> = 同配置重复 30 次排除运气。</li>
+    <li><b>2 种口径</b> = 两种成本计法（是否启用门控成本）。</li>
+  </ul>
+  <div class="warnbox"><b>必防一句话</b>：评委若说「你有 8640 个数据点呢」——标准回法：「<b>有效独立单元只有 36 个任务、约 5 个基底</b>，8640 是轨迹数不是独立样本数，报告里按体系整簇重抽处理了。」</div>
+</section>
+
+<!-- ============ 第5章 ============ -->
+<section id="c5">
+  <h2>第 5 章 · 三个核心发现（复述版）</h2>
+  <p><b>发现一：BO 不是万能的。</b>正常任务 18/18 全赢；信息不足的任务 4 个显著输，最差少 33.9 个命中。同一套方法，换个任务就翻车。</p>
+  <p><b>发现二：什么时候翻车，跟「做什么材料」关系不大，跟「怎么描述材料」关系很大。</b>同一体系，描述符砍到 2 维就翻车，85 维就稳赢。<b>失效在表示里，不在体系里。</b>（严格说：翻转只发生在部分体系——expt_gap 就不翻转，这句限定必须带上。）</p>
+  <p><b>发现三：失效的机制是「自信地错」。</b>失效时 BO 把预算投到<b>更低的真实分位</b>（0.560 vs 0.613，五个体系方向全一致，p=0.031）。它不是运气差，它是<b>认真地、系统地绕开好答案</b>。</p>
+</section>
+
+<!-- ============ 第6章 ============ -->
+<section id="c6">
+  <h2>第 6 章 · 五个必背数字卡（赛前最后一晚背这个）</h2>
+  <div class="numcards">
+    <div class="numcard"><div class="big">8640</div><div class="small">36×4×30×2 ·「每一条都能复算」</div></div>
+    <div class="numcard"><div class="big">18/18<br>vs 4/18</div><div class="small">主臂全赢 / 消融显著输 ·「好时全赢，坏时有规律地坏」</div></div>
+    <div class="numcard"><div class="big">−33.9</div><div class="small">最差任务少命中 ·「白烧 34 次实验」</div></div>
+    <div class="numcard"><div class="big">0.731</div><div class="small">[0.556, 0.807] ·「边界找到了，但它预报不了自己」</div></div>
+    <div class="numcard"><div class="big">27·9·4·5</div><div class="small">放行27（显著漏报0）/ 拒绝9 = 真拒4+误杀5</div></div>
+  </div>
+  <p><b>加分数字（被追问再报）</b>：<span class="pill">+26.17 卡比全BO多命中</span><span class="pill">ρ=+0.167 跨体系 p=0.69「测不出关系」</span><span class="pill">0.560 vs 0.613 机制 p=0.031</span><span class="pill">35.40 删掉的AUC条款净亏</span><span class="pill">−19.20 更复杂规则留出转负→不交付</span></p>
+</section>
+
+<!-- ============ 第7章 ============ -->
+<section id="c7">
+  <h2>第 7 章 · 评委问什么，你怎么答</h2>
+  <div class="qa"><div class="q">Q：你这卡不就是一条 if 语句吗？</div>
+    <div class="a">A：对，而且是设计选择。复杂规则我们搜过——留出检验转负（−19.2），所以不交付。这条简单规则的每一类错误都被 8640 次实测定过价。</div></div>
+  <div class="qa"><div class="q">Q：36 个任务都来自 matbench，独立吗？</div>
+    <div class="a">A：不独立，独立基底只有约 5 个，我们按体系整簇重抽处理统计推断，并把「留一基底错误率 0.28–0.44」写在报告里。这是最大局限，我们选择说出来而不是藏。</div></div>
+  <div class="qa"><div class="q">Q：ρ=0.820 不是说相关性很强吗？</div>
+    <div class="a">A：那个 0.820 测的是<b>同一体系内</b>换表示；一跨体系，8 个基底级点实测 ρ=0.167，p=0.69——不是估不出来，是<b>测不出关系</b>。所以 AUC 只能当诊断量，不能当开关。</div></div>
+  <div class="qa"><div class="q">Q：你说漏报 0，真的一个负的都没有？</div>
+    <div class="a">A：<b>显著</b>漏报 0。放行区里有一个任务 BO 差 9.9，但 p=0.89 不显著——这个数在 tests.csv 里，欢迎查。</div></div>
+  <div class="qa"><div class="q">Q：为什么不跑新实验证明前瞻性？</div>
+    <div class="a">A：判据已公开，任何「知道答案后的新跑」都没有证明力。我们交付的是错误率定价和可复算数据，前瞻验证写在后续计划里。</div></div>
+</section>
+
+<!-- ============ 第8章 ============ -->
+<section id="c8">
+  <h2>第 8 章 · 忘词急救包（现场卡壳就说这些）</h2>
+  <ul>
+    <li>被问懵：<b>「这个问题我们的报告 §4.4 有完整分析，我复述核心结论是……」</b>（争取 3 秒思考）</li>
+    <li>数字忘了：<b>「具体数字在报告里有，方向我可以确定地说：……」</b></li>
+    <li>被打断：停下，听完，说「您指的是……对吗」再答。</li>
+    <li>万能金句（背下来）：<b>「科学里最贵的不是算力，是知道什么时候不该算。」</b></li>
+  </ul>
+</section>
+
+<!-- ============ 第9章 ============ -->
+<section id="c9">
+  <h2>第 9 章 · 怎么操作（手把手，照抄就能跑）</h2>
+  <p class="lead">这一章教你亲手把项目跑起来。每条命令都解释了它在干什么，照抄即可。</p>
+
+  <h3>9.1 跑演示程序 ask.py（现在就能跑）</h3>
+  <p>它读我们已存盘的实验结果（tests.csv 等，共约 300KB），2 秒输出一张卡的裁决。<b>不用联网。</b></p>
+  <div class="step"><div class="n">1</div><div class="body"><b>打开终端</b>
+    <div class="d">按键盘 <code>Win + R</code>，输入 <code>cmd</code> 回车。弹出的黑窗口就是终端——它是「用打字代替点击来操作电脑」的工具。</div></div></div>
+  <div class="step"><div class="n">2</div><div class="body"><b>进入项目目录</b>
+    <pre><code>cd /d D:\WorkBuddy\personal-workspace\AI4S_Hackathon\_brainstorm_share</code></pre>
+    <div class="d">「cd」= change directory（换文件夹），告诉终端「接下来在这个文件夹里干活」。<code>/d</code> 表示允许跨盘符跳转。</div></div></div>
+  <div class="step"><div class="n">3</div><div class="body"><b>告诉程序数据在哪</b>
+    <pre><code>set FAILBOUND_RESULTS=D:\WorkBuddy\personal-workspace\AI4S_Hackathon\unzipped\agent_lab\results</code></pre>
+    <div class="d">「set」= 设一个环境变量（临时记号）。ask.py 会读这个记号去找结果文件夹。（等交付闭环做完、脚本进公开仓库后，这一步会省掉。）</div></div></div>
+  <div class="step"><div class="n">4</div><div class="body"><b>跑起来（三个例子）</b>
+    <pre><code>python ask.py --task matbench_dielectric__pca1   :: 拒对的例子
+python ask.py --task matbench_dielectric__rp5    :: 放行但略亏的例子
+python ask.py --task matbench_log_gvrh__pca2     :: 拒错的例子（误杀）</code></pre>
+    <div class="d">「python ask.py」= 运行这个脚本；「--task xxx」= 指定要看哪个任务。屏幕会输出：描述符几维 → 卡的判断 → 实测数字 → 三级裁决（拒对 / 拒错 / 放行对 / 放行亏）。</div></div></div>
+  <div class="goodbox"><b>看懂输出</b>：<code>拒绝优化</code> = 卡不让用 BO；<code>USE_BO</code> = 卡放行；最后一行「裁决」是拿实测数据给卡打分——<b>它会自己承认「拒错了：误杀」</b>，这就是答辩最敢的一招。</div>
+
+  <h3>9.2 复算主数字 verify.py（交付闭环做完后可用）</h3>
+  <pre><code>python verify.py</code></pre>
+  <p>30 秒内打印两个数：<b>+26.17</b>（熔断卡比全用 BO 多命中）和 <b>−9.23</b>（旧两条件卡），并列出由哪 36 行、哪些种子配对算出——与报告逐位一致。这是给评委「自己动手验一条」用的。</p>
+
+  <h3>9.3 打开交互控制台（网页，拖滑块）</h3>
+  <div class="step"><div class="n">1</div><div class="body">双击打开 <code>failbound-console.html</code>（在仓库目录里），或访问 GitHub Pages 主页。</div></div>
+  <div class="step"><div class="n">2</div><div class="body">拖两个滑块：θ（AUC 阈值）和 d（维度阈值），右侧实时显示「放行 / 拒绝」。
+    <div class="d">⚠️ 注意：控制台当前默认 θ=0.600 / d=3 是<b>旧版卡</b>，正在统一改成主卡 dim≤2（总账 #2 的一项）。改完之前别拿它演示。</div></div></div>
+
+  <h3>9.4 自己查数字（Excel 就能干）</h3>
+  <div class="grid2">
+    <div class="mini"><h4>tests.csv（主结果表）</h4>用 Excel 打开 <code>unzipped\agent_lab\results\tests.csv</code>。重点列：<code>budget</code>（预算档）看 400；<code>strategy</code> 看 gp_ucb；<code>use_gate</code> 看 False；<code>mean_bo</code> / <code>mean_base</code> = BO 与基线的平均命中；<code>p_holm</code> = 校正后 p 值。</div>
+    <div class="mini"><h4>task_props.csv（任务属性表）</h4>看每个任务的 <code>dim</code>（描述符维度）和 <code>separability_auc</code>。两表用 <code>task</code> 列对照——「维度 ≤2 的行，BO 是不是普遍输给基线」一眼可见。</div>
+  </div>
+
+  <h3>9.5 答辩当天的操作（提前做，不做就翻车）</h3>
+  <div class="step"><div class="n">1</div><div class="body"><b>前一晚</b>：把演示目录整个拷进 U 盘 + 现场电脑双备份；预录 40 秒成功录屏当退路。</div></div>
+  <div class="step"><div class="n">2</div><div class="body"><b>上台前</b>：终端窗口和 ask.py 输出提前开好、字号调大（至少 20pt）；断网状态试跑一次确认可用。</div></div>
+  <div class="step"><div class="n">3</div><div class="body"><b>第 3 页时</b>：Alt+Tab 切到终端，跑「一拒对 + 一拒错」两条命令（30 秒内），指着「拒错了：误杀」那行说：「这是我们自己卡的错账。」</div></div>
+  <div class="step"><div class="n">4</div><div class="body"><b>纪律</b>：现场不开 IDE、不现场打字输长命令、不依赖任何网页。跑挂了就切录屏，说「这是刚才那条命令的输出」。</div></div>
+</section>
+
+<!-- ============ 第10章 ============ -->
+<section id="c10">
+  <h2>附 · 术语速查表（按答辩出场顺序）</h2>
+  <table>
+    <tr><th>词</th><th>念法</th><th>一句话</th></tr>
+    <tr><td>Bayesian Optimization</td><td>贝叶斯 / BEY-zhee-un</td><td>边试边学的聪明吃法</td></tr>
+    <tr><td>BO</td><td>「比-欧」</td><td>上词缩写</td></tr>
+    <tr><td>descriptor</td><td>dih-SKRIP-ter</td><td>材料的数字画像</td></tr>
+    <tr><td>surrogate</td><td>SUR-uh-git</td><td>BO 脑内的猜测模型</td></tr>
+    <tr><td>Gaussian Process</td><td>高斯 / GOW-see-an</td><td>带不确定度的代理模型</td></tr>
+    <tr><td>gp_ucb</td><td>字母连读</td><td>主策略名</td></tr>
+    <tr><td>space-filling</td><td>SPAYS-FIL-ing</td><td>均匀铺点的笨基线</td></tr>
+    <tr><td>LHS</td><td>拉丁超立方</td><td>被换掉的退化基线</td></tr>
+    <tr><td>seed</td><td>「西-德」</td><td>随机起点，30 个排运气</td></tr>
+    <tr><td>hit</td><td>「嘿特」</td><td>进前 10% 算命中</td></tr>
+    <tr><td>AUC</td><td>「A-U-C」</td><td>可学习性打分</td></tr>
+    <tr><td>Cliff's delta</td><td>克里夫斯-戴尔塔</td><td>效应量</td></tr>
+    <tr><td>p_holm</td><td>霍姆校正后的 p</td><td>修过的显著性</td></tr>
+    <tr><td>CI</td><td>置信区间</td><td>真值的可能范围</td></tr>
+    <tr><td>bootstrap</td><td>BOOT-strap</td><td>重抽样估波动</td></tr>
+    <tr><td>holdout</td><td>「厚德-奥特」</td><td>留出考试题</td></tr>
+    <tr><td>retrospective</td><td>reh-truh-SPEK-tiv</td><td>回溯性（我们的局限）</td></tr>
+    <tr><td>prospective</td><td>pruh-SPEK-tiv</td><td>前瞻性（后续计划）</td></tr>
+    <tr><td>fuse card</td><td>熔断卡</td><td>dim≤2 拒绝 BO 的保险丝</td></tr>
+    <tr><td>false kill</td><td>「佛尔斯-克尔」误杀</td><td>拒错了 5 个</td></tr>
+    <tr><td>miss</td><td>「密斯」漏报</td><td>放错了（显著 0 个）</td></tr>
+    <tr><td>dielectric</td><td>介电</td><td>数据集 1</td></tr>
+    <tr><td>perovskite</td><td>钙钛矿</td><td>数据集 2</td></tr>
+    <tr><td>gvrh / kvrh</td><td>逐字母 G-V-R-H / K-V-R-H</td><td>剪切 / 体积模量</td></tr>
+    <tr><td>expt_gap</td><td>「实验带隙」</td><td>数据集 3</td></tr>
+    <tr><td>phonon</td><td>FOH-non 声子</td><td>数据集 4 相关</td></tr>
+    <tr><td>MatBench</td><td>「麦特-本奇」</td><td>全部任务的数据源</td></tr>
+  </table>
+</section>
+
+<footer>FailBound-Lab 讲解册 · HTML 图文版 · 2026-11-17 · 配套：《决赛答辩台本》《决赛文案包_终版》《一页总账》</footer>
+</div>
+</body>
+</html>

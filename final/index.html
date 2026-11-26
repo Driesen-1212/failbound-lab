@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>FailBound-Lab · 开跑前的决策卡</title>
+<meta name="description" content="用开工前拿得到的信息，判断这一次该不该投贝叶斯优化。Verity 队 · AI4Science Hackathon 2026 决赛。">
+<style>
+  :root{
+    --ink:#0D1B2E; --ink-2:#1E2C42; --muted:#5A6A80; --line:#E2E8F0;
+    --brand:#0E3F8C; --brand-2:#1B62C9; --bg:#F7F9FC; --white:#fff;
+    --warn:#B4472A;
+  }
+  *{box-sizing:border-box;-webkit-text-size-adjust:100%}
+  html,body{margin:0;padding:0}
+  body{
+    background:var(--bg); color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;
+    line-height:1.7; font-size:16px; -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:760px;margin:0 auto;padding:0 20px}
+
+  /* HERO */
+  header{
+    background:
+      radial-gradient(1100px 380px at 12% -10%, rgba(43,110,200,.42), transparent 62%),
+      linear-gradient(168deg,#081426 0%,#0C2340 58%,#0A1A30 100%);
+    color:#fff; padding:44px 0 40px; position:relative; overflow:hidden;
+  }
+  header::after{
+    content:""; position:absolute; inset:0; pointer-events:none;
+    background-image:linear-gradient(rgba(255,255,255,.045) 1px,transparent 1px),
+                     linear-gradient(90deg,rgba(255,255,255,.045) 1px,transparent 1px);
+    background-size:52px 52px; mask-image:linear-gradient(180deg,rgba(0,0,0,.9),transparent 82%);
+  }
+  .kicker{
+    font:600 11px/1 ui-monospace,SFMono-Regular,Menlo,monospace;
+    letter-spacing:.22em; text-transform:uppercase; color:#7FB0F0; margin:0 0 18px;
+  }
+  h1{font-size:clamp(30px,7.4vw,46px); line-height:1.1; margin:0; letter-spacing:-.01em; font-weight:800}
+  h1 span{display:block; font-size:clamp(15px,3.6vw,19px); font-weight:500; color:#A8C6EA; margin-top:12px; letter-spacing:0}
+  .lead{font-size:clamp(16px,4vw,18.5px); color:#DCE8F7; margin:22px 0 0; max-width:34em}
+  .lead b{color:#fff; font-weight:700}
+  .meta{
+    margin-top:26px; padding-top:16px; border-top:1px solid rgba(255,255,255,.16);
+    display:flex; flex-wrap:wrap; gap:8px 22px;
+    font-size:12.5px; color:#8FA8C6; letter-spacing:.02em;
+  }
+  .meta b{color:#D5E4F6; font-weight:600}
+
+  /* NUMBERS */
+  .figs{display:grid; grid-template-columns:repeat(3,1fr); gap:1px; background:var(--line);
+        border:1px solid var(--line); border-radius:14px; overflow:hidden; margin:-26px auto 0;
+        position:relative; z-index:2; box-shadow:0 14px 34px -18px rgba(13,27,46,.3);}
+  .fig{background:#fff; padding:18px 14px; text-align:center}
+  .fig .n{font:800 clamp(21px,5.6vw,29px)/1.15 -apple-system,"Segoe UI",sans-serif; color:var(--brand); letter-spacing:-.02em}
+  .fig .l{font-size:11.5px; color:var(--muted); margin-top:7px; line-height:1.45}
+
+  section{padding:40px 0 0}
+  .eyebrow{
+    font:600 10.5px/1 ui-monospace,SFMono-Regular,Menlo,monospace;
+    letter-spacing:.2em; text-transform:uppercase; color:var(--brand-2); margin:0 0 10px;
+  }
+  h2{font-size:clamp(19px,4.6vw,23px); margin:0 0 14px; letter-spacing:-.01em; font-weight:750; line-height:1.4}
+  p{margin:0 0 14px; color:var(--ink-2)}
+  p.small{font-size:14.5px; color:var(--muted)}
+
+  .figure{margin:18px 0 6px; border:1px solid var(--line); border-radius:14px; overflow:hidden; background:#fff}
+  .figure img{display:block; width:100%; height:auto}
+  .cap{font-size:12.5px; color:var(--muted); padding:11px 14px; border-top:1px solid var(--line); background:#FBFCFE}
+
+  .checks{list-style:none; margin:0; padding:0; display:grid; gap:10px}
+  .checks li{
+    background:#fff; border:1px solid var(--line); border-radius:12px; padding:14px 16px;
+    display:grid; grid-template-columns:26px 1fr; gap:12px; align-items:start;
+  }
+  .checks .i{
+    width:26px;height:26px;border-radius:7px;background:#EAF1FB;color:var(--brand);
+    font:700 13px/26px ui-monospace,monospace; text-align:center;
+  }
+  .checks b{display:block; font-size:15px; margin-bottom:3px}
+  .checks span{font-size:13.5px; color:var(--muted); line-height:1.6}
+
+  .callout{
+    background:#fff; border:1px solid var(--line); border-left:3px solid var(--brand);
+    border-radius:0 12px 12px 0; padding:16px 18px; margin:20px 0;
+  }
+  .callout b{color:var(--brand)}
+
+  table{width:100%; border-collapse:collapse; font-size:14px; background:#fff;
+        border:1px solid var(--line); border-radius:12px; overflow:hidden}
+  th,td{padding:10px 13px; text-align:left; border-bottom:1px solid var(--line)}
+  th{background:#F4F7FC; font-weight:650; font-size:12.5px; color:var(--muted); letter-spacing:.02em}
+  tr:last-child td{border-bottom:none}
+  td.num{font-variant-numeric:tabular-nums; font-weight:650; color:var(--ink)}
+  .neg{color:var(--warn)}
+
+  footer{
+    margin-top:46px; padding:30px 0 44px;
+    background:linear-gradient(180deg,rgba(13,27,46,0) 0%,rgba(13,27,46,.04) 100%);
+    border-top:1px solid var(--line);
+  }
+  .sig{font-size:14px; color:var(--muted); line-height:1.9}
+  .sig b{color:var(--ink); font-weight:650}
+  .tag{display:inline-block; font:600 10.5px/1 ui-monospace,monospace; letter-spacing:.16em;
+       text-transform:uppercase; color:var(--brand); background:#EAF1FB; padding:6px 9px; border-radius:5px}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap">
+    <p class="kicker">AI4Science Hackathon 2026 · Final · Research Tools</p>
+    <h1>FailBound-Lab<span>失效边界实验室</span></h1>
+    <p class="lead">一张开跑前的决策卡：<b>这一次，该不该投贝叶斯优化。</b><br>判断只用开工前就拿得到的信息，不读目标值。</p>
+    <div class="meta">
+      <span>队伍 <b>Verity</b></span>
+      <span>赛道 <b>AI for Science · 材料发现</b></span>
+      <span><b>2026.12.3</b> 香港城市大学</span>
+    </div>
+  </div>
+</header>
+
+<div class="wrap">
+  <div class="figs">
+    <div class="fig"><div class="n">17,520</div><div class="l">次完整运行</div></div>
+    <div class="fig"><div class="n">36</div><div class="l">个独立任务臂<br>（样本量的分母）</div></div>
+    <div class="fig"><div class="n">27 / 9</div><div class="l">放行 / 拒绝<br>（同一批任务臂）</div></div>
+  </div>
+
+  <section>
+    <p class="eyebrow">01 / Research problem</p>
+    <h2>默认配置，在部分体系上是负收益</h2>
+    <p>贝叶斯优化已经是材料筛选的默认做法。但在同一笔 400 次预算下，有相当一部分体系里它跑不过最朴素的均匀铺点，最差的一个差了 33.9 个命中。</p>
+    <p>这类失败在跑完之后无法归因：赢了算方法有效，输了算体系太难。于是同一个错误会被重复，也不会被记进任何账单。</p>
+  </section>
+
+  <section>
+    <p class="eyebrow">02 / Approach</p>
+    <h2>三道前置检查，一道有否决权</h2>
+    <div class="figure">
+      <img src="main.jpg" alt="三道前置检查：基底校准、小探针、任务特征否决闸" loading="lazy">
+      <div class="cap">三道检查只读开工前信息；任一环节不确定，即退回均匀铺点。</div>
+    </div>
+    <ul class="checks">
+      <li><div class="i">1</div><div><b>基底校准</b><span>这个体系的历史对照靠不靠得住。靠不住，这一轮不进对照。</span></div></li>
+      <li><div class="i">2</div><div><b>两点探针</b><span>花两个点试方向，不收敛值。方向对得上，才把预算交给优化器。</span></div></li>
+      <li><div class="i">3</div><div><b>任务特征否决闸</b><span>只读描述符维度。大于 2 放行进满预算；小于等于 2 拒绝，改走均匀铺点或砍到六成。</span></div></li>
+    </ul>
+  </section>
+
+  <section>
+    <p class="eyebrow">03 / What it changes</p>
+    <h2>一进一出，净差 26.17</h2>
+    <table>
+      <tr><th>分组</th><th>任务臂</th><th>结果</th></tr>
+      <tr><td>放行</td><td class="num">27</td><td>与盲目用优化器完全一致，加总 <b>+960.53</b></td></tr>
+      <tr><td>拒绝</td><td class="num">9</td><td>盲目用优化器 <span class="neg">−26.17</span>，卡归零</td></tr>
+      <tr><td>净差</td><td class="num">—</td><td><b>+26.17</b>（省下 98.53，让掉 72.37）</td></tr>
+    </table>
+    <div class="callout">
+      <b>这个数有前提。</b>它来自参与拟合的那批基底。换 3 个没拟合过的新体系，净增益 +0.90；严格留出集 −8.60。所以它只作机制存在过的证据，不作普适成绩——同源体系内有效，跨体系需重新标定。
+    </div>
+  </section>
+
+  <section>
+    <p class="eyebrow">04 / Error rate</p>
+    <h2>错误率和收益印在同一页</h2>
+    <table>
+      <tr><th>指标</th><th>数值</th><th>分母</th></tr>
+      <tr><td>漏报（该拦没拦）</td><td class="num">0</td><td>放行的 27 个；95% 上界 12.8%</td></tr>
+      <tr><td>误杀（不该拦却拦）</td><td class="num">5</td><td>拒绝的 9 个，误杀率 55.6%</td></tr>
+      <tr><td>灾难臂拦截</td><td class="num">4 / 4</td><td>随机拦 9 个期望只拦到 1 个</td></tr>
+    </table>
+    <p class="small">误杀这 5 个让掉 72.37 个命中，真拒的 4 个省下 98.53。两笔账分开记，不合并成一个好看的数字。</p>
+  </section>
+
+  <section>
+    <p class="eyebrow">05 / Reproducibility</p>
+    <h2>不需要相信，打开就能重算</h2>
+    <p>证据包 155 MB、39 个文件、17,520 条轨迹逐条在包内。每个结论对应一条命令，零第三方依赖，断网可跑；数字与报告不一致时脚本直接报 FAIL。</p>
+    <p class="small">这批数据是回溯性的、任务同源，这是它最硬的局限，写在结论旁边。四种失效情形：任务与这 36 个臂不同源、预算远超标定区间、指标换成与命中数无关的口径、任务之间强耦合。</p>
+  </section>
+
+  <footer>
+    <div class="wrap" style="padding:0">
+      <p class="sig">
+        <span class="tag">Verity</span><br>
+        <b>FailBound-Lab</b> · 单文件决策台 · 可逐比特复算<br>
+        AI4Science Hackathon 2026 决赛 · 2026 年 12 月 3 日 · 香港城市大学
+      </p>
+    </div>
+  </footer>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,16 @@
+[start] arm=ablate use_gate=False tasks=14 seeds=30 procs=6 max_budget=400 budgets=[25, 50, 100, 200, 400] → runs_nogate_ablate.jsonl
+[done] matbench_log_kvrh__elem20          n_pool= 3000 thr=+2.286 | 120 runs | 289s | eta 3755s
+[done] matbench_log_kvrh__full            n_pool= 3000 thr=+2.286 | 240 runs | 640s | eta 3843s
+[done] matbench_log_kvrh__pca1            n_pool= 3000 thr=+2.286 | 360 runs | 922s | eta 3382s
+[done] matbench_log_kvrh__pca2            n_pool= 3000 thr=+2.286 | 480 runs | 1150s | eta 2874s
+[done] matbench_log_kvrh__pca5            n_pool= 3000 thr=+2.286 | 600 runs | 1365s | eta 2456s
+[done] matbench_log_kvrh__rp2             n_pool= 3000 thr=+2.286 | 720 runs | 1652s | eta 2202s
+[done] matbench_log_kvrh__rp5             n_pool= 3000 thr=+2.286 | 840 runs | 1840s | eta 1840s
+[done] matbench_perovskites__elem20       n_pool= 3000 thr=+2.400 | 960 runs | 2097s | eta 1573s
+[done] matbench_perovskites__full         n_pool= 3000 thr=+2.400 | 1080 runs | 2419s | eta 1344s
+[done] matbench_perovskites__pca1         n_pool= 3000 thr=+2.400 | 1200 runs | 2807s | eta 1123s
+[done] matbench_perovskites__pca2         n_pool= 3000 thr=+2.400 | 1320 runs | 3200s | eta 873s
+[done] matbench_perovskites__pca5         n_pool= 3000 thr=+2.400 | 1440 runs | 3491s | eta 582s
+[done] matbench_perovskites__rp2          n_pool= 3000 thr=+2.400 | 1560 runs | 3874s | eta 298s
+[done] matbench_perovskites__rp5          n_pool= 3000 thr=+2.400 | 1680 runs | 4052s | eta 0s
+[save] D:\WorkBuddy\personal-workspace\AI4S_Hackathon\holdout\agent_lab\results\runs_nogate_ablate.jsonl | runs=1680 | 4052s

@@ -1,0 +1,38 @@
+{
+  "matbench_dielectric|random_uniform|25|0": {
+    "run_experiments": "5324be67099809f6",
+    "agent": "5324be67099809f6",
+    "screening": "5324be67099809f6",
+    "n": 25
+  },
+  "matbench_dielectric|farthest_point|25|0": {
+    "run_experiments": "ff97f324e7bdfec3",
+    "agent": "ff97f324e7bdfec3",
+    "screening": "ff97f324e7bdfec3",
+    "n": 25
+  },
+  "matbench_dielectric|gp_ucb|25|0": {
+    "run_experiments": "3fd12c314ff48c1e",
+    "agent": "3fd12c314ff48c1e",
+    "screening": "3fd12c314ff48c1e",
+    "n": 25
+  },
+  "matbench_dielectric|gp_ei|25|1": {
+    "run_experiments": "3e201313669a5623",
+    "agent": "3e201313669a5623",
+    "screening": "3e201313669a5623",
+    "n": 25
+  },
+  "matbench_log_gvrh|gp_ucb|50|3": {
+    "run_experiments": "2fcd0ff32cef80be",
+    "agent": "2fcd0ff32cef80be",
+    "screening": "2fcd0ff32cef80be",
+    "n": 50
+  },
+  "matbench_log_gvrh|farthest_point|50|3": {
+    "run_experiments": "ce13e2e7f524a67e",
+    "agent": "ce13e2e7f524a67e",
+    "screening": "ce13e2e7f524a67e",
+    "n": 50
+  }
+}

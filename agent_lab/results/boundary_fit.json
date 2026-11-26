@@ -1,0 +1,156 @@
+{
+  "main_equal_cost": {
+    "strategy": "gp_ucb",
+    "budget": 400,
+    "use_gate": false,
+    "n_tasks": 18,
+    "auc_star": null,
+    "direction": null,
+    "ci": null,
+    "ci_note": "原样本无零点穿越，故不报 CI；bootstrap 中仅 2.9% 的重采样出现零点，不足以支持边界存在",
+    "n_boot_with_crossing": 57,
+    "frac_boot_with_crossing": 0.0285,
+    "auc_range": [
+      0.5163099653808111,
+      0.9308296268841116
+    ],
+    "gain_range": [
+      6.933333333333334,
+      130.13333333333333
+    ],
+    "n_significant": 18,
+    "n_significant_pos": 18,
+    "sign_all_positive": true,
+    "effect": "abs_gain",
+    "note": "扫描区间内未出现absolute gain (BO hits - baseline hits)的零点穿越"
+  },
+  "main_gate": {
+    "strategy": "gp_ucb",
+    "budget": 400,
+    "use_gate": true,
+    "n_tasks": 18,
+    "auc_star": null,
+    "direction": null,
+    "ci": null,
+    "ci_note": "原样本无零点穿越，故不报 CI；bootstrap 中仅 5.7% 的重采样出现零点，不足以支持边界存在",
+    "n_boot_with_crossing": 113,
+    "frac_boot_with_crossing": 0.0565,
+    "auc_range": [
+      0.5163099653808111,
+      0.9308296268841116
+    ],
+    "gain_range": [
+      3.033333333333333,
+      122.6
+    ],
+    "n_significant": 13,
+    "n_significant_pos": 13,
+    "sign_all_positive": true,
+    "effect": "abs_gain",
+    "note": "扫描区间内未出现absolute gain (BO hits - baseline hits)的零点穿越"
+  },
+  "main_nogate": {
+    "strategy": "gp_ucb",
+    "budget": 400,
+    "use_gate": false,
+    "n_tasks": 18,
+    "auc_star": null,
+    "direction": null,
+    "ci": null,
+    "ci_note": "原样本无零点穿越，故不报 CI；bootstrap 中仅 2.9% 的重采样出现零点，不足以支持边界存在",
+    "n_boot_with_crossing": 57,
+    "frac_boot_with_crossing": 0.0285,
+    "auc_range": [
+      0.5163099653808111,
+      0.9308296268841116
+    ],
+    "gain_range": [
+      6.933333333333334,
+      130.13333333333333
+    ],
+    "n_significant": 18,
+    "n_significant_pos": 18,
+    "sign_all_positive": true,
+    "effect": "abs_gain",
+    "note": "扫描区间内未出现absolute gain (BO hits - baseline hits)的零点穿越"
+  },
+  "ablate_gate": {
+    "strategy": "gp_ucb",
+    "budget": 400,
+    "use_gate": true,
+    "n_tasks": 18,
+    "auc_star": 0.57686556175812,
+    "direction": "neg2pos",
+    "ci": [
+      0.5531849607862299,
+      0.8015971844513905
+    ],
+    "ci_note": null,
+    "n_boot_with_crossing": 1855,
+    "frac_boot_with_crossing": 0.9275,
+    "auc_range": [
+      0.5464253897550111,
+      0.9149005436125526
+    ],
+    "gain_range": [
+      -17.833333333333332,
+      66.4
+    ],
+    "n_significant": 10,
+    "n_significant_pos": 7,
+    "sign_all_positive": false,
+    "effect": "abs_gain",
+    "note": null
+  },
+  "ablate_nogate": {
+    "strategy": "gp_ucb",
+    "budget": 400,
+    "use_gate": false,
+    "n_tasks": 18,
+    "auc_star": 0.7306939792174585,
+    "direction": "pos2neg",
+    "ci": [
+      0.5557114412277196,
+      0.8065918559941079
+    ],
+    "ci_note": null,
+    "n_boot_with_crossing": 1884,
+    "frac_boot_with_crossing": 0.942,
+    "auc_range": [
+      0.5464253897550111,
+      0.9149005436125526
+    ],
+    "gain_range": [
+      -33.9,
+      87.43333333333334
+    ],
+    "n_significant": 14,
+    "n_significant_pos": 10,
+    "sign_all_positive": false,
+    "effect": "abs_gain",
+    "note": null
+  },
+  "h4": {
+    "n_cells": 90,
+    "inversion_rate": 0.3851851851851852,
+    "mean_rank_rho": 0.6788675134594813,
+    "median_rank_rho": 0.5,
+    "n_cells_rho_lt_1": 50,
+    "mean_effect_shift_gp_ucb": -6.02111111111111
+  },
+  "config": {
+    "main_strategy": "gp_ucb",
+    "main_budget_by_arm": {
+      "main": 400,
+      "ablate": 400
+    },
+    "alpha": 0.05,
+    "n_boot": 2000,
+    "bin_width": 0.05,
+    "lowess_frac": 0.6,
+    "n_tasks_registered": {
+      "main": 18,
+      "ablate": 18
+    }
+  }
+}

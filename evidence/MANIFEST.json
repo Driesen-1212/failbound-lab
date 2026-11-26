@@ -1,0 +1,202 @@
+{
+  "frozen_at": "2026-11-17",
+  "source": "Byte-identical copies of the original campaign outputs (sciencepal_files/, ext11/, holdout/). No experiment was re-run; all counts are re-enumerations of these files.",
+  "totals": {
+    "main_8640": 8640,
+    "ext11_7200": 7200,
+    "holdout_1680": 1680,
+    "grand_total": 17520
+  },
+  "verify_command": "python reconciliation/reconcile_runs.py",
+  "root_hash": {
+    "of": "checksums/SHA256SUMS.txt",
+    "sha256": "34691388b7ddefcd8f77a0382d4990cd7dde61dc62f556a53ffb40e020864fbd",
+    "note": "Hashes detect transfer corruption, not tampering (manifests are not self-hashed); anchor this root hash against the submission record. v1 root hash (2026-11-17) superseded - see REFREEZE.md."
+  },
+  "files": [
+    {
+      "path": "EVIDENCE_GUIDE.md",
+      "sha256": "174b6e7fbab21ed0434c97ed2a8b6b310db8c8b998185407fb0bc9cf799c8be0",
+      "bytes": 13412
+    },
+    {
+      "path": "EXCLUDED.md",
+      "sha256": "432e81897795ad66ad5d70908e45b6959b71ae6ecaac6954fa44f7f41e22455c",
+      "bytes": 2172
+    },
+    {
+      "path": "ext11_7200/runs_nogate_ablate.jsonl",
+      "sha256": "497c42f841c018b92bf2fa58892103c8ca6c7e48196e512aa80da20f04d9b67a",
+      "bytes": 79027413
+    },
+    {
+      "path": "ext11_7200/runs_nogate_ablate_shufgap.jsonl",
+      "sha256": "9d314df73788af9b4530406fac72679be2b5889c6811b59449d46291be70b52d",
+      "bytes": 5600517
+    },
+    {
+      "path": "ext11_7200/runs_nogate_ablate_shufgap.tmatbench_expt_gap__elem20.jsonl",
+      "sha256": "d05983f677fd770a3895d0e0dc030f571c2be08ae74bf800760e1d1dff5f3f00",
+      "bytes": 935397
+    },
+    {
+      "path": "ext11_7200/runs_nogate_ablate_shufgap.tmatbench_expt_gap__pca1.jsonl",
+      "sha256": "cd08c0ae72dfd2572bc13426da51c775f51e21c937398b9f6b4d98927d99b64a",
+      "bytes": 933259
+    },
+    {
+      "path": "ext11_7200/runs_nogate_ablate_shufgap.tmatbench_expt_gap__pca2.jsonl",
+      "sha256": "83db6b0b900ca3b01af72f29d1c3560c5f864c91566c0e0c7a22beb2d52559b6",
+      "bytes": 933493
+    },
+    {
+      "path": "ext11_7200/runs_nogate_ablate_shufgap.tmatbench_expt_gap__pca5.jsonl",
+      "sha256": "93120f2b29a406ce6d236a77873f31ad712ff050c7c648cdb576c14b352758fc",
+      "bytes": 935754
+    },
+    {
+      "path": "ext11_7200/runs_nogate_ablate_shufgap.tmatbench_expt_gap__rp2.jsonl",
+      "sha256": "2592dd75370b59785a10731a58da8acdc2587f787039261e45b7e34ba630901f",
+      "bytes": 931593
+    },
+    {
+      "path": "ext11_7200/runs_nogate_ablate_shufgap.tmatbench_expt_gap__rp5.jsonl",
+      "sha256": "84d03f3eacedcd7bff6a5b7c11b08fb1c2ddd9558950e68518775e9bf1d6de69",
+      "bytes": 933434
+    },
+    {
+      "path": "ext11_7200/runs_nogate_ablate_shufprobe.jsonl",
+      "sha256": "9a7791c49d74685b70d9b7f707bf3c1af540e3cd359b9b758e06f7449033a9f2",
+      "bytes": 187989
+    },
+    {
+      "path": "ext11_7200/TASK_SELECTION.md",
+      "sha256": "6b0c046be616e9971b88db568518c3e2a722b5f6537d7f67b2d41706a1e104d4",
+      "bytes": 2983
+    },
+    {
+      "path": "ext11_7200/tasks_48.txt",
+      "sha256": "a9086fdfca492173d6296f57a1f409f037040871af0b65a5b9d3b0655f06c1b2",
+      "bytes": 1218
+    },
+    {
+      "path": "holdout_1680/ablate_manifest.csv",
+      "sha256": "d4003d44c83be9cd5ec77e618040e8a6c71f0fa08ef1b48c6f1e1b0ba9bb463e",
+      "bytes": 1876
+    },
+    {
+      "path": "holdout_1680/analyze_holdout.py",
+      "sha256": "8490a22aa35d0029afac52a8c08754994685d6f68e401ff39ca36eaa63017ad0",
+      "bytes": 9081
+    },
+    {
+      "path": "holdout_1680/build_holdout.py",
+      "sha256": "4c86353bb204262b722073a2d3238445ac9388435bef963fce05acaa8cb9d3d4",
+      "bytes": 4304
+    },
+    {
+      "path": "holdout_1680/holdout_props.csv",
+      "sha256": "eb3fd6f86eb83dc63072f8c372bfb78a74d728297bd8d1f05378d6aea79fc282",
+      "bytes": 1639
+    },
+    {
+      "path": "holdout_1680/holdout_results.json",
+      "sha256": "ea1207bb85aee050c3f7a6381c380676baeca4574c963fa2fea1481c4994bb3f",
+      "bytes": 14623
+    },
+    {
+      "path": "holdout_1680/holdout_run.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    {
+      "path": "holdout_1680/holdout_run_nogate.log",
+      "sha256": "7151eef5a96fae934b226e146d3cd9f288bbb941efa2a1929ab57e156a6d5c0c",
+      "bytes": 1632
+    },
+    {
+      "path": "holdout_1680/plot_holdout.py",
+      "sha256": "96f0ae2d3936e1f803b26f2c78cfa3dfcdcd0a8e49237c5d817e5d08b3cafee6",
+      "bytes": 3596
+    },
+    {
+      "path": "holdout_1680/props_holdout.py",
+      "sha256": "f00f866f184c93f3b3aef08b1479dc68fd2b9a6c479d37ccbd57770ee87bf592",
+      "bytes": 1518
+    },
+    {
+      "path": "holdout_1680/runs_nogate_ablate.jsonl",
+      "sha256": "3321e8d17cbc56545898d1349790c1a7ef05e5a56fb1b66040f89ab7a4a5adfd",
+      "bytes": 17932477
+    },
+    {
+      "path": "main_8640/runs_gate.jsonl",
+      "sha256": "0d245101af91f38221f9f5629bf67cc514857d4e0d29577b43c4ddea91e8c41c",
+      "bytes": 10155294
+    },
+    {
+      "path": "main_8640/runs_gate_ablate.jsonl",
+      "sha256": "64fa48895517358bb70eece5f460a6e11eca1e40ac5b8237ebca05f5a5ee9476",
+      "bytes": 9420810
+    },
+    {
+      "path": "main_8640/runs_nogate.jsonl",
+      "sha256": "991324a7f1b54227ae84c1669bb1ff7d6c5ca7d98e3a91b8caf5e9a29cba9e2f",
+      "bytes": 14650235
+    },
+    {
+      "path": "main_8640/runs_nogate_ablate.jsonl",
+      "sha256": "f8d4f5c2b04fd6696d6118970a42112ced1a6fcdf723e299e16ea070c01a3f93",
+      "bytes": 12638270
+    },
+    {
+      "path": "README.md",
+      "sha256": "174b6e7fbab21ed0434c97ed2a8b6b310db8c8b998185407fb0bc9cf799c8be0",
+      "bytes": 13412
+    },
+    {
+      "path": "reconciliation/base_system_overlap.csv",
+      "sha256": "ff53fa32fdf5b710c68c0dbb14eae5385b974ed3183e57609c7640dc75a45a2d",
+      "bytes": 365
+    },
+    {
+      "path": "reconciliation/crosscheck_samples.csv",
+      "sha256": "08572a64fd55c90399e908bf29abd89a9e73acab6fdca4d929ee12727642000f",
+      "bytes": 11718
+    },
+    {
+      "path": "reconciliation/RECONCILE_RESULT.txt",
+      "sha256": "2d7aae8add40c3686b96b07b77e39b394769209ea98869f9e0307e25a5dfbaa7",
+      "bytes": 17
+    },
+    {
+      "path": "reconciliation/reconcile_runs.py",
+      "sha256": "57d5d5825e06a16cd88912ef7397a6132be7b18acac017c0b14d62c2ec17379d",
+      "bytes": 21239
+    },
+    {
+      "path": "reconciliation/reconciliation_report.csv",
+      "sha256": "5d94e0c4a219948e8d4a6306007a7a95a0403abe5d4ae60d16fbcb8e408980e3",
+      "bytes": 1903
+    },
+    {
+      "path": "reconciliation/replay_card_on_holdout.csv",
+      "sha256": "be8b951b2de0d0c53450e17e724979854b620ca980607d8092c8f2a9c3e1ee9e",
+      "bytes": 1321
+    },
+    {
+      "path": "reconciliation/replay_card_on_holdout.py",
+      "sha256": "1592807185e42e3afcb7628de1020cefa573d818934530d503f21538dd812c79",
+      "bytes": 7005
+    },
+    {
+      "path": "reconciliation/summary_by_task_strategy.csv",
+      "sha256": "54323f8ffdd1f7baa427ec66a624fe454bb82f80d2dd853906f1b7c093d473f5",
+      "bytes": 54250
+    }
+  ],
+  "note": "reconciliation/ contents are regenerated by reconcile_runs.py on each run; the hashed copies are the frozen seed-42 reference run (deterministic given the shipped data). MANIFEST.json itself is not self-hashed.",
+  "revised_at": "2026-11-24",
+  "revision_note": "v2 (2026-11-24): 4 files revised - replay script now emits the card's contract basis (gp_ucb vs farthest_point, net -8.60) as primary and the best-of-family basis (-13.13) as a labelled sensitivity column; guide and its README copy restated accordingly. No data file changed, no experiment re-run. See REFREEZE.md. | v2 addendum (same day): beta_scan note added - MANIFEST and REFREEZE are non-self-hashed by design, so this note changes no anchor and leaves root_hash 34691388... untouched. See REFREEZE.md.",
+  "beta_scan": "Exploratory analysis, not a pre-registered endpoint. Its per-run ledger (beta_runs.csv, 1,080 runs, produced 2026-10-22) does not feed any numeric claim in the report and is therefore outside the frozen anchor set - not because it was considered for inclusion and dropped, but because it never belonged to this pack's scope. mismatch_vs_frozen=0 indicates field/schema consistency with the frozen protocol only, not endorsement of any beta-scan conclusion. Ledger and scripts available on request."
+}

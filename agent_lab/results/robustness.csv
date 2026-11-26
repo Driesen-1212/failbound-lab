@@ -1,0 +1,11 @@
+check,scope,n_main,n_ablate,median_main,median_ablate,p_raw,budget,note
+cross_axis_all,全部 AUC 区间,18,18,18.383333333333333,7.433333333333334,0.027886264742467463,400,两轴增益分布是否不同
+cross_axis_low_auc,AUC < 0.75（关键区间）,9,9,10.633333333333333,2.966666666666667,0.052058768750600205,400,低可学习性区间内两轴是否不同
+effective_n,ablate/dielectric,6,6,-13.716666666666669,,,400,显著为负 3 个，显著为正 2 个
+effective_n,ablate/expt_gap,6,6,19.116666666666667,,,400,显著为负 0 个，显著为正 5 个
+effective_n,ablate/log_gvrh,6,6,5.15,,,400,显著为负 1 个，显著为正 3 个
+effective_n,main/dielectric,1,1,15.8,,,400,显著为负 0 个，显著为正 1 个
+effective_n,main/expt_gap,1,1,124.83333333333333,,,400,显著为负 0 个，显著为正 1 个
+effective_n,main/log_gvrh,1,1,101.16666666666667,,,400,显著为负 0 个，显著为正 1 个
+effective_n,main/log_kvrh,12,12,16.316666666666666,,,400,显著为负 0 个，显著为正 12 个
+effective_n,main/perovskites,3,3,22.533333333333335,,,400,显著为负 0 个，显著为正 3 个

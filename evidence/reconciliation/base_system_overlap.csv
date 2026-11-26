@@ -1,0 +1,11 @@
+base,ext11_tasks,holdout_tasks,main_tasks,main_ablate_tasks,layers_present
+matbench_dielectric,6,0,1,6,3
+matbench_expt_gap,6,0,1,6,3
+matbench_glass,6,0,0,0,1
+matbench_jdft2d,6,0,0,0,1
+matbench_log_gvrh,6,0,1,6,3
+matbench_log_kvrh,6,7,12,0,3
+matbench_mp_e_form,6,0,0,0,1
+matbench_perovskites,6,7,3,0,3
+matbench_phonons,6,0,0,0,1
+matbench_steels,6,0,0,0,1

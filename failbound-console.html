@@ -164,7 +164,7 @@
 <header>
   <div>
     <h1>FailBound <span>·</span> 门控决策台</h1>
-    <p class="sub">本页装的是消融臂 18 个任务（预算 400、等成本口径）；全量 <b>36 任务 × 4 策略 × 30 种子 × 2 口径 = 8640</b> 次真实运行。下面每一个数字，
+    <p class="sub">本页装的是消融臂 18 个任务（预算 400、等成本口径）；全量 <b>36 任务-臂 × 4 策略 × 30 种子 × 2 种评估设定 = 8640</b> 次真实运行。下面每一个数字，
       都能用两条滑块重新算出来，包括让我们自己难看的那几个。</p>
   </div>
   <div class="stamp">
@@ -175,21 +175,20 @@
 
 <section>
   <h2>一 · 你来当这个 Agent<em>拖两条线，看它做对了几次</em></h2>
-  <p class="lead">规则只有一条：<span class="mono">AUC ≥ θ 且 描述符维数 ≥ d</span> 就用贝叶斯优化，
-    否则退回空间填充。θ 和 d 是两个可以拖的阈值，剩下的全是实测数据。</p>
+  <p class="lead">交付的主卡只有一条判据：<span class="mono">描述符维数 ≥ d</span>（主卡 d=3，即 dim&gt;2 放行、dim≤2 退回空间填充）就用贝叶斯优化。原来并排的 AUC 门槛经实测从不赚钱，已删除（报告 §4.4.2）；θ 滑块保留在这里，是为了让你亲手拖一拖、验证「AUC 门槛帮不上忙」这件事。</p>
 
   <div class="console">
     <div class="card">
       <div class="ctl">
-        <label><span>可分性门槛 θ<sub>AUC</sub></span> <b id="vTheta">0.600</b></label>
-        <input type="range" id="sTheta" min="0.5" max="0.95" step="0.005" value="0.6">
+        <label><span>可分性门槛 θ<sub>AUC</sub>（已退场，默认不绑定）</span> <b id="vTheta">0.500</b></label>
+        <input type="range" id="sTheta" min="0.5" max="0.95" step="0.005" value="0.5">
       </div>
       <div class="ctl">
         <label><span>描述符维数门槛 d</span> <b id="vDim">3</b></label>
         <input type="range" id="sDim" min="0" max="21" step="1" value="3">
       </div>
       <div class="presets" id="presets">
-        <button data-th="0.6" data-d="3" class="on">人工冻结卡</button>
+        <button data-th="0.5" data-d="3" class="on">人工冻结卡（主卡）</button>
         <button data-th="0.63" data-d="0">自动搜最优</button>
         <button data-th="0.5" data-d="0">全用 BO</button>
         <button data-th="1.1" data-d="0">全不用</button>
@@ -246,7 +245,7 @@
   </div>
   <p style="font-size:11.5px;color:var(--dim2);margin-top:12px">
     「判对/接错/拒错」按增益符号判定；按显著性（Holm 校正）判定的版本见技术报告 §4.4：
-    漏报 0/27、误杀 5/9（预注册的两参数版是 0/23、7/36）。两套口径我们都摆着，不挑好看的那个说。</p>
+    显著漏报 0/27、误杀 5/9。两套口径我们都摆着，不挑好看的那个说。</p>
 </section>
 
 <section>
@@ -282,7 +281,7 @@
 </div>
 
 <script>
-const D = {"meta":{"sha":"b6d0a514261846cd","shaOk":true,"bytes":6698192,"nTasks":18,"nBases":3,"budget":400,"arm":"ablate","frozen":{"auc":0.6,"dim":3,"hits":1262.4,"n":9},"allbo":{"hits":1236.23,"n":18},"allbase":{"hits":991.37,"n":0},"oracle":{"hits":1344.67,"n":13}},"tasks":[{"id":"matbench_dielectric__elem20","base":"dielectric","variant":"elem20","auc":0.8324,"dim":20,"bo":50.133333,"baseHits":40.433333,"gain":9.7,"sig":true,"p":0.00032},{"id":"matbench_dielectric__pca1","base":"dielectric","variant":"pca1","auc":0.626,"dim":1,"bo":42.8,"baseHits":60.333333,"gain":-17.533333,"sig":true,"p":3e-05},{"id":"matbench_dielectric__pca2","base":"dielectric","variant":"pca2","auc":0.7695,"dim":2,"bo":57.966667,"baseHits":91.866667,"gain":-33.9,"sig":true,"p":0.00015},{"id":"matbench_dielectric__pca5","base":"dielectric","variant":"pca5","auc":0.8786,"dim":5,"bo":157.433333,"baseHits":121.6,"gain":35.833333,"sig":true,"p":0.00032},{"id":"matbench_dielectric__rp2","base":"dielectric","variant":"rp2","auc":0.6977,"dim":2,"bo":53.533333,"baseHits":80.033333,"gain":-26.5,"sig":true,"p":8e-05},{"id":"matbench_dielectric__rp5","base":"dielectric","variant":"rp5","auc":0.8128,"dim":5,"bo":108.233333,"baseHits":118.133333,"gain":-9.9,"sig":false,"p":0.89297},{"id":"matbench_expt_gap__elem20","base":"expt_gap","variant":"elem20","auc":0.757,"dim":20,"bo":64.266667,"baseHits":46.733333,"gain":17.533333,"sig":true,"p":5e-05},{"id":"matbench_expt_gap__pca1","base":"expt_gap","variant":"pca1","auc":0.5464,"dim":1,"bo":39.833333,"baseHits":37.066667,"gain":2.766667,"sig":false,"p":0.48025},{"id":"matbench_expt_gap__pca2","base":"expt_gap","variant":"pca2","auc":0.7691,"dim":2,"bo":52.366667,"baseHits":38.3,"gain":14.066667,"sig":true,"p":0.01255},{"id":"matbench_expt_gap__pca5","base":"expt_gap","variant":"pca5","auc":0.8382,"dim":5,"bo":86.966667,"baseHits":32.0,"gain":54.966667,"sig":true,"p":3e-05},{"id":"matbench_expt_gap__rp2","base":"expt_gap","variant":"rp2","auc":0.6333,"dim":2,"bo":42.266667,"baseHits":21.566667,"gain":20.7,"sig":true,"p":3e-05},{"id":"matbench_expt_gap__rp5","base":"expt_gap","variant":"rp5","auc":0.6531,"dim":5,"bo":82.466667,"baseHits":17.3,"gain":65.166667,"sig":true,"p":3e-05},{"id":"matbench_log_gvrh__elem20","base":"log_gvrh","variant":"elem20","auc":0.7376,"dim":20,"bo":30.833333,"baseHits":25.666667,"gain":5.166667,"sig":true,"p":0.0003},{"id":"matbench_log_gvrh__pca1","base":"log_gvrh","variant":"pca1","auc":0.6438,"dim":1,"bo":49.166667,"baseHits":46.2,"gain":2.966667,"sig":false,"p":0.82553},{"id":"matbench_log_gvrh__pca2","base":"log_gvrh","variant":"pca2","auc":0.8663,"dim":2,"bo":84.333333,"baseHits":52.466667,"gain":31.866667,"sig":true,"p":0.03376},{"id":"matbench_log_gvrh__pca5","base":"log_gvrh","variant":"pca5","auc":0.9149,"dim":5,"bo":137.7,"baseHits":50.266667,"gain":87.433333,"sig":true,"p":3e-05},{"id":"matbench_log_gvrh__rp2","base":"log_gvrh","variant":"rp2","auc":0.5931,"dim":2,"bo":42.366667,"baseHits":62.966667,"gain":-20.6,"sig":true,"p":3e-05},{"id":"matbench_log_gvrh__rp5","base":"log_gvrh","variant":"rp5","auc":0.7336,"dim":5,"bo":53.566667,"baseHits":48.433333,"gain":5.133333,"sig":false,"p":0.95897}],"insample":{"hits":1271.6,"theta_auc":0.63,"theta_dim":0},"loo":[{"label":"只用 AUC 一个门槛","desc":"θ_auc 由数据自己选，维数不参与","hits":1136.6,"n":12,"inn":17.15,"out":8.07,"gap":9.08,"fits":[{"held":"dielectric","theta":0.6132,"dim":null},{"held":"expt_gap","theta":0.8226,"dim":null},{"held":"log_gvrh","theta":0.6296,"dim":null}]},{"label":"只用维数一个门槛","desc":"d 由数据自己选，AUC 不参与","hits":1184.47,"n":12,"inn":16.5,"out":10.73,"gap":5.77,"fits":[{"held":"dielectric","theta":null,"dim":0},{"held":"expt_gap","theta":null,"dim":3},{"held":"log_gvrh","theta":null,"dim":3}]},{"label":"两个门槛一起学","desc":"harness 同时演化两个技能参数","hits":1101.77,"n":10,"inn":17.86,"out":6.13,"gap":11.73,"fits":[{"held":"dielectric","theta":0.6132,"dim":0},{"held":"expt_gap","theta":0.8226,"dim":0},{"held":"log_gvrh","theta":-1.0,"dim":3}]}],"span":1.8226,"stab":[{"n":1,"span":1.8226,"fits":[{"bases":["dielectric"],"theta":0.8225812988360405},{"bases":["expt_gap"],"theta":-1.0},{"bases":["log_gvrh"],"theta":0.6184442179392142}]},{"n":2,"span":1.8226,"fits":[{"bases":["dielectric","expt_gap"],"theta":-1.0},{"bases":["dielectric","log_gvrh"],"theta":0.8225812988360405},{"bases":["expt_gap","log_gvrh"],"theta":0.6132060386780496}]},{"n":3,"span":0.0,"fits":[{"bases":["dielectric","expt_gap","log_gvrh"],"theta":0.6296253096439037}]}],"sanity":{"n_tasks":18,"fitted":{"theta_auc":-1.0,"theta_dim":0,"calib_gain":1499.1666666666665},"hits_all_bo":1499.17,"hits_under_fitted_gate":1499.17,"gate_lost_hits":0.0},"deltas":{"ins_vs_frozen":9.2,"loo_vs_frozen":-125.8,"frozen_vs_allbo":26.2,"frozen_vs_allbase":271.0,"oracle_gap":82.3}};
+const D = {"meta":{"sha":"b6d0a514261846cd","shaOk":true,"bytes":6698192,"nTasks":18,"nBases":3,"budget":400,"arm":"ablate","frozen":{"auc":null,"dim":3,"hits":1262.4,"n":9},"allbo":{"hits":1236.23,"n":18},"allbase":{"hits":991.37,"n":0},"oracle":{"hits":1344.67,"n":13}},"tasks":[{"id":"matbench_dielectric__elem20","base":"dielectric","variant":"elem20","auc":0.8324,"dim":20,"bo":50.133333,"baseHits":40.433333,"gain":9.7,"sig":true,"p":0.00032},{"id":"matbench_dielectric__pca1","base":"dielectric","variant":"pca1","auc":0.626,"dim":1,"bo":42.8,"baseHits":60.333333,"gain":-17.533333,"sig":true,"p":3e-05},{"id":"matbench_dielectric__pca2","base":"dielectric","variant":"pca2","auc":0.7695,"dim":2,"bo":57.966667,"baseHits":91.866667,"gain":-33.9,"sig":true,"p":0.00015},{"id":"matbench_dielectric__pca5","base":"dielectric","variant":"pca5","auc":0.8786,"dim":5,"bo":157.433333,"baseHits":121.6,"gain":35.833333,"sig":true,"p":0.00032},{"id":"matbench_dielectric__rp2","base":"dielectric","variant":"rp2","auc":0.6977,"dim":2,"bo":53.533333,"baseHits":80.033333,"gain":-26.5,"sig":true,"p":8e-05},{"id":"matbench_dielectric__rp5","base":"dielectric","variant":"rp5","auc":0.8128,"dim":5,"bo":108.233333,"baseHits":118.133333,"gain":-9.9,"sig":false,"p":0.89297},{"id":"matbench_expt_gap__elem20","base":"expt_gap","variant":"elem20","auc":0.757,"dim":20,"bo":64.266667,"baseHits":46.733333,"gain":17.533333,"sig":true,"p":5e-05},{"id":"matbench_expt_gap__pca1","base":"expt_gap","variant":"pca1","auc":0.5464,"dim":1,"bo":39.833333,"baseHits":37.066667,"gain":2.766667,"sig":false,"p":0.48025},{"id":"matbench_expt_gap__pca2","base":"expt_gap","variant":"pca2","auc":0.7691,"dim":2,"bo":52.366667,"baseHits":38.3,"gain":14.066667,"sig":true,"p":0.01255},{"id":"matbench_expt_gap__pca5","base":"expt_gap","variant":"pca5","auc":0.8382,"dim":5,"bo":86.966667,"baseHits":32.0,"gain":54.966667,"sig":true,"p":3e-05},{"id":"matbench_expt_gap__rp2","base":"expt_gap","variant":"rp2","auc":0.6333,"dim":2,"bo":42.266667,"baseHits":21.566667,"gain":20.7,"sig":true,"p":3e-05},{"id":"matbench_expt_gap__rp5","base":"expt_gap","variant":"rp5","auc":0.6531,"dim":5,"bo":82.466667,"baseHits":17.3,"gain":65.166667,"sig":true,"p":3e-05},{"id":"matbench_log_gvrh__elem20","base":"log_gvrh","variant":"elem20","auc":0.7376,"dim":20,"bo":30.833333,"baseHits":25.666667,"gain":5.166667,"sig":true,"p":0.0003},{"id":"matbench_log_gvrh__pca1","base":"log_gvrh","variant":"pca1","auc":0.6438,"dim":1,"bo":49.166667,"baseHits":46.2,"gain":2.966667,"sig":false,"p":0.82553},{"id":"matbench_log_gvrh__pca2","base":"log_gvrh","variant":"pca2","auc":0.8663,"dim":2,"bo":84.333333,"baseHits":52.466667,"gain":31.866667,"sig":true,"p":0.03376},{"id":"matbench_log_gvrh__pca5","base":"log_gvrh","variant":"pca5","auc":0.9149,"dim":5,"bo":137.7,"baseHits":50.266667,"gain":87.433333,"sig":true,"p":3e-05},{"id":"matbench_log_gvrh__rp2","base":"log_gvrh","variant":"rp2","auc":0.5931,"dim":2,"bo":42.366667,"baseHits":62.966667,"gain":-20.6,"sig":true,"p":3e-05},{"id":"matbench_log_gvrh__rp5","base":"log_gvrh","variant":"rp5","auc":0.7336,"dim":5,"bo":53.566667,"baseHits":48.433333,"gain":5.133333,"sig":false,"p":0.95897}],"insample":{"hits":1271.6,"theta_auc":0.63,"theta_dim":0},"loo":[{"label":"只用 AUC 一个门槛","desc":"θ_auc 由数据自己选，维数不参与","hits":1136.6,"n":12,"inn":17.15,"out":8.07,"gap":9.08,"fits":[{"held":"dielectric","theta":0.6132,"dim":null},{"held":"expt_gap","theta":0.8226,"dim":null},{"held":"log_gvrh","theta":0.6296,"dim":null}]},{"label":"只用维数一个门槛","desc":"d 由数据自己选，AUC 不参与","hits":1184.47,"n":12,"inn":16.5,"out":10.73,"gap":5.77,"fits":[{"held":"dielectric","theta":null,"dim":0},{"held":"expt_gap","theta":null,"dim":3},{"held":"log_gvrh","theta":null,"dim":3}]},{"label":"两个门槛一起学","desc":"harness 同时演化两个技能参数","hits":1101.77,"n":10,"inn":17.86,"out":6.13,"gap":11.73,"fits":[{"held":"dielectric","theta":0.6132,"dim":0},{"held":"expt_gap","theta":0.8226,"dim":0},{"held":"log_gvrh","theta":-1.0,"dim":3}]}],"span":1.8226,"stab":[{"n":1,"span":1.8226,"fits":[{"bases":["dielectric"],"theta":0.8225812988360405},{"bases":["expt_gap"],"theta":-1.0},{"bases":["log_gvrh"],"theta":0.6184442179392142}]},{"n":2,"span":1.8226,"fits":[{"bases":["dielectric","expt_gap"],"theta":-1.0},{"bases":["dielectric","log_gvrh"],"theta":0.8225812988360405},{"bases":["expt_gap","log_gvrh"],"theta":0.6132060386780496}]},{"n":3,"span":0.0,"fits":[{"bases":["dielectric","expt_gap","log_gvrh"],"theta":0.6296253096439037}]}],"sanity":{"n_tasks":18,"fitted":{"theta_auc":-1.0,"theta_dim":0,"calib_gain":1499.1666666666665},"hits_all_bo":1499.17,"hits_under_fitted_gate":1499.17,"gate_lost_hits":0.0},"deltas":{"ins_vs_frozen":9.2,"loo_vs_frozen":-125.8,"frozen_vs_allbo":26.2,"frozen_vs_allbase":271.0,"oracle_gap":82.3}};
 const T = D.tasks, M = D.meta;
 
 /* ---------- 与 Python gain_of() 同口径 ---------- */
@@ -414,7 +413,7 @@ function refresh(){
   const items = [
     {k:'全用空间填充', v:M.allbase.hits, cls:'dim'},
     {k:'全用 BO', v:M.allbo.hits, cls:'dim'},
-    {k:'人工冻结卡', v:M.frozen.hits, cls:'accent', hl:(Math.abs(th-0.6)<1e-9 && d===3)},
+    {k:'人工冻结卡（主卡）', v:M.frozen.hits, cls:'accent', hl:(Math.abs(th-0.5)<1e-9 && d===3)},
     {k:'你当前的规则', v:cur.hits, cls:'', hl:true},
     {k:'样本内最优', v:D.insample.hits, cls:'dim'},
     {k:'逐任务最优（上界）', v:M.oracle.hits, cls:'dim'},

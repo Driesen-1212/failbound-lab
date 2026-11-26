@@ -1,0 +1,19 @@
+arm,use_gate,budget,predictor,spearman_rho,p_raw,n_tasks,note
+main,True,400,separability_auc,0.7502579979360166,0.0003352980382239196,18,exploratory（预注册未指定，§10 事后登记）
+main,True,400,r_proxy,0.6635706914344685,0.002677983974457382,18,exploratory（预注册未指定，§10 事后登记）
+main,True,400,n_modes,0.24448519912421493,0.3282017506539593,18,exploratory（预注册未指定，§10 事后登记）
+main,True,400,base_hit_rate,0.29834655619564915,0.22915722139656078,18,exploratory（预注册未指定，§10 事后登记）
+main,False,400,separability_auc,0.8637770897832818,3.854410891744887e-06,18,exploratory（预注册未指定，§10 事后登记）
+main,False,400,r_proxy,0.7564499484004128,0.0002802193872136038,18,exploratory（预注册未指定，§10 事后登记）
+main,False,400,n_modes,0.5227701953623767,0.026018325091028,18,exploratory（预注册未指定，§10 事后登记）
+main,False,400,base_hit_rate,0.2936481852319381,0.23692712529994384,18,exploratory（预注册未指定，§10 事后登记）
+ablate,True,400,separability_auc,0.4613003095975232,0.053990476377347364,18,exploratory（预注册未指定，§10 事后登记）
+ablate,True,400,r_proxy,0.3602501844597676,0.1419614486634149,18,exploratory（预注册未指定，§10 事后登记）
+ablate,True,400,n_modes,-0.27541131637762184,0.26866108935303973,18,exploratory（预注册未指定，§10 事后登记）
+ablate,True,400,dim,0.37129436190788107,0.1292631064016259,18,exploratory（预注册未指定，§10 事后登记）
+ablate,True,400,base_hit_rate,-0.27541131637762184,0.26866108935303973,18,exploratory（预注册未指定，§10 事后登记）
+ablate,False,400,separability_auc,0.5128998968008256,0.029506553722099392,18,exploratory（预注册未指定，§10 事后登记）
+ablate,False,400,r_proxy,0.34265175590857205,0.16393782526234893,18,exploratory（预注册未指定，§10 事后登记）
+ablate,False,400,n_modes,-0.2885261409670324,0.24558679958341023,18,exploratory（预注册未指定，§10 事后登记）
+ablate,False,400,dim,0.4520105275400292,0.05966996214280048,18,exploratory（预注册未指定，§10 事后登记）
+ablate,False,400,base_hit_rate,-0.2885261409670324,0.24558679958341023,18,exploratory（预注册未指定，§10 事后登记）

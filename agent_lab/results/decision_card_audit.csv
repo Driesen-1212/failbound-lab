@@ -1,0 +1,37 @@
+task,arm,auc,dim,card_use_bo,card_strategy,card_confidence,actual_gain,actual_significant,trigger_reasons,truth
+matbench_dielectric,main,0.918,85,True,gp_ucb,low,15.8,True,未触发任何失效条件，按默认（BO）执行,显著为正（BO 真赢）
+matbench_expt_gap,main,0.818,85,True,gp_ucb,medium,124.83,True,未触发任何失效条件，按默认（BO）执行,显著为正（BO 真赢）
+matbench_log_gvrh,main,0.931,85,True,gp_ucb,medium,101.17,True,未触发任何失效条件，按默认（BO）执行,显著为正（BO 真赢）
+matbench_log_kvrh__lam0.02,main,0.516,85,True,gp_ucb,low,10.63,True,AUC=0.516 < 0.60：落入实测失效区，但该条规则实测净亏 35.40，已从否决条件降为低置信标注,显著为正（BO 真赢）
+matbench_log_kvrh__lam0.05,main,0.518,85,True,gp_ucb,low,6.93,True,AUC=0.518 < 0.60：落入实测失效区，但该条规则实测净亏 35.40，已从否决条件降为低置信标注,显著为正（BO 真赢）
+matbench_log_kvrh__lam0.08,main,0.532,85,True,gp_ucb,low,7.07,True,AUC=0.532 < 0.60：落入实测失效区，但该条规则实测净亏 35.40，已从否决条件降为低置信标注,显著为正（BO 真赢）
+matbench_log_kvrh__lam0.12,main,0.559,85,True,gp_ucb,low,10.77,True,AUC=0.559 < 0.60：落入实测失效区，但该条规则实测净亏 35.40，已从否决条件降为低置信标注,显著为正（BO 真赢）
+matbench_log_kvrh__lam0.18,main,0.618,85,True,gp_ucb,low,10.17,True,AUC=0.618 处于 0.60–0.75 的不确定带,显著为正（BO 真赢）
+matbench_log_kvrh__lam0.25,main,0.645,85,True,gp_ucb,low,15.03,True,AUC=0.645 处于 0.60–0.75 的不确定带,显著为正（BO 真赢）
+matbench_log_kvrh__lam0.35,main,0.671,85,True,gp_ucb,low,17.6,True,AUC=0.671 处于 0.60–0.75 的不确定带,显著为正（BO 真赢）
+matbench_log_kvrh__lam0.45,main,0.704,85,True,gp_ucb,low,19.17,True,AUC=0.704 处于 0.60–0.75 的不确定带,显著为正（BO 真赢）
+matbench_log_kvrh__lam0.60,main,0.756,85,True,gp_ucb,medium,33.27,True,未触发任何失效条件，按默认（BO）执行,显著为正（BO 真赢）
+matbench_log_kvrh__lam0.75,main,0.794,85,True,gp_ucb,medium,49.63,True,未触发任何失效条件，按默认（BO）执行,显著为正（BO 真赢）
+matbench_log_kvrh__lam0.88,main,0.851,85,True,gp_ucb,medium,66.43,True,未触发任何失效条件，按默认（BO）执行,显著为正（BO 真赢）
+matbench_log_kvrh__lam1.00,main,0.927,85,True,gp_ucb,medium,130.13,True,未触发任何失效条件，按默认（BO）执行,显著为正（BO 真赢）
+matbench_perovskites__lam0.25,main,0.613,85,True,gp_ucb,low,10.5,True,AUC=0.613 处于 0.60–0.75 的不确定带,显著为正（BO 真赢）
+matbench_perovskites__lam0.60,main,0.777,85,True,gp_ucb,medium,22.53,True,未触发任何失效条件，按默认（BO）执行,显著为正（BO 真赢）
+matbench_perovskites__lam1.00,main,0.871,85,True,gp_ucb,medium,37.83,True,未触发任何失效条件，按默认（BO）执行,显著为正（BO 真赢）
+matbench_dielectric__elem20,ablate,0.832,20,True,gp_ucb,medium,9.7,True,未触发任何失效条件，按默认（BO）执行,显著为正（BO 真赢）
+matbench_dielectric__pca1,ablate,0.626,1,False,farthest_point,medium,-17.53,True,AUC=0.626 处于 0.60–0.75 的不确定带；描述符仅 1 维：实测 4 个显著负增益任务全部来自 ≤2 维,显著为负（BO 真输）
+matbench_dielectric__pca2,ablate,0.769,2,False,farthest_point,low,-33.9,True,描述符仅 2 维：实测 4 个显著负增益任务全部来自 ≤2 维,显著为负（BO 真输）
+matbench_dielectric__pca5,ablate,0.879,5,True,gp_ucb,low,35.83,True,未触发任何失效条件，按默认（BO）执行,显著为正（BO 真赢）
+matbench_dielectric__rp2,ablate,0.698,2,False,farthest_point,low,-26.5,True,AUC=0.698 处于 0.60–0.75 的不确定带；描述符仅 2 维：实测 4 个显著负增益任务全部来自 ≤2 维,显著为负（BO 真输）
+matbench_dielectric__rp5,ablate,0.813,5,True,gp_ucb,low,-9.9,False,未触发任何失效条件，按默认（BO）执行,不显著（噪声）
+matbench_expt_gap__elem20,ablate,0.757,20,True,gp_ucb,medium,17.53,True,未触发任何失效条件，按默认（BO）执行,显著为正（BO 真赢）
+matbench_expt_gap__pca1,ablate,0.546,1,False,farthest_point,medium,2.77,False,AUC=0.546 < 0.60：落入实测失效区，但该条规则实测净亏 35.40，已从否决条件降为低置信标注；描述符仅 1 维：实测 4 个显著负增益任务全部来自 ≤2 维,不显著（噪声）
+matbench_expt_gap__pca2,ablate,0.769,2,False,farthest_point,medium,14.07,True,描述符仅 2 维：实测 4 个显著负增益任务全部来自 ≤2 维,显著为正（BO 真赢）
+matbench_expt_gap__pca5,ablate,0.838,5,True,gp_ucb,medium,54.97,True,未触发任何失效条件，按默认（BO）执行,显著为正（BO 真赢）
+matbench_expt_gap__rp2,ablate,0.633,2,False,farthest_point,medium,20.7,True,AUC=0.633 处于 0.60–0.75 的不确定带；描述符仅 2 维：实测 4 个显著负增益任务全部来自 ≤2 维,显著为正（BO 真赢）
+matbench_expt_gap__rp5,ablate,0.653,5,True,gp_ucb,low,65.17,True,AUC=0.653 处于 0.60–0.75 的不确定带,显著为正（BO 真赢）
+matbench_log_gvrh__elem20,ablate,0.738,20,True,gp_ucb,low,5.17,True,AUC=0.738 处于 0.60–0.75 的不确定带,显著为正（BO 真赢）
+matbench_log_gvrh__pca1,ablate,0.644,1,False,farthest_point,medium,2.97,False,AUC=0.644 处于 0.60–0.75 的不确定带；描述符仅 1 维：实测 4 个显著负增益任务全部来自 ≤2 维,不显著（噪声）
+matbench_log_gvrh__pca2,ablate,0.866,2,False,farthest_point,medium,31.87,True,描述符仅 2 维：实测 4 个显著负增益任务全部来自 ≤2 维,显著为正（BO 真赢）
+matbench_log_gvrh__pca5,ablate,0.915,5,True,gp_ucb,medium,87.43,True,未触发任何失效条件，按默认（BO）执行,显著为正（BO 真赢）
+matbench_log_gvrh__rp2,ablate,0.593,2,False,farthest_point,medium,-20.6,True,AUC=0.593 < 0.60：落入实测失效区，但该条规则实测净亏 35.40，已从否决条件降为低置信标注；描述符仅 2 维：实测 4 个显著负增益任务全部来自 ≤2 维,显著为负（BO 真输）
+matbench_log_gvrh__rp5,ablate,0.734,5,True,gp_ucb,low,5.13,False,AUC=0.734 处于 0.60–0.75 的不确定带,不显著（噪声）
