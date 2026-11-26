@@ -164,8 +164,7 @@
 <header>
   <div>
     <h1>FailBound <span>·</span> 门控决策台</h1>
-    <p class="sub">本页装的是消融臂 18 个任务（预算 400、等成本口径）；全量 <b>36 任务-臂 × 4 策略 × 30 种子 × 2 种评估设定 = 8640</b> 次真实运行。下面每一个数字，
-      都能用两条滑块重新算出来，包括让我们自己难看的那几个。</p>
+    <p class="sub">18 个任务，预算 400，等成本口径；下面每个数字都能用两条滑块重算。</p>
   </div>
   <div class="stamp">
     <b id="shaState">冻结包指纹校验中…</b>
@@ -175,7 +174,7 @@
 
 <section>
   <h2>一 · 你来当这个 Agent<em>拖两条线，看它做对了几次</em></h2>
-  <p class="lead">交付的主卡只有一条判据：<span class="mono">描述符维数 ≥ d</span>（主卡 d=3，即 dim&gt;2 放行、dim≤2 退回空间填充）就用贝叶斯优化。原来并排的 AUC 门槛经实测从不赚钱，已删除（报告 §4.4.2）；θ 滑块保留在这里，是为了让你亲手拖一拖、验证「AUC 门槛帮不上忙」这件事。</p>
+  <p class="lead">主卡只有一条判据：<span class="mono">描述符维数 ≥ d</span> 就用贝叶斯优化，否则退回空间填充（主卡 d=3）。</p>
 
   <div class="console">
     <div class="card">
@@ -194,8 +193,7 @@
         <button data-th="1.1" data-d="0">全不用</button>
       </div>
       <p style="font-size:11px;color:var(--dim2);margin:12px 0 0;line-height:1.6">
-        「自动搜最优」= 把这族规则的阈值交还给数据去选（样本内）。它在样本内确实更高，
-        往下滚到第三块，看它在没见过的基底上掉成什么样。</p>
+        「自动搜最优」= 阈值交给数据自己选（样本内）。</p>
     </div>
 
     <div>
@@ -231,9 +229,7 @@
 
 <section>
   <h2>二 · 这 18 个任务长什么样<em>横轴是可预测性，纵轴是用 BO 到底赚不赚</em></h2>
-  <p class="lead">看清楚一件事：<b style="color:var(--txt)">AUC 高不等于赚</b>。
-    <span class="mono">dielectric·rp2</span> 的 AUC 有 0.698，用 BO 却净亏 26.5；
-    <span class="mono">expt_gap·rp5</span> 只有 0.653，却净赚 65.2。散点的上下分带，就是这张卡存在的理由。</p>
+  <p class="lead"><span class="mono">dielectric·rp2</span> 的 AUC 有 0.698，用 BO 却净亏 26.5；<span class="mono">expt_gap·rp5</span> 只有 0.653，却净赚 65.2。AUC 高不等于赚，这就是这张卡存在的理由。</p>
   <div class="tw">
   <table id="tbl">
     <thead><tr>
@@ -250,17 +246,14 @@
 
 <section>
   <h2>三 · 那让阈值自己学，行不行？<em>我们试了，结论是不行，原因在这儿</em></h2>
-  <p class="lead">上面那个「自动搜最优」按钮，就是「让 harness 自己演化参数」的最小版本。
-    为了不骗自己，我们做了严格留一基底：3 个材料体系各被留出一次，规则只能拿另外两个体系的历史反馈来拟合。</p>
+  <p class="lead">「自动搜最优」就是让参数自己演化的最小版本。为了不骗自己，我们做了严格留一基底：3 个体系各被留出一次。</p>
   <div class="rsi" id="rsi"></div>
   <p class="unstab" id="unstab"></p>
   <div class="callout">
     样本内最优 <span class="q" id="insTxt">1271.6</span>，比人工冻结卡高
     <span class="q">+9.2</span>；同一个搜索过程留一基底之后，三条规则分别是 1136.6 / 1184.5 / 1101.8，<b>最低只剩</b>
     <span class="q" id="looBest">1136.6</span>（最高 1184.5），比人工卡低 <span class="q">125.8</span>。
-    这 135 个命中，就是「让系统自己调自己」在样本量不够时会制造出来的幻觉。<br>
-    <b>所以我们不做 RSI，我们做 RSI 的评估层：</b>这套留一基底回放本身就是判断「自我进化到底有没有真发生」
-    的仪器，而它给出的第一个结论是：现在还不该转动这个旋钮。
+    所以我们不做 RSI，做它的评估层：留一基底回放就是判断「自我进化是否真的发生」的仪器，而它给出的第一个结论是——现在还不该转动这个旋钮。
   </div>
 </section>
 
@@ -274,9 +267,7 @@
   不是重新采样。所以它可以用来理解规则、不能用来说明显著性。<br>
   <b>复现：</b><code>python demo/build_console.py</code> 会重新读取冻结包并重建这一页，
   同时核对冻结核验和（<span id="shaFoot"></span>）。页面上没有一个手写常量。<br>
-  <b>这一页和提交包的关系：</b>它是只读的演示层，用来把已经跑完的 8640 次运行摆出来给人拖一拖；
-  它不参与跑分，也不改冻结包里任何一个字节。
-</footer>
+  </footer>
 
 </div>
 
