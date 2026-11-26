@@ -508,28 +508,28 @@ h3 {
     </div>
   </div>
 
-  <p class="metrics-note">8640 次实验已完成 · 36 任务 × 4 策略 · 30 种子 × 2 口径 · seed 20261015 · pkg b6d0a514…</p>
-  <p class="metrics-note">7200 次扩展消融 · 10 个基底 · 8 个有效基底 · Agent 累计命中 773 &lt; 780(36 任务等成本口径,见 §4.4)</p>
+  <p class="metrics-note">17,520 条轨迹 · 主集 8,640 + 扩展 7,200 + 严格留出 1,680 · 36 个任务臂 · 30 种子 × 2 口径 · seed 20261015 · pkg b6d0a514…</p>
+  <p class="metrics-note">扩展 10 个基底 / 有效 8 个；Agent 累计命中 773 &lt; 780(36 任务等成本口径,见 §4.4)；留出 14 个任务从不参与标定</p>
 </header>
 
 <!-- ==================== 00 VIDEO ==================== -->
 <section id="video">
   <div class="section-inner">
     <div class="section-label">00 / video</div>
-    <h2 class="section-title">四分钟看完全部结论</h2>
+    <h2 class="section-title">三分钟看完全部结论</h2>
     <div class="section-body">
       <div class="video-frame">
         <video controls preload="metadata" playsinline
-               poster="media/failbound-promo-poster.jpg">
-          <source src="media/failbound-promo.mp4" type="video/mp4">
-          你的浏览器不支持内嵌播放,<a href="media/failbound-promo.mp4">点此下载(10 MB)</a>。
+               poster="media/failbound-final-poster.jpg">
+          <source src="media/failbound-final.mp4" type="video/mp4">
+          你的浏览器不支持内嵌播放,<a href="media/failbound-final.mp4">点此下载(14 MB)</a>。
         </video>
       </div>
       <div class="video-meta">
-        <span><b>时长</b> 4:17</span>
-        <span><b>规格</b> 1920×1080 · 30fps · 10 MB</span>
-        <span><b>顺序</b> 8640 次实验 → 失效边界 → 熔断卡与错误率</span>
-        <span><a href="media/failbound-promo.mp4" download>下载 mp4</a></span>
+        <span><b>时长</b> 3:16</span>
+        <span><b>规格</b> 1920×1080 · 30fps · 14 MB</span>
+        <span><b>顺序</b> 开跑前的问题 → 一进一出的账 → 单文件决策台现场验判</span>
+        <span><a href="media/failbound-final.mp4" download>下载 mp4</a></span>
       </div>
       <p class="video-note">片中的每个数字都能在<a href="tech-report.html">技术报告</a>里找到对应的复算命令,视频、主页、报告三处口径一致。</p>
     </div>
@@ -714,7 +714,7 @@ h3 {
 <text x="0" y="190" fill="#5c6976" font-size="9.5" font-family="-apple-system,'Noto Sans SC',sans-serif">命中口径 = 目标值落入该任务 top-10% 分位（随机期望恒 0.100）；种子 20261015 固定，子种子由 blake2b 派生</text>
 </svg>
         </div>
-        <div class="wf-cap"><b>FIG 02</b>三层实验规模，<i>每层都附产物路径，可逐 run 复算。</i></div>
+        <div class="wf-cap"><b>FIG 02</b>三层实验规模，<i>主集 8,640 + 扩展 7,200 + 严格留出 1,680 = 17,520 条，每层都附产物路径，可逐 run 复算。</i></div>
       </div>
       <div class="table-wrap">
         <table>
@@ -730,7 +730,8 @@ h3 {
             <tr><td>消融单元数</td><td class="num">144(3 × 6 × 4 × 2)</td></tr>
             <tr><td>消融 run 总数</td><td class="num">4320</td></tr>
             <tr><td>扩展消融 run 总数</td><td class="num">7200(10 基底 × 6 表示 × 4 策略 × 30 种子;有效 8 基底 × 48 任务)</td></tr>
-            <tr><td>全套实验规模</td><td class="num">8640 run(36 任务 × 4 策略 × 30 种子 × 2 口径)</td></tr>
+            <tr><td>严格留出 run 总数</td><td class="num">1680(14 任务 × 4 策略 × 30 种子;判据从未在这批任务上标定)</td></tr>
+            <tr><td>全套实验规模</td><td class="num">17,520 条轨迹(主集 8,640 + 扩展 7,200 + 留出 1,680)</td></tr>
             <tr><td>任务构成</td><td>轴 A 18(15 降质档 + 3 零降质锚点)· 轴 B 18(描述符消融)</td></tr>
             <tr><td>预算档</td><td>200(沙箱)· 400(本地全量)</td></tr>
             <tr><td>候选池</td><td class="num">3000 / 基底</td></tr>
@@ -856,6 +857,8 @@ h3 {
 
       <div class="callout">
         <p>所以交付物不是自动开关,是一张保守熔断卡。它原有两个参数:描述符 ≤2 维或 AUC &lt; 0.60 时拒绝贝叶斯优化。事后我们把两条参数拆开、按基底逐个留出重算,发现 AUC 那一条在 8 个基底上一次都没赚过:主臂上它拦下的 4 个任务实测 +6.9 到 +10.8,全是误杀,净亏 35.40;而 ≤2 维那一条触发 9 次命中 4 次,靠的是避损 98.53 对放弃 72.37 的赔率。于是现行卡只剩一条:描述符 ≤2 维就停,改用空间填充。36 任务口径下它比全用 BO 高 26.17(原两参数卡是 −9.23),拒 9 个里 4 个真输、5 个误杀,放行 27 个里漏报 0。预注册的两参数卡在同一批 36 个任务上是放行 23、漏报 0、误拒 7(另 2 个不显著),两套口径都留着:<code>audit_decision_card.py</code> 不加参数跑交付版,加 <code>--two-param</code> 跑预注册版,逐任务可复算。净效果是把 −33.9 的右尾灾难,换成 +14 到 +32 的左尾少赚。</p>
+      <p><strong>这个数有前提,写在数字旁边。</strong>+26.17 来自参与标定的那批基底。换 3 个没参与标定的新体系,净增益落到 <strong>+0.90</strong>;走到 14 个任务的严格留出集,是 <strong>−8.60</strong>(契约口径:gp_ucb 对 farthest_point,不换采集函数)。所以这张卡是「机制真实存在过」的证据,不是「放到哪都涨」的成绩;同源体系内有效,跨体系要重新标定。</p>
+      <p>两笔账分开记,不并成一个好看的数字:真拒的 4 个避开 −33.9,随机拒绝 9 个期望只拦到 1 个(超几何单侧 <strong>P=0.0021</strong>)。压力测试也记账:去掉 <code>dielectric</code> 这一个基底,卡的总增益转 <strong>−51.77</strong>——增益集中在单一基底,这是它最脆的地方。</p>
       </div>
 
       <div class="callout">
@@ -1220,6 +1223,8 @@ h3 {
 
       <p>这条规则我们真的执行了两次,两次结果都写进了报告,包括对我们不利的那次。</p>
 
+      <p><strong>交付形态上,它是一张单文件、零依赖的判据。</strong>输入只有任务接收时就能看到的描述符维度,输出是 <code>use_bo</code> / <code>withhold_bo</code>;挂在优化器之前调用即可,不训练、不联网、不读目标值。</p>
+
       <p><strong>① 让 Agent 自己判断该不该上 BO。</strong>18 个任务改名 Task-A..R(matbench 是公开数据集,给名字就等于让它背答案),只给开题时真实可见的信息:池几何 + 一次 25 点探针结果。它要预测"BO 会不会赢、赢多少"。</p>
 
       <div class="wide-fig">
@@ -1314,7 +1319,7 @@ h3 {
 
       <h3 style="margin:32px 0 16px;font-size:1.15rem;font-weight:600">材料清单</h3>
       <ul class="materials-list">
-        <li><span class="mat-icon">→</span><a href="media/failbound-promo.mp4" download>演示视频(4:17,10 MB,mp4)</a></li>
+        <li><span class="mat-icon">→</span><a href="media/failbound-final.mp4" download>演示视频(3:16,14 MB,mp4)</a></li>
         <li><span class="mat-icon">→</span><a href="tech-report.pdf">技术报告(完整版)</a></li>
         <li><span class="mat-icon">→</span><a href="sandbox-execution-log.pdf">沙箱执行记录</a></li>
         <li><span class="mat-icon">→</span><a href="originality-statement.pdf">原创性声明</a></li>
