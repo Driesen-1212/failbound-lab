@@ -483,7 +483,7 @@ h3 {
 
   <div class="action-row">
     <a href="failbound-console.html" class="btn primary">打开交互决策台</a>
-    <a href="view.html?d=data" class="btn">4320 run 消融数据</a>
+    <a href="view.html?d=data" class="btn">消融臂明细(4,320 run)</a>
     <a href="tech-report.html" class="btn">技术报告</a>
     <a href="sandbox-log.html" class="btn">沙箱执行记录</a>
     <a href="https://sciencepal.ai/share/944c87a6-46b9-49b0-b49f-0adc67257c21" target="_blank" rel="noopener" class="btn">SciencePal Replay</a>
@@ -494,29 +494,29 @@ h3 {
     <div class="metric-card">
       <div class="label">熔断器漏报</div>
       <div class="value pos">0 <span style="font-size:0.9rem;color:var(--dim)">/ 27</span></div>
-      <div class="desc">放行的 27 个里没有一个显著为负(36 任务里显著负共 4 个,全被拦住)。代价是拒绝 9 个,其中 5 个没有显著为负(3 个显著为正、2 个不显著):两个数一起公布</div>
+      <div class="desc">放行的 27 个里没有一个显著为负(36 任务里显著负共 4 个,全被拦住)。代价是拒绝 9 个,其中 5 个没有显著为负(3 个显著为正、2 个不显著):两个数一起公布。未观察到不等于不存在——Clopper–Pearson 95% 上界 12.8%</div>
     </div>
     <div class="metric-card">
       <div class="label">样本外秩相关</div>
       <div class="value acc">+0.820</div>
-      <div class="desc">两个从未参与拟合的新基底、14 个任务上,判据比样本内更准(+0.513 → +0.820,p = 0.0003)。但零增益线从 0.731 移到 0.601,所以仍不能当自动开关</div>
+      <div class="desc">两个从未参与拟合的新基底、14 个任务上,判据比样本内更准(+0.513 → +0.820,p = 0.0003);这 14 点是 2 体系 × 7 算子,证明的是体系内换算子仍能预报,不是跨体系泛化(体系级 ρ = +0.167)。零增益线也从 0.731 移到 0.601,所以仍不能当自动开关</div>
     </div>
     <div class="metric-card">
       <div class="label">最差情形</div>
       <div class="value neg">−33.9</div>
-      <div class="desc">4/18 个任务上 BO 输给均匀撒点,最低一处是 dielectric__pca2 单基底(Cliff's δ = −0.629)。净效果是把这条右尾,换成 +14 到 +32 的左尾少赚</div>
+      <div class="desc">4/18 个任务显著为负(另 1 个为负但不显著),最低一处是 dielectric__pca2 单基底(Cliff's δ = −0.629)。净效果是把这条右尾,换成 +14 到 +32 的左尾少赚</div>
     </div>
   </div>
 
   <p class="metrics-note">17,520 条轨迹 · 主集 8,640 + 扩展 7,200 + 严格留出 1,680 · 36 个任务臂 · 30 种子 × 2 口径 · seed 20261015 · pkg b6d0a514…</p>
-  <p class="metrics-note">扩展 10 个基底 / 有效 8 个；Agent 累计命中 773 &lt; 780(36 任务等成本口径,见 §4.4)；留出 14 个任务从不参与标定</p>
+  <p class="metrics-note">扩展 10 个基底 / 有效 8 个；Agent 累计命中 773 &lt; 780(18 任务校准记录,见 §4.4)；留出 14 个任务从不参与标定</p>
 </header>
 
 <!-- ==================== 00 VIDEO ==================== -->
 <section id="video">
   <div class="section-inner">
     <div class="section-label">00 / video</div>
-    <h2 class="section-title">三分钟看完全部结论</h2>
+    <h2 class="section-title">项目视频</h2>
     <div class="section-body">
       <div class="video-frame">
         <video controls preload="metadata" playsinline
@@ -531,7 +531,7 @@ h3 {
         <span><b>顺序</b> 开跑前的问题 → 一进一出的账 → 单文件决策台现场验判</span>
         <span><a href="media/failbound-final.mp4" download>下载 mp4</a></span>
       </div>
-      <p class="video-note">片中的每个数字都能在<a href="tech-report.html">技术报告</a>里找到对应的复算命令,视频、主页、报告三处口径一致。</p>
+      <p class="video-note">片中的数字都能在<a href="tech-report.html">技术报告</a>与<a href="https://github.com/Driesen-1212/failbound-lab/tree/main/evidence">证据包</a>里找到对应的复算命令与产物。开场字幕里的 8,640 指主实验那一层,全站合计 17,520 次(另含扩展 7,200 与留出 1,680),片中第 30 秒的 <code>reconcile_runs.py</code> 重数的就是这 17,520 条。</p>
     </div>
   </div>
 </section>
@@ -604,7 +604,7 @@ h3 {
         <img src="img/fig_boundary_auc.png" alt="图2 消融轴逐任务增益 + LOWESS + 置信带">
         <div class="caption">
           <span class="fig-label">图 2</span>
-          消融轴上的逐任务增益与 LOWESS 拟合，阴影为置信带。不确定带内逐任务方向并不一致，这正是它不能当自动开关的原因。
+          消融轴上的逐任务增益与 LOWESS 拟合（frac=0.6）。不确定带内逐任务方向并不一致，这正是它不能当自动开关的原因。
         </div>
       </div>
 
@@ -620,7 +620,7 @@ h3 {
 
       <p>同样的 2 维,增益跨度是 65.8([−33.9, +31.9]);同样的 5 维,跨度 97.3([−9.9, +87.4]);而 1 维和 20 维的跨度反而只有 20.5 与 12.4。在同一族压缩方式内部,维度既非充分也非必要,它只是这次扫描里恰好跟上场的那个变量。把「失效边界」说成「维度诅咒」是错的。</p>
 
-      <p>但上面的实验还差一步:真实的描述符缺陷不长这样。没人会把 85 维随机投影成 2 维,真正天天发生的是「漏掉一个关键物理量,维度还是几十维」。于是补了一组新实验——全篇仅一组新增 run,15 任务 × 4 策略 × 30 种子 = 1800 次:按 |Spearman(f<sub>j</sub>, y)| 删掉最相关的 k 个描述符、其余全留,85 维降到 85 / 60 / 40 / 15 / 7 维,目标值一字不动。</p>
+      <p>但上面的实验还差一步:真实的描述符缺陷不长这样。没人会把 85 维随机投影成 2 维,真正天天发生的是「漏掉一个关键物理量,维度还是几十维」。于是又单独补了一组:15 任务 × 4 策略 × 30 种子 = 1800 次,按 |Spearman(f<sub>j</sub>, y)| 删掉最相关的 k 个描述符、其余全留,85 维降到 85 / 60 / 40 / 15 / 7 维,目标值一字不动。</p>
 
       <div class="figure">
         <img src="img/fig_physdrop.png" alt="图4 物理量删除 vs 压缩两族">
@@ -632,13 +632,13 @@ h3 {
 
       <p>数据显示,随着关键描述符被逐个移除,增益单调衰减 +86.5 → +19.8 → +12.8 → +3.9 → −5.9,但 15 个任务里只有 3/15 个 Holm 显著为负,且全落在 AUC ≤ 0.53 的深档;AUC 0.61–0.71、40 维这一档 0/3 为负,平均 +12.8。所以 0.731 这条边界只属于「表示被压到极低维、但仍保留中等可预测性」的场景(降维、嵌入、投影),不能外推到「漏掉一个物理量」:后者只会让 BO 变不划算,不会变有害。这也解释了准则卡上为什么「≤2 维」那一条实测有用、AUC 那一条实测没用——前者代理的是「几何被压扁」,后者只代理「信息变少」。</p>
 
-      <p>上面所有数字都出自同 3 个基底。换两个基底,还成立吗?于是补了一次真正的样本外检验(与后文的 1800 run 物理量删除实验并列为两组新增实验)——matbench_log_kvrh 与 matbench_perovskites,各 7 种算子共 14 个任务、1680 次 run。这两个基底的任何数据都没有参与过边界拟合、规则搜索与诊断标定,三条判据在看结果之前就写死在脚本里。</p>
+      <p>上面所有数字都出自同 3 个基底。换两个基底,还成立吗?于是补了一次真正的样本外检验(与前面的 1800 run 物理量删除实验并列为两组新增实验)——matbench_log_kvrh 与 matbench_perovskites,各 7 种算子共 14 个任务、1680 次 run。这两个基底的任何数据都没有参与过边界拟合、规则搜索与诊断标定,三条判据在看结果之前就写死在脚本里。</p>
 
       <div class="figure">
         <img src="img/fig_holdout.png" alt="图5 样本外检验">
         <div class="caption">
           <span class="fig-label">图 5</span>
-          蓝线只用旧 3 个基底拟合，橙三角（新基底 14 个任务）完全没参与拟合。低 AUC 处全部贴着零线，高 AUC 处全部转正。
+          蓝线只用旧 3 个基底拟合，橙三角（新基底 14 个任务）完全没参与拟合。AUC&lt;0.65 的 5 个全部贴着零线（负增益 0 个），AUC≥0.80 的 4 个全部转正。
         </div>
       </div>
 
@@ -657,61 +657,61 @@ h3 {
     <div class="section-body">
       <div class="wide-fig">
         <div class="wf-scroll">
-        <svg viewBox="0 0 760 196" role="img" aria-label="实验规模三层分解">
-<text x="0" y="14" fill="#e8eef5" font-size="11.5" font-family="-apple-system,'Noto Sans SC',sans-serif">实验规模：三层设计，每层都能逐 run 复算</text>
-<text x="64" y="50" fill="#8b98a8" font-size="10.5" font-family="-apple-system,'Noto Sans SC',sans-serif" text-anchor="end">消融臂</text>
-<rect x="72" y="34" width="58" height="22" rx="5" fill="#141d27" stroke="#25313f" stroke-width="1"/>
-<text x="101" y="49" fill="#cfd9e4" font-size="10" font-family="ui-monospace,monospace" text-anchor="middle">3 基底</text>
-<text x="137" y="49" fill="#5c6976" font-size="10" font-family="ui-monospace,monospace" text-anchor="middle">×</text>
-<rect x="146" y="34" width="58" height="22" rx="5" fill="#141d27" stroke="#25313f" stroke-width="1"/>
-<text x="175" y="49" fill="#cfd9e4" font-size="10" font-family="ui-monospace,monospace" text-anchor="middle">6 表示</text>
-<text x="211" y="49" fill="#5c6976" font-size="10" font-family="ui-monospace,monospace" text-anchor="middle">×</text>
-<rect x="220" y="34" width="58" height="22" rx="5" fill="#141d27" stroke="#25313f" stroke-width="1"/>
-<text x="249" y="49" fill="#cfd9e4" font-size="10" font-family="ui-monospace,monospace" text-anchor="middle">4 策略</text>
-<text x="285" y="49" fill="#5c6976" font-size="10" font-family="ui-monospace,monospace" text-anchor="middle">×</text>
-<rect x="294" y="34" width="58" height="22" rx="5" fill="#141d27" stroke="#25313f" stroke-width="1"/>
-<text x="323" y="49" fill="#cfd9e4" font-size="10" font-family="ui-monospace,monospace" text-anchor="middle">2 门控</text>
-<text x="359" y="49" fill="#5c6976" font-size="10" font-family="ui-monospace,monospace" text-anchor="middle">×</text>
-<rect x="368" y="34" width="69.5" height="22" rx="5" fill="#141d27" stroke="#25313f" stroke-width="1"/>
-<text x="402.75" y="49" fill="#cfd9e4" font-size="10" font-family="ui-monospace,monospace" text-anchor="middle">30 种子</text>
-<text x="449.5" y="50" fill="#5c6976" font-size="12" font-family="ui-monospace,monospace">=</text>
-<text x="467.5" y="51" fill="#7aa2ff" font-size="15" font-family="ui-monospace,monospace" font-weight="600">4,320</text>
-<text x="527.5" y="50" fill="#5c6976" font-size="10" font-family="ui-monospace,monospace">run</text>
-<text x="559.5" y="50" fill="#5c6976" font-size="10" font-family="-apple-system,'Noto Sans SC',sans-serif">144 单元 × 30 种子</text>
+        <svg viewBox="0 0 760 206" role="img" aria-label="实验规模三层分解">
+<text x="0" y="14" fill="#e8eef5" font-size="11.5" font-family="-apple-system,'Noto Sans SC',sans-serif">实验规模：三层相加即 17,520，每层都能逐 run 复算</text>
+<text x="64" y="50" fill="#8b98a8" font-size="10.5" font-family="-apple-system,'Noto Sans SC',sans-serif" text-anchor="end">主实验</text>
+<rect x="72" y="34" width="80" height="22" rx="5" fill="#141d27" stroke="#25313f" stroke-width="1"/>
+<text x="112" y="49" fill="#cfd9e4" font-size="10" font-family="ui-monospace,monospace" text-anchor="middle">36 任务-臂</text>
+<text x="160" y="49" fill="#5c6976" font-size="10" font-family="ui-monospace,monospace" text-anchor="middle">×</text>
+<rect x="168" y="34" width="54" height="22" rx="5" fill="#141d27" stroke="#25313f" stroke-width="1"/>
+<text x="195" y="49" fill="#cfd9e4" font-size="10" font-family="ui-monospace,monospace" text-anchor="middle">4 策略</text>
+<text x="230" y="49" fill="#5c6976" font-size="10" font-family="ui-monospace,monospace" text-anchor="middle">×</text>
+<rect x="238" y="34" width="58" height="22" rx="5" fill="#141d27" stroke="#25313f" stroke-width="1"/>
+<text x="267" y="49" fill="#cfd9e4" font-size="10" font-family="ui-monospace,monospace" text-anchor="middle">30 种子</text>
+<text x="304" y="49" fill="#5c6976" font-size="10" font-family="ui-monospace,monospace" text-anchor="middle">×</text>
+<rect x="312" y="34" width="54" height="22" rx="5" fill="#141d27" stroke="#25313f" stroke-width="1"/>
+<text x="339" y="49" fill="#cfd9e4" font-size="10" font-family="ui-monospace,monospace" text-anchor="middle">2 口径</text>
+<text x="414" y="50" fill="#5c6976" font-size="12" font-family="ui-monospace,monospace">=</text>
+<text x="480" y="51" fill="#7aa2ff" font-size="15" font-family="ui-monospace,monospace" font-weight="600" text-anchor="end">8,640</text>
+<text x="486" y="50" fill="#5c6976" font-size="10" font-family="ui-monospace,monospace">run</text>
+<text x="516" y="50" fill="#5c6976" font-size="10" font-family="-apple-system,'Noto Sans SC',sans-serif">主臂 18 + 消融臂 18</text>
+
 <text x="64" y="100" fill="#8b98a8" font-size="10.5" font-family="-apple-system,'Noto Sans SC',sans-serif" text-anchor="end">扩展消融</text>
-<rect x="72" y="84" width="69.5" height="22" rx="5" fill="#141d27" stroke="#25313f" stroke-width="1"/>
-<text x="106.75" y="99" fill="#cfd9e4" font-size="10" font-family="ui-monospace,monospace" text-anchor="middle">10 基底</text>
-<text x="148.5" y="99" fill="#5c6976" font-size="10" font-family="ui-monospace,monospace" text-anchor="middle">×</text>
-<rect x="157.5" y="84" width="58" height="22" rx="5" fill="#141d27" stroke="#25313f" stroke-width="1"/>
-<text x="186.5" y="99" fill="#cfd9e4" font-size="10" font-family="ui-monospace,monospace" text-anchor="middle">6 表示</text>
-<text x="222.5" y="99" fill="#5c6976" font-size="10" font-family="ui-monospace,monospace" text-anchor="middle">×</text>
-<rect x="231.5" y="84" width="58" height="22" rx="5" fill="#141d27" stroke="#25313f" stroke-width="1"/>
-<text x="260.5" y="99" fill="#cfd9e4" font-size="10" font-family="ui-monospace,monospace" text-anchor="middle">4 策略</text>
-<text x="296.5" y="99" fill="#5c6976" font-size="10" font-family="ui-monospace,monospace" text-anchor="middle">×</text>
-<rect x="305.5" y="84" width="69.5" height="22" rx="5" fill="#141d27" stroke="#25313f" stroke-width="1"/>
-<text x="340.25" y="99" fill="#cfd9e4" font-size="10" font-family="ui-monospace,monospace" text-anchor="middle">30 种子</text>
-<text x="387" y="100" fill="#5c6976" font-size="12" font-family="ui-monospace,monospace">=</text>
-<text x="405" y="101" fill="#7aa2ff" font-size="15" font-family="ui-monospace,monospace" font-weight="600">7,200</text>
-<text x="465" y="100" fill="#5c6976" font-size="10" font-family="ui-monospace,monospace">run</text>
-<text x="497" y="100" fill="#5c6976" font-size="10" font-family="-apple-system,'Noto Sans SC',sans-serif">有效 8 基底 / 48 任务</text>
-<text x="64" y="150" fill="#8b98a8" font-size="10.5" font-family="-apple-system,'Noto Sans SC',sans-serif" text-anchor="end">全套实验</text>
-<rect x="72" y="134" width="69.5" height="22" rx="5" fill="#141d27" stroke="#25313f" stroke-width="1"/>
-<text x="106.75" y="149" fill="#cfd9e4" font-size="10" font-family="ui-monospace,monospace" text-anchor="middle">36 任务</text>
-<text x="148.5" y="149" fill="#5c6976" font-size="10" font-family="ui-monospace,monospace" text-anchor="middle">×</text>
-<rect x="157.5" y="134" width="58" height="22" rx="5" fill="#141d27" stroke="#25313f" stroke-width="1"/>
-<text x="186.5" y="149" fill="#cfd9e4" font-size="10" font-family="ui-monospace,monospace" text-anchor="middle">4 策略</text>
-<text x="222.5" y="149" fill="#5c6976" font-size="10" font-family="ui-monospace,monospace" text-anchor="middle">×</text>
-<rect x="231.5" y="134" width="69.5" height="22" rx="5" fill="#141d27" stroke="#25313f" stroke-width="1"/>
-<text x="266.25" y="149" fill="#cfd9e4" font-size="10" font-family="ui-monospace,monospace" text-anchor="middle">30 种子</text>
-<text x="308" y="149" fill="#5c6976" font-size="10" font-family="ui-monospace,monospace" text-anchor="middle">×</text>
-<rect x="317" y="134" width="58" height="22" rx="5" fill="#141d27" stroke="#25313f" stroke-width="1"/>
-<text x="346" y="149" fill="#cfd9e4" font-size="10" font-family="ui-monospace,monospace" text-anchor="middle">2 口径</text>
-<text x="387" y="150" fill="#5c6976" font-size="12" font-family="ui-monospace,monospace">=</text>
-<text x="405" y="151" fill="#3ddc97" font-size="15" font-family="ui-monospace,monospace" font-weight="600">8,640</text>
-<text x="465" y="150" fill="#5c6976" font-size="10" font-family="ui-monospace,monospace">run</text>
-<text x="497" y="150" fill="#5c6976" font-size="10" font-family="-apple-system,'Noto Sans SC',sans-serif">主臂 18 + 消融臂 18</text>
-<line x1="0" y1="176" x2="760" y2="176" stroke="#1f2937" stroke-width="1"/>
-<text x="0" y="190" fill="#5c6976" font-size="9.5" font-family="-apple-system,'Noto Sans SC',sans-serif">命中口径 = 目标值落入该任务 top-10% 分位（随机期望恒 0.100）；种子 20261015 固定，子种子由 blake2b 派生</text>
+<rect x="72" y="84" width="66" height="22" rx="5" fill="#141d27" stroke="#25313f" stroke-width="1"/>
+<text x="105" y="99" fill="#cfd9e4" font-size="10" font-family="ui-monospace,monospace" text-anchor="middle">10 基底</text>
+<text x="146" y="99" fill="#5c6976" font-size="10" font-family="ui-monospace,monospace" text-anchor="middle">×</text>
+<rect x="154" y="84" width="54" height="22" rx="5" fill="#141d27" stroke="#25313f" stroke-width="1"/>
+<text x="181" y="99" fill="#cfd9e4" font-size="10" font-family="ui-monospace,monospace" text-anchor="middle">6 表示</text>
+<text x="216" y="99" fill="#5c6976" font-size="10" font-family="ui-monospace,monospace" text-anchor="middle">×</text>
+<rect x="224" y="84" width="54" height="22" rx="5" fill="#141d27" stroke="#25313f" stroke-width="1"/>
+<text x="251" y="99" fill="#cfd9e4" font-size="10" font-family="ui-monospace,monospace" text-anchor="middle">4 策略</text>
+<text x="286" y="99" fill="#5c6976" font-size="10" font-family="ui-monospace,monospace" text-anchor="middle">×</text>
+<rect x="294" y="84" width="58" height="22" rx="5" fill="#141d27" stroke="#25313f" stroke-width="1"/>
+<text x="323" y="99" fill="#cfd9e4" font-size="10" font-family="ui-monospace,monospace" text-anchor="middle">30 种子</text>
+<text x="414" y="100" fill="#5c6976" font-size="12" font-family="ui-monospace,monospace">=</text>
+<text x="480" y="101" fill="#7aa2ff" font-size="15" font-family="ui-monospace,monospace" font-weight="600" text-anchor="end">7,200</text>
+<text x="486" y="100" fill="#5c6976" font-size="10" font-family="ui-monospace,monospace">run</text>
+<text x="516" y="100" fill="#5c6976" font-size="10" font-family="-apple-system,'Noto Sans SC',sans-serif">60 任务，有效 48</text>
+
+<text x="64" y="150" fill="#8b98a8" font-size="10.5" font-family="-apple-system,'Noto Sans SC',sans-serif" text-anchor="end">严格留出</text>
+<rect x="72" y="134" width="66" height="22" rx="5" fill="#141d27" stroke="#25313f" stroke-width="1"/>
+<text x="105" y="149" fill="#cfd9e4" font-size="10" font-family="ui-monospace,monospace" text-anchor="middle">14 任务</text>
+<text x="146" y="149" fill="#5c6976" font-size="10" font-family="ui-monospace,monospace" text-anchor="middle">×</text>
+<rect x="154" y="134" width="54" height="22" rx="5" fill="#141d27" stroke="#25313f" stroke-width="1"/>
+<text x="181" y="149" fill="#cfd9e4" font-size="10" font-family="ui-monospace,monospace" text-anchor="middle">4 策略</text>
+<text x="216" y="149" fill="#5c6976" font-size="10" font-family="ui-monospace,monospace" text-anchor="middle">×</text>
+<rect x="224" y="134" width="58" height="22" rx="5" fill="#141d27" stroke="#25313f" stroke-width="1"/>
+<text x="253" y="149" fill="#cfd9e4" font-size="10" font-family="ui-monospace,monospace" text-anchor="middle">30 种子</text>
+<text x="414" y="150" fill="#5c6976" font-size="12" font-family="ui-monospace,monospace">=</text>
+<text x="480" y="151" fill="#7aa2ff" font-size="15" font-family="ui-monospace,monospace" font-weight="600" text-anchor="end">1,680</text>
+<text x="486" y="150" fill="#5c6976" font-size="10" font-family="ui-monospace,monospace">run</text>
+<text x="516" y="150" fill="#5c6976" font-size="10" font-family="-apple-system,'Noto Sans SC',sans-serif">仅 gate-off 臂，判据从未在此标定</text>
+
+<line x1="0" y1="166" x2="760" y2="166" stroke="#1f2937" stroke-width="1"/>
+<text x="64" y="188" fill="#8b98a8" font-size="10.5" font-family="-apple-system,'Noto Sans SC',sans-serif" text-anchor="end">三层合计</text>
+<text x="72" y="188" fill="#3ddc97" font-size="13" font-family="ui-monospace,monospace" font-weight="600">8,640 + 7,200 + 1,680 = 17,520</text>
+<text x="316" y="188" fill="#5c6976" font-size="10" font-family="-apple-system,'Noto Sans SC',sans-serif">条 run 级轨迹</text>
+<text x="0" y="202" fill="#5c6976" font-size="9.5" font-family="-apple-system,'Noto Sans SC',sans-serif">一次 run = 一个任务、一种策略、一个种子，跑满预算；统计独立单元仍只有 36 个任务-臂，run 数大不等于样本多</text>
 </svg>
         </div>
         <div class="wf-cap"><b>FIG 02</b>三层实验规模，<i>主集 8,640 + 扩展 7,200 + 严格留出 1,680 = 17,520 条，每层都附产物路径，可逐 run 复算。</i></div>
@@ -735,7 +735,7 @@ h3 {
             <tr><td>任务构成</td><td>轴 A 18(15 降质档 + 3 零降质锚点)· 轴 B 18(描述符消融)</td></tr>
             <tr><td>预算档</td><td>200(沙箱)· 400(本地全量)</td></tr>
             <tr><td>候选池</td><td class="num">3000 / 基底</td></tr>
-            <tr><td>描述符维度</td><td class="num">85(原始)</td></tr>
+            <tr><td>描述符维度</td><td class="num">85(元素分数;加 3 个聚合统计量共 88 维)</td></tr>
             <tr><td>种子</td><td><code>20261015</code> 固定,子种子由 blake2b 派生</td></tr>
             <tr><td>命中口径</td><td>目标值落入该任务 top-10% 分位(随机期望恒为 0.100)</td></tr>
           </tbody>
@@ -815,7 +815,7 @@ h3 {
       </div>
 
       <h3>4.2 四条结论:边界在哪里、能不能预报</h3>
-      <p>下表前三条数字来自本地全量 36 任务 × 4 策略 × 30 种子 × 2 口径 = 8640 条 run 轨迹,产物在 <code>results/boundary_fit.json</code>;第四条是零新增实验的离线复盘,产物在 <code>results-extra/matched_dim.json</code>。</p>
+      <p>下表前三条数字来自主实验的 36 任务 × 4 策略 × 30 种子 × 2 口径 = 8640 条 run 轨迹,产物在 <code>results/boundary_fit.json</code>;第四条是零新增实验的离线复盘,产物在 <code>results-extra/matched_dim.json</code>。</p>
 
       <div class="table-wrap">
         <table class="t42">
@@ -856,7 +856,7 @@ h3 {
       </div>
 
       <div class="callout">
-        <p>所以交付物不是自动开关,是一张保守熔断卡。它原有两个参数:描述符 ≤2 维或 AUC &lt; 0.60 时拒绝贝叶斯优化。事后我们把两条参数拆开、按基底逐个留出重算,发现 AUC 那一条在 8 个基底上一次都没赚过:主臂上它拦下的 4 个任务实测 +6.9 到 +10.8,全是误杀,净亏 35.40;而 ≤2 维那一条触发 9 次命中 4 次,靠的是避损 98.53 对放弃 72.37 的赔率。于是现行卡只剩一条:描述符 ≤2 维就停,改用空间填充。36 任务口径下它比全用 BO 高 26.17(原两参数卡是 −9.23),拒 9 个里 4 个真输、5 个误杀,放行 27 个里漏报 0。预注册的两参数卡在同一批 36 个任务上是放行 23、漏报 0、误拒 7(另 2 个不显著),两套口径都留着:<code>audit_decision_card.py</code> 不加参数跑交付版,加 <code>--two-param</code> 跑预注册版,逐任务可复算。净效果是把 −33.9 的右尾灾难,换成 +14 到 +32 的左尾少赚。</p>
+        <p>所以交付物不是自动开关,是一张保守熔断卡。它原有两个参数:描述符 ≤2 维或 AUC &lt; 0.60 时拒绝贝叶斯优化。事后我们把两条参数拆开、按基底逐个留出重算,发现 AUC 那一条在 8 个基底上一次都没赚过:主臂上它拦下的 4 个任务实测 +6.9 到 +10.8,全是误杀,净亏 35.40;而 ≤2 维那一条触发 9 次命中 4 次,靠的是避损 98.53 对放弃 72.37 的赔率(分项取整到两位,合计按未舍入值:98.5333 − 72.3667 = 26.1667)。于是现行卡只剩一条:描述符 ≤2 维就停,改用空间填充。36 任务口径下它比全用 BO 高 26.17(原两参数卡是 −9.23),拒 9 个里 4 个真输、5 个误杀,放行 27 个里漏报 0。预注册的两参数卡在同一批 36 个任务上是放行 23、漏报 0、误拒 7(另 2 个不显著),两套口径都留着:<code>audit_decision_card.py</code> 不加参数跑交付版,加 <code>--two-param</code> 跑预注册版,逐任务可复算。净效果是把 −33.9 的右尾灾难,换成 +14 到 +32 的左尾少赚。</p>
       <p><strong>这个数有前提,写在数字旁边。</strong>+26.17 来自参与标定的那批基底。换 3 个没参与标定的新体系,净增益落到 <strong>+0.90</strong>;走到 14 个任务的严格留出集,是 <strong>−8.60</strong>(契约口径:gp_ucb 对 farthest_point,不换采集函数)。所以这张卡是「机制真实存在过」的证据,不是「放到哪都涨」的成绩;同源体系内有效,跨体系要重新标定。</p>
       <p>两笔账分开记,不并成一个好看的数字:真拒的 4 个避开 −33.9,随机拒绝 9 个期望只拦到 1 个(超几何单侧 <strong>P=0.0021</strong>)。压力测试也记账:去掉 <code>dielectric</code> 这一个基底,卡的总增益转 <strong>−51.77</strong>——增益集中在单一基底,这是它最脆的地方。</p>
       </div>
@@ -876,7 +876,7 @@ h3 {
       <!-- 4.3 扩展消融臂 -->
       <h3 style="margin:32px 0 16px;font-size:1.15rem;font-weight:600">4.3 扩展消融臂:从 3 个基底加到 8 个</h3>
       <p>把消融臂从 3 个基底扩到 10 个材料基底,设计为 <strong>10 个材料基底 × 6 种描述符表示 × 4 种采集策略 × 30 个种子 = 7200 条 run</strong>,预算 400,门控关闭。</p>
-      <p>剔除两个分类基底与一个退化基底(<code>matbench_glass</code> 的 top-10% 分位在 400 次采样里期望命中 282–285 次,命中口径失效),剩 <strong>8 个有效基底 × 6 表示 = 48 个任务</strong>。</p>
+      <p>剔除 2 个基底后剩 <strong>8 个有效基底 × 6 表示 = 48 个任务</strong>:退化基底 <code>matbench_glass</code>(top-10% 分位在 400 次采样里期望命中 282–285 次,命中口径失效)与命中口径不适用的 <code>matbench_steels</code>;原剔除计划里的分类基底 <code>matbench_expt_is_metal</code> 不在本批扩展运行之内。</p>
       <p>方差分解结果(归一化口径:命中数 ÷ 同格纯随机命中数):</p>
       <div class="table-wrap">
         <table>
@@ -994,13 +994,13 @@ h3 {
     <div class="section-label">05</div>
     <h2 class="section-title">Interactive Sandbox</h2>
     <div class="section-body">
-      <p>这是 18 个任务的可交互决策台。拖两条阈值线,看总命中与四类判决计数如何变化。它验证的主张是:<strong>熔断卡不是「更准」,是把 −33.9 的右尾灾难换成 +14~+32 的左尾少赚</strong>。</p>
+      <p>这是 18 个任务的可交互决策台。主卡只读描述符维数:d 一动,总命中与四类判决计数跟着变(θ 滑块是被删掉的 AUC 门槛,留作对照)。它验证的主张是:<strong>熔断卡不是「更准」,是把 −33.9 的右尾灾难换成 +14~+32 的左尾少赚</strong>。</p>
 
       <div class="sandbox-frame">
         <iframe src="failbound-console.html" loading="lazy" title="FailBound 门控决策台"></iframe>
       </div>
 
-      <p>四组预设值的期望结果(供访客自检):</p>
+      <p>五组预设值的期望结果(供访客自检):</p>
       <div class="table-wrap">
         <table>
           <thead>
@@ -1015,7 +1015,7 @@ h3 {
           </tbody>
         </table>
       </div>
-      <p class="table-note">沙箱总命中为 18 个消融任务在预算 400 下的<strong>互补选择</strong>总和(每个任务按卡要么用 BO、要么用空间填充),与首屏 773/780 的 36 任务等成本口径不可直接比较。</p>
+      <p class="table-note">沙箱总命中为 18 个消融任务在预算 400 下的<strong>互补选择</strong>总和(每个任务按卡要么用 BO、要么用空间填充),与首屏 773/780 的 18 任务校准记录不可直接比较。</p>
       <div class="wide-fig">
         <div class="wf-scroll">
         <svg viewBox="0 0 760 250" role="img" aria-label="沙箱五组预设总命中对比">
@@ -1041,12 +1041,12 @@ h3 {
 <rect x="168" y="184" width="479.64" height="24" rx="4" fill="#7aa2ff" opacity="0.62"/>
 <text x="655.64" y="200" fill="#e8eef5" font-size="10.5" font-family="ui-monospace,monospace" font-weight="600">1271.6</text>
 
-<text x="700" y="30" fill="#3ddc97" font-size="9.5" font-family="-apple-system,'Noto Sans SC',sans-serif" text-anchor="end">人工卡距最优 +9.2（0.7%）</text>
+<text x="700" y="30" fill="#3ddc97" font-size="9.5" font-family="-apple-system,'Noto Sans SC',sans-serif" text-anchor="end">人工卡比样本内穷举低 9.2（0.7%）</text>
 <line x1="0" y1="216" x2="760" y2="216" stroke="#1f2937" stroke-width="1"/>
 <text x="0" y="231" fill="#5c6976" font-size="9.5" font-family="-apple-system,'Noto Sans SC',sans-serif">只重算决策、不重跑实验：滑块改变的是「选哪一半结果」，能说明规则，不能用来说明显著性</text>
 </svg>
         </div>
-        <div class="wf-cap"><b>FIG 04</b>人工卡距理论最优只差 9.2（0.7%），<i>换掉的是右尾灾难。</i></div>
+        <div class="wf-cap"><b>FIG 04</b>人工卡比「样本内穷举阈值」低 9.2（0.7%），<i>换掉的是右尾灾难；穷举是见过全部答案的上限，不是可部署方法。</i></div>
       </div>
 
       <p style="font-size:13.5px;color:var(--dim2);margin-top:16px"><em>页面只重算决策、不重跑实验;滑块改变的是「选哪一半结果」,所以它能说明规则,不能用来说明显著性。</em></p>
@@ -1203,9 +1203,9 @@ h3 {
           </thead>
           <tbody>
             <tr>
-              <td><strong>内循环</strong><br><span style="color:var(--dim2);font-size:12px">GP 拟合、UCB 采集、选点,共 8640 次</span></td>
+              <td><strong>内循环</strong><br><span style="color:var(--dim2);font-size:12px">GP 拟合、UCB 采集、选点,共 17,520 次(主集 8,640 + 扩展 7,200 + 留出 1,680)</span></td>
               <td>确定性代码<br><code>failbound_agent.py</code></td>
-              <td>零 LLM 调用、零网络请求。LLM 一进来,8640 次 run 就无法逐比特复现</td>
+              <td>零 LLM 调用、零网络请求。LLM 一进来,17,520 次 run 就无法逐比特复现</td>
             </tr>
             <tr>
               <td><strong>外循环</strong><br><span style="color:var(--dim2);font-size:12px">该不该用 BO、该测哪个假设、这个数字能不能信</span></td>
@@ -1324,11 +1324,12 @@ h3 {
         <li><span class="mat-icon">→</span><a href="sandbox-execution-log.pdf">沙箱执行记录</a></li>
         <li><span class="mat-icon">→</span><a href="originality-statement.pdf">原创性声明</a></li>
         <li><span class="mat-icon">→</span><a href="project-overview-5p.pdf">5 页说明</a></li>
-        <li><span class="mat-icon">→</span><a href="evidence_4320runs.csv">4320 次消融数据</a></li>
+        <li><span class="mat-icon">→</span><a href="evidence_4320runs.csv">消融臂聚合表(4,320 run / 144 单元)</a></li>
         <li><span class="mat-icon">→</span><a href="https://sciencepal.ai/share/944c87a6-46b9-49b0-b49f-0adc67257c21" target="_blank" rel="noopener">沙箱 Replay(SciencePal 站内)</a></li>
         <li><span class="mat-icon">→</span><a href="replay/s3.html">跨环境复现子页:S3</a> · <a href="replay/s4a.html">S4a</a> · <a href="replay/s4b.html">S4b</a> · <a href="replay/s5.html">S5</a> · <a href="replay/forecast.html">forecast</a></li>
         <li><span class="mat-icon">→</span><a href="img/fig_repr_effect.png">图 6 原图</a></li>
-        <li><span class="mat-icon">→</span>7200 条扩展消融原始轨迹 <code>ext11/agent_lab/results/runs_nogate_ablate.jsonl</code>(6.7 MB,随提交包提供)</li>
+        <li><span class="mat-icon">→</span><a href="https://github.com/Driesen-1212/failbound-lab/tree/main/evidence/ext11_7200">7,200 条扩展消融原始轨迹</a> <code>evidence/ext11_7200/runs_nogate_ablate.jsonl</code>(79 MB,逐 run 一行)</li>
+        <li><span class="mat-icon">→</span><a href="https://github.com/Driesen-1212/failbound-lab/tree/main/evidence">证据包</a> 39 个文件 / 155 MB · 36 条 sha256 · <code>python evidence/reconciliation/reconcile_runs.py</code> 一条命令重数 17,520</li>
       </ul>
 
       <h3 style="margin:40px 0 16px;font-size:1.15rem;font-weight:600">复现命令</h3>
@@ -1351,7 +1352,7 @@ python screening_demo.py --budget 200 --seeds 10 --counterfactual</div>
 <!-- ==================== FOOTER ==================== -->
 <footer>
   <div class="footer-note">
-    数据为 matbench v0.1(88 维描述符,候选池 3000,成本模型来自真实化学式),模型只用了 scikit-learn。<br>
+    数据为 matbench v0.1(85 维元素分数 + 3 个聚合统计量 = 88 维描述符,候选池 3000,成本模型来自真实化学式),模型只用了 scikit-learn。<br>
     候选来自公开基准的历史条目,不宣称发现新材料,任何材料结论仍需实验验证。
   </div>
   <p>FailBound-Lab · 2026</p>
